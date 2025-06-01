@@ -47,19 +47,25 @@ const Topbar = () => {
     // Tutor design - White theme with profile dropdown
     return (
       <div className="sticky top-0 z-10 bg-white border-b border-gray-200 h-16 flex items-center px-6">
-        {/* Left Section - Sidebar Toggle and Logo */}
+        {/* Left Section - Sidebar Toggle only */}
         <div className="flex items-center space-x-4">
-          <SidebarTrigger className="text-gray-600 hover:text-gray-900" />
-          <div className="flex items-center space-x-2">
-            <div className="h-8 w-8 bg-slate-900 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">TS</span>
-            </div>
-            <span className="text-gray-900 font-semibold text-lg">TalentSchool</span>
-          </div>
+          <SidebarTrigger className="text-gray-600 hover:text-gray-900 p-2 hover:bg-gray-100 rounded-md transition-colors" />
         </div>
 
         {/* Right Section - Actions */}
         <div className="flex items-center justify-end space-x-3 ml-auto">
+          {/* Home Button */}
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            asChild
+            className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+          >
+            <Link to="/">
+              <Home className="h-5 w-5" />
+            </Link>
+          </Button>
+
           {/* Help Button */}
           <Button 
             variant="ghost" 
