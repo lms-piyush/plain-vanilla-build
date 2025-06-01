@@ -36,39 +36,32 @@ const Sidebar = () => {
     { icon: HelpCircle, label: "Help", path: "/help" },
   ];
 
-  // Tutor navigation items
+  // Tutor navigation items - only essential ones
   const tutorMenuItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/tutor/dashboard" },
-    { icon: Book, label: "My Classes", path: "/tutor/classes" },
-    { icon: Users, label: "Students", path: "/tutor/students" },
-    { icon: BarChart3, label: "Analytics", path: "/tutor/analytics" },
+    { icon: Book, label: "Classes", path: "/tutor/classes" },
     { icon: DollarSign, label: "Earnings", path: "/tutor/earnings" },
     { icon: MessagesSquare, label: "Messages", path: "/tutor/messages" },
-    { icon: ThumbsUp, label: "Reviews", path: "/tutor/feedback" },
-    { icon: Settings, label: "Settings", path: "/tutor/settings" },
-    { icon: HelpCircle, label: "Support", path: "/tutor/help" },
+    { icon: ThumbsUp, label: "Feedback", path: "/tutor/feedback" },
   ];
 
   const menuItems = isTutorRoute ? tutorMenuItems : studentMenuItems;
 
   if (isTutorRoute) {
-    // Tutor sidebar - Dark professional theme
+    // Tutor sidebar - White theme
     return (
-      <SidebarComponent className="border-slate-700">
-        <div className="flex items-center justify-center h-16 border-b border-slate-700 bg-slate-900">
+      <SidebarComponent className="border-gray-200">
+        <div className="flex items-center justify-center h-16 border-b border-gray-200 bg-white">
           <div className="flex items-center space-x-2">
-            <div className="h-8 w-8 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
+            <div className="h-8 w-8 bg-slate-900 rounded-lg flex items-center justify-center">
               <span className="text-white font-bold text-sm">TS</span>
             </div>
-            <h1 className="text-lg font-semibold text-white">TalentSchool</h1>
+            <h1 className="text-lg font-semibold text-gray-900">TalentSchool</h1>
           </div>
         </div>
         
-        <SidebarContent className="flex flex-col justify-between flex-1 bg-slate-900">
+        <SidebarContent className="flex flex-col justify-between flex-1 bg-white">
           <div className="pt-4">
-            <div className="px-4 mb-4">
-              <span className="text-xs font-medium text-slate-400 uppercase tracking-wider">Menu</span>
-            </div>
             <SidebarMenu>
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.path} className="py-1 mx-2">
@@ -76,8 +69,8 @@ const Sidebar = () => {
                     asChild
                     isActive={isActive(item.path)}
                     className={isActive(item.path) 
-                      ? "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-lg" 
-                      : "hover:bg-slate-800 text-slate-300 hover:text-white"}
+                      ? "bg-slate-900 text-white shadow-sm" 
+                      : "hover:bg-gray-50 text-gray-700 hover:text-gray-900"}
                   >
                     <Link to={item.path} className="flex items-center space-x-3 px-3 py-2 rounded-lg transition-all">
                       <item.icon className="h-5 w-5" />
@@ -90,10 +83,10 @@ const Sidebar = () => {
           </div>
         </SidebarContent>
         
-        <SidebarFooter className="border-t border-slate-700 p-4 bg-slate-900">
+        <SidebarFooter className="border-t border-gray-200 p-4 bg-white">
           <SidebarMenuButton 
             asChild 
-            className="w-full hover:bg-red-900/20 hover:text-red-400 text-slate-300 transition-colors"
+            className="w-full hover:bg-red-50 hover:text-red-600 text-gray-700 transition-colors"
           >
             <Link to="/" className="flex items-center space-x-2 px-3 py-2 rounded-lg">
               <LogOut className="h-5 w-5" />
