@@ -1,21 +1,20 @@
 
 import React from "react";
+import { Outlet } from "react-router-dom";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 
-interface LayoutProps {
-  children: React.ReactNode;
-}
-
-const Layout = ({ children }: LayoutProps) => {
+const Layout = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
         <Sidebar />
         <div className="flex-1">
           <Topbar />
-          <main className="p-6">{children}</main>
+          <main className="p-6">
+            <Outlet />
+          </main>
         </div>
       </div>
     </SidebarProvider>
