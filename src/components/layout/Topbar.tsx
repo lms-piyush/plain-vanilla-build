@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
-import { Bell, Search, User, GraduationCap } from "lucide-react";
+import { Bell, Search, User, GraduationCap, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -101,8 +101,20 @@ const Topbar = () => {
         </div>
       )}
 
-      {/* Right Section - Notifications & Profile */}
+      {/* Right Section - Home, Notifications & Profile */}
       <div className={`flex items-center justify-end space-x-4 ${!isTutorRoute ? 'ml-auto' : 'ml-0 flex-1'}`}>
+        {/* Home Button */}
+        <Button 
+          variant="outline" 
+          size="icon" 
+          asChild
+          className="border border-gray-200 hover:bg-[#E5D0FF] hover:text-black active:bg-[#8A5BB7] active:text-white focus:bg-[#8A5BB7] focus:text-white"
+        >
+          <Link to="/">
+            <Home className="h-5 w-5" />
+          </Link>
+        </Button>
+
         {/* Notification Button */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
