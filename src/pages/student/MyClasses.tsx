@@ -1,7 +1,5 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import Layout from "@/components/layout/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -334,7 +332,7 @@ const MyClasses = () => {
   });
   
   return (
-    <Layout>
+    <>
       <h1 className="text-2xl font-bold mb-6">My Classes</h1>
       
       <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
@@ -512,7 +510,7 @@ const MyClasses = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </Layout>
+    </>
   );
 };
 
