@@ -1,8 +1,8 @@
 
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
-import { Bell, Search, User } from "lucide-react";
+import { Bell, Search, User, GraduationCap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -13,8 +13,11 @@ import {
 
 const Topbar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  
+  const isTutorRoute = location.pathname.startsWith('/tutor');
 
   // Dummy search results for "advanced" keyword
   const searchResults = [
@@ -34,65 +37,72 @@ const Topbar = () => {
     }
   };
 
+  // Profile link and user type based on route
+  const profileLink = isTutorRoute ? "/tutor/dashboard" : "/profile";
+  const userType = isTutorRoute ? "Tutor" : "Student";
+  const UserIcon = isTutorRoute ? GraduationCap : User;
+
   return (
     <div className="sticky top-0 z-10 bg-white border-b border-gray-200 h-16 flex items-center px-6">
-      {/* Search Bar - Now on the left side */}
-      <div className="flex-1 max-w-md relative">
-        <div className="relative flex items-center">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            type="text"
-            placeholder="Search courses, tutors..."
-            className="pl-10 pr-4 w-full border-gray-200 hover:bg-[#E5D0FF] focus:border-[#8A5BB7] focus-visible:ring-[#8A5BB7]"
-            value={searchQuery}
-            onChange={(e) => {
-              setSearchQuery(e.target.value);
-              setIsSearching(e.target.value.length > 0);
-            }}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                handleSearch();
-              }
-            }}
-          />
-        </div>
+      {/* Search Bar - Show only for student routes */}
+      {!isTutorRoute && (
+        <div className="flex-1 max-w-md relative">
+          <div className="relative flex items-center">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+            <Input
+              type="text"
+              placeholder="Search courses, tutors..."
+              className="pl-10 pr-4 w-full border-gray-200 hover:bg-[#E5D0FF] focus:border-[#8A5BB7] focus-visible:ring-[#8A5BB7]"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setIsSearching(e.target.value.length > 0);
+              }}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  handleSearch();
+                }
+              }}
+            />
+          </div>
 
-        {/* Search Results Dropdown - Show when typing "advanced" */}
-        {isSearching && shouldShowResults && (
-          <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 p-2">
-            <div className="py-2">
-              {searchResults.map((result) => (
-                <div 
-                  key={result.id}
-                  className="px-3 py-2 hover:bg-[#E5D0FF] rounded cursor-pointer"
+          {/* Search Results Dropdown - Show when typing "advanced" */}
+          {isSearching && shouldShowResults && (
+            <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-50 p-2">
+              <div className="py-2">
+                {searchResults.map((result) => (
+                  <div 
+                    key={result.id}
+                    className="px-3 py-2 hover:bg-[#E5D0FF] rounded cursor-pointer"
+                    onClick={() => {
+                      navigate(`/explore?search=advanced`);
+                      setIsSearching(false);
+                    }}
+                  >
+                    <p className="font-medium">{result.title}</p>
+                    <p className="text-sm text-gray-500">By {result.tutor}</p>
+                  </div>
+                ))}
+              </div>
+              <div className="pt-2 border-t border-gray-100">
+                <Button 
+                  variant="link" 
+                  className="w-full justify-center text-[#8A5BB7]"
                   onClick={() => {
                     navigate(`/explore?search=advanced`);
                     setIsSearching(false);
                   }}
                 >
-                  <p className="font-medium">{result.title}</p>
-                  <p className="text-sm text-gray-500">By {result.tutor}</p>
-                </div>
-              ))}
+                  View All Results
+                </Button>
+              </div>
             </div>
-            <div className="pt-2 border-t border-gray-100">
-              <Button 
-                variant="link" 
-                className="w-full justify-center text-[#8A5BB7]"
-                onClick={() => {
-                  navigate(`/explore?search=advanced`);
-                  setIsSearching(false);
-                }}
-              >
-                View All Results
-              </Button>
-            </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* Right Section - Notifications & Profile */}
-      <div className="flex items-center justify-end space-x-4 ml-auto">
+      <div className={`flex items-center justify-end space-x-4 ${!isTutorRoute ? 'ml-auto' : 'ml-0 flex-1'}`}>
         {/* Notification Button */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -148,12 +158,12 @@ const Topbar = () => {
           asChild 
           className="flex items-center space-x-2 border border-gray-200 hover:bg-[#E5D0FF] hover:text-black active:bg-[#8A5BB7] active:text-white focus:bg-[#8A5BB7] focus:text-white px-3"
         >
-          <Link to="/profile">
+          <Link to={profileLink}>
             <div className="flex items-center space-x-2">
               <div className="h-8 w-8 rounded-full bg-[#8A5BB7] flex items-center justify-center text-white">
-                <User className="h-5 w-5" />
+                <UserIcon className="h-5 w-5" />
               </div>
-              <span className="text-sm font-medium hidden md:inline-block">Student</span>
+              <span className="text-sm font-medium hidden md:inline-block">{userType}</span>
             </div>
           </Link>
         </Button>

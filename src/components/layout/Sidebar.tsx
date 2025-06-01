@@ -9,19 +9,42 @@ import {
   SidebarMenuItem, 
   SidebarMenuButton
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Book, Compass, HelpCircle, LogOut, MessagesSquare } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  Book, 
+  Compass, 
+  HelpCircle, 
+  LogOut, 
+  MessagesSquare,
+  DollarSign,
+  ThumbsUp
+} from "lucide-react";
 
 const Sidebar = () => {
   const location = useLocation();
   const isActive = (path: string) => location.pathname === path;
+  const isTutorRoute = location.pathname.startsWith('/tutor');
 
-  const menuItems = [
-    { icon: LayoutDashboard, label: "Dashboard", path: "/" },
+  // Student navigation items
+  const studentMenuItems = [
+    { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
     { icon: Book, label: "My Classes", path: "/my-classes" },
     { icon: Compass, label: "Explore Classes", path: "/explore" },
     { icon: MessagesSquare, label: "Messages", path: "/messages" },
     { icon: HelpCircle, label: "Help", path: "/help" },
   ];
+
+  // Tutor navigation items
+  const tutorMenuItems = [
+    { icon: LayoutDashboard, label: "Dashboard", path: "/tutor/dashboard" },
+    { icon: Book, label: "Classes", path: "/tutor/classes" },
+    { icon: DollarSign, label: "Earnings", path: "/tutor/earnings" },
+    { icon: MessagesSquare, label: "Messages", path: "/tutor/messages" },
+    { icon: ThumbsUp, label: "Feedback", path: "/tutor/feedback" },
+    { icon: HelpCircle, label: "Help", path: "/tutor/help" },
+  ];
+
+  const menuItems = isTutorRoute ? tutorMenuItems : studentMenuItems;
 
   return (
     <SidebarComponent>
@@ -53,10 +76,10 @@ const Sidebar = () => {
           asChild 
           className="w-full hover:bg-[#E5D0FF] hover:text-black active:bg-[#8A5BB7] active:text-white"
         >
-          <button className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-2">
             <LogOut />
             <span>Logout</span>
-          </button>
+          </Link>
         </SidebarMenuButton>
       </SidebarFooter>
     </SidebarComponent>
