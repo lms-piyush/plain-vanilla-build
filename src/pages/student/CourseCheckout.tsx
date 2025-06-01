@@ -1,7 +1,5 @@
-
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import {
   Card,
@@ -209,7 +207,7 @@ const CourseCheckout = () => {
 
   if (!course) {
     return (
-      <Layout>
+      <>
         <div className="flex flex-col items-center justify-center h-[calc(100vh-8rem)] p-6">
           <h1 className="text-2xl font-bold mb-4">Course Not Found</h1>
           <p className="mb-6">The course you're looking for doesn't exist or has been removed.</p>
@@ -220,12 +218,12 @@ const CourseCheckout = () => {
             Back to Explore
           </Button>
         </div>
-      </Layout>
+      </>
     );
   }
   
   return (
-    <Layout>
+    <>
       <div className="container max-w-4xl mx-auto p-6">
         <h1 className="text-2xl font-bold mb-8">Course Checkout</h1>
         
@@ -606,7 +604,7 @@ const CourseCheckout = () => {
           </DialogContent>
         </Dialog>
       </div>
-    </Layout>
+    </>
   );
 };
 
