@@ -1,6 +1,5 @@
 
 import React, { useState } from "react";
-import Layout from "@/components/layout/Layout";
 import {
   Accordion,
   AccordionContent,
@@ -115,7 +114,7 @@ const Help = () => {
   ];
 
   return (
-    <Layout>
+    <>
       {/* Banner Section */}
       <div className="mb-6 bg-gradient-to-r from-[#8A5BB7] to-[#BA8DF1] rounded-lg p-8 text-white">
         <div className="flex flex-col md:flex-row items-center justify-between">
@@ -297,7 +296,7 @@ const Help = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </Layout>
+    </>
   );
 };
 
