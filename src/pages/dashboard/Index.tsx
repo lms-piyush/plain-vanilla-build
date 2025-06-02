@@ -8,7 +8,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { GraduationCap, ChevronDown } from "lucide-react";
+import { GraduationCap, ChevronDown, Home } from "lucide-react";
 import Hero from "@/components/Hero";
 import Categories from "@/components/Categories";
 import HowItWorks from "@/components/HowItWorks";
@@ -18,12 +18,6 @@ import FeaturedTutors from "@/components/home/FeaturedTutors";
 import PopularClasses from "@/components/home/PopularClasses";
 import CallToAction from "@/components/home/CallToAction";
 import { tutors, featuredClasses } from "@/components/home/data";
-import { 
-  exploreClassesItems, 
-  howItWorksItems, 
-  forTutorsItems, 
-  resourcesItems 
-} from '@/components/navbar/NavigationData';
 
 const Index = () => {
   useEffect(() => {
@@ -32,10 +26,11 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* Enhanced Landing Navbar with Dropdown Navigation */}
+      {/* Unified Dashboard Navbar */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
+            {/* Logo */}
             <div className="flex items-center">
               <GraduationCap className="h-8 w-8 text-[#8A5BB7]" />
               <h1 className="ml-2 text-2xl font-bold text-gray-900">TalentSchool</h1>
@@ -69,19 +64,22 @@ const Index = () => {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
-                    How It Works
+                    For Students
                     <ChevronDown className="ml-1 h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 bg-white">
                   <DropdownMenuItem>
-                    <Link to="/dashboard" className="w-full">For Parents</Link>
+                    <Link to="/student/dashboard" className="w-full">Student Dashboard</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/dashboard" className="w-full">Class Formats</Link>
+                    <Link to="/student/my-classes" className="w-full">My Classes</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/dashboard" className="w-full">Safety & Quality</Link>
+                    <Link to="/student/explore" className="w-full">Explore Classes</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/student/profile" className="w-full">Profile</Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -95,41 +93,35 @@ const Index = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 bg-white">
                   <DropdownMenuItem>
-                    <Link to="/dashboard" className="w-full">Become a Tutor</Link>
+                    <Link to="/tutor/dashboard" className="w-full">Tutor Dashboard</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/dashboard" className="w-full">Tutor Resources</Link>
+                    <Link to="/tutor/classes" className="w-full">My Classes</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/dashboard" className="w-full">Success Stories</Link>
+                    <Link to="/tutor/earnings" className="w-full">Earnings</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/tutor/messages" className="w-full">Messages</Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
-                    Resources
-                    <ChevronDown className="ml-1 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-48 bg-white">
-                  <DropdownMenuItem>
-                    <Link to="/dashboard" className="w-full">Blog & Articles</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/dashboard" className="w-full">Help Center</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/dashboard" className="w-full">Learning Guides</Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Link to="/student/help" className="text-gray-700 hover:text-[#8A5BB7] text-sm font-medium">
+                Help
+              </Link>
             </nav>
 
-            <div className="flex space-x-4">
+            {/* Right Section - Dashboard and Auth */}
+            <div className="flex items-center space-x-4">
               <Button variant="outline" asChild>
                 <Link to="/dashboard">Dashboard</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/auth/login">Login</Link>
+              </Button>
+              <Button className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90" asChild>
+                <Link to="/auth/signup">Sign Up</Link>
               </Button>
             </div>
           </div>

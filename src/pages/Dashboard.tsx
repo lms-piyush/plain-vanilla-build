@@ -10,34 +10,29 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { GraduationCap, User, BookOpen, DollarSign, MessageSquare, Star, Home, ArrowRight, ChevronDown } from 'lucide-react';
-import { 
-  exploreClassesItems, 
-  howItWorksItems, 
-  forTutorsItems, 
-  resourcesItems 
-} from '@/components/navbar/NavigationData';
 
 const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100">
-      {/* Header with Dropdown Navigation */}
+      {/* Unified Dashboard Navbar */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <Link to="/" className="flex items-center hover:opacity-80 transition-opacity">
-                <Home className="h-6 w-6 text-[#8A5BB7] mr-2" />
-                <span className="text-sm font-medium text-gray-600">Back to Home</span>
+            {/* Logo and Home Link */}
+            <div className="flex items-center space-x-6">
+              <Link to="/" className="flex items-center">
+                <GraduationCap className="h-8 w-8 text-[#8A5BB7]" />
+                <h1 className="ml-2 text-2xl font-bold text-gray-900">TalentSchool</h1>
+              </Link>
+              
+              <Link to="/" className="flex items-center text-gray-600 hover:text-[#8A5BB7] transition-colors">
+                <Home className="h-5 w-5 mr-2" />
+                <span className="text-sm font-medium">Home</span>
               </Link>
             </div>
-            
-            <div className="flex items-center">
-              <GraduationCap className="h-8 w-8 text-[#8A5BB7]" />
-              <h1 className="ml-2 text-2xl font-bold text-gray-900">TalentSchool</h1>
-            </div>
 
-            {/* Navigation Dropdown Menus */}
-            <nav className="hidden md:flex items-center space-x-8">
+            {/* Navigation Menu */}
+            <nav className="hidden md:flex items-center space-x-6">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
@@ -46,27 +41,41 @@ const Dashboard = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 bg-white">
-                  {exploreClassesItems.map((item) => (
-                    <DropdownMenuItem key={item.title}>
-                      <Link to={item.href} className="w-full">{item.title}</Link>
-                    </DropdownMenuItem>
-                  ))}
+                  <DropdownMenuItem>
+                    <Link to="/student/explore" className="w-full">Academic Subjects</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/student/explore" className="w-full">Arts & Creativity</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/student/explore" className="w-full">Technology & Coding</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/student/explore" className="w-full">Life Skills</Link>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
-                    How It Works
+                    For Students
                     <ChevronDown className="ml-1 h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 bg-white">
-                  {howItWorksItems.map((item) => (
-                    <DropdownMenuItem key={item.title}>
-                      <Link to={item.href} className="w-full">{item.title}</Link>
-                    </DropdownMenuItem>
-                  ))}
+                  <DropdownMenuItem>
+                    <Link to="/student/dashboard" className="w-full">Student Dashboard</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/student/my-classes" className="w-full">My Classes</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/student/explore" className="w-full">Explore Classes</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/student/profile" className="w-full">Profile</Link>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -74,64 +83,6 @@ const Dashboard = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
                     For Tutors
-                    <ChevronDown className="ml-1 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-48 bg-white">
-                  {forTutorsItems.map((item) => (
-                    <DropdownMenuItem key={item.title}>
-                      <Link to={item.href} className="w-full">{item.title}</Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
-                    Resources
-                    <ChevronDown className="ml-1 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-48 bg-white">
-                  {resourcesItems.map((item) => (
-                    <DropdownMenuItem key={item.title}>
-                      <Link to={item.href} className="w-full">{item.title}</Link>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
-                    Dashboard
-                    <ChevronDown className="ml-1 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-48 bg-white">
-                  <DropdownMenuItem>
-                    <Link to="/dashboard" className="w-full">User Dashboard</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/dashboard/profile" className="w-full">Profile</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/dashboard/enrolled-classes" className="w-full">Enrolled Classes</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/dashboard/saved-classes" className="w-full">Saved Classes</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/dashboard/settings" className="w-full">Account Settings</Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
-                    Tutor Portal
                     <ChevronDown className="ml-1 h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
@@ -148,32 +99,23 @@ const Dashboard = () => {
                   <DropdownMenuItem>
                     <Link to="/tutor/messages" className="w-full">Messages</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/tutor/feedback" className="w-full">Feedback</Link>
-                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
-                    Auth
-                    <ChevronDown className="ml-1 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-48 bg-white">
-                  <DropdownMenuItem>
-                    <Link to="/auth/login" className="w-full">Login</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/auth/signup" className="w-full">Sign Up</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/auth/forgot-password" className="w-full">Forgot Password</Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Link to="/student/help" className="text-gray-700 hover:text-[#8A5BB7] text-sm font-medium">
+                Help
+              </Link>
             </nav>
+
+            {/* Right Section - Auth Buttons */}
+            <div className="flex items-center space-x-4">
+              <Button variant="outline" asChild>
+                <Link to="/auth/login">Login</Link>
+              </Button>
+              <Button className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90" asChild>
+                <Link to="/auth/signup">Sign Up</Link>
+              </Button>
+            </div>
           </div>
         </div>
       </header>
