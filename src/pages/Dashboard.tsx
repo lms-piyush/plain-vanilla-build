@@ -41,16 +41,13 @@ const Dashboard = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 bg-white">
                   <DropdownMenuItem>
-                    <Link to="/explore" className="w-full">All Classes</Link>
+                    <Link to="/explore/academic-subjects" className="w-full">Academic Subjects</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/explore/academic" className="w-full">Academic Subjects</Link>
+                    <Link to="/explore/arts-creativity" className="w-full">Arts & Creativity</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/explore/arts" className="w-full">Arts & Creativity</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/explore/technology" className="w-full">Technology & Coding</Link>
+                    <Link to="/explore/technology-coding" className="w-full">Technology & Coding</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
                     <Link to="/explore/life-skills" className="w-full">Life Skills</Link>
@@ -67,13 +64,13 @@ const Dashboard = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 bg-white">
                   <DropdownMenuItem>
-                    <Link to="/how-it-works/parents" className="w-full">For Parents</Link>
+                    <Link to="/how-it-works/for-parents" className="w-full">For Parents</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/how-it-works/formats" className="w-full">Class Formats</Link>
+                    <Link to="/how-it-works/class-formats" className="w-full">Class Formats</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/how-it-works/safety" className="w-full">Safety & Quality</Link>
+                    <Link to="/how-it-works/safety-quality" className="w-full">Safety & Quality</Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -87,13 +84,13 @@ const Dashboard = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 bg-white">
                   <DropdownMenuItem>
-                    <Link to="/for-tutors/become" className="w-full">Become a Tutor</Link>
+                    <Link to="/for-tutors/become-tutor" className="w-full">Become a Tutor</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/for-tutors/resources" className="w-full">Tutor Resources</Link>
+                    <Link to="/for-tutors/tutor-resources" className="w-full">Tutor Resources</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/for-tutors/success" className="w-full">Success Stories</Link>
+                    <Link to="/for-tutors/success-stories" className="w-full">Success Stories</Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -107,13 +104,85 @@ const Dashboard = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 bg-white">
                   <DropdownMenuItem>
-                    <Link to="/resources/help" className="w-full">Help Center</Link>
+                    <Link to="/resources/help-center" className="w-full">Help Center</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/resources/blog" className="w-full">Blog Articles</Link>
+                    <Link to="/resources/blog-articles" className="w-full">Blog Articles</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/resources/guides" className="w-full">Learning Guides</Link>
+                    <Link to="/resources/learning-guides" className="w-full">Learning Guides</Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
+                    Dashboard
+                    <ChevronDown className="ml-1 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-48 bg-white">
+                  <DropdownMenuItem>
+                    <Link to="/dashboard" className="w-full">User Dashboard</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/dashboard/profile" className="w-full">Profile</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/dashboard/enrolled-classes" className="w-full">Enrolled Classes</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/dashboard/saved-classes" className="w-full">Saved Classes</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/dashboard/settings" className="w-full">Account Settings</Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
+                    Tutor Portal
+                    <ChevronDown className="ml-1 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-48 bg-white">
+                  <DropdownMenuItem>
+                    <Link to="/tutor-dashboard" className="w-full">Tutor Dashboard</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/tutor-dashboard/classes" className="w-full">My Classes</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/tutor-dashboard/earnings" className="w-full">Earnings</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/tutor-dashboard/messages" className="w-full">Messages</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/tutor-dashboard/feedback" className="w-full">Feedback</Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
+                    Auth
+                    <ChevronDown className="ml-1 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-48 bg-white">
+                  <DropdownMenuItem>
+                    <Link to="/auth/login" className="w-full">Login</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/auth/signup" className="w-full">Sign Up</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/auth/forgot-password" className="w-full">Forgot Password</Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
