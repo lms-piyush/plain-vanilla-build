@@ -18,6 +18,9 @@ const Landing = () => {
             </div>
             <div className="flex space-x-4">
               <Button variant="outline" asChild>
+                <Link to="/dashboard">Dashboard</Link>
+              </Button>
+              <Button variant="outline" asChild>
                 <Link to="/student">Student Login</Link>
               </Button>
               <Button asChild className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90">
@@ -42,15 +45,15 @@ const Landing = () => {
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <Button size="lg" asChild className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90 w-full sm:w-auto">
-              <Link to="/student" className="flex items-center">
-                <User className="mr-2 h-5 w-5" />
-                Start Learning
+              <Link to="/dashboard" className="flex items-center">
+                <GraduationCap className="mr-2 h-5 w-5" />
+                Access Dashboard
               </Link>
             </Button>
             <Button size="lg" variant="outline" asChild className="border-[#8A5BB7] text-[#8A5BB7] hover:bg-[#E5D0FF] w-full sm:w-auto">
-              <Link to="/tutor" className="flex items-center">
-                <GraduationCap className="mr-2 h-5 w-5" />
-                Start Teaching
+              <Link to="/student" className="flex items-center">
+                <User className="mr-2 h-5 w-5" />
+                Start Learning
               </Link>
             </Button>
           </div>

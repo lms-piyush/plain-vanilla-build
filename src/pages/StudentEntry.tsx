@@ -6,8 +6,8 @@ const StudentEntry = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Redirect to student dashboard
-    navigate("/dashboard");
+    // Redirect to student dashboard with new route structure
+    navigate("/student/dashboard");
   }, [navigate]);
 
   return (

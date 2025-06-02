@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // New pages
 import Landing from "./pages/Landing";
+import Dashboard from "./pages/Dashboard";
 import StudentEntry from "./pages/StudentEntry";
 import TutorEntry from "./pages/TutorEntry";
 
@@ -19,7 +20,7 @@ import Feedback from "./pages/tutor/Feedback";
 import TutorHelp from "./pages/tutor/Help";
 
 // Student pages
-import Dashboard from "./pages/student/Dashboard";
+import StudentDashboardPage from "./pages/student/Dashboard";
 import MyClasses from "./pages/student/MyClasses";
 import ExploreClasses from "./pages/student/ExploreClasses";
 import ClassDetail from "./pages/student/ClassDetail";
@@ -45,6 +46,9 @@ const App = () => (
           {/* Landing page */}
           <Route path="/" element={<Landing />} />
           
+          {/* New Dashboard with login options */}
+          <Route path="/dashboard" element={<Dashboard />} />
+          
           {/* Entry points */}
           <Route path="/student" element={<StudentEntry />} />
           <Route path="/tutor" element={<TutorEntry />} />
@@ -61,7 +65,7 @@ const App = () => (
           
           {/* Student Routes with Layout */}
           <Route element={<Layout />}>
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/student/dashboard" element={<StudentDashboardPage />} />
             <Route path="/my-classes" element={<MyClasses />} />
             <Route path="/explore" element={<ExploreClasses />} />
             <Route path="/classes/:id" element={<ClassDetail />} />
