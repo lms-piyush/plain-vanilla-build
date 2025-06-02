@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
@@ -27,13 +28,13 @@ const Sidebar = () => {
   const isActive = (path: string) => location.pathname === path;
   const isTutorRoute = location.pathname.startsWith('/tutor');
 
-  // Student navigation items
+  // Student navigation items - Updated with /student/ prefix
   const studentMenuItems = [
-    { icon: LayoutDashboard, label: "Dashboard", path: "/dashboard" },
-    { icon: Book, label: "My Classes", path: "/my-classes" },
-    { icon: Compass, label: "Explore Classes", path: "/explore" },
-    { icon: MessagesSquare, label: "Messages", path: "/messages" },
-    { icon: HelpCircle, label: "Help", path: "/help" },
+    { icon: LayoutDashboard, label: "Dashboard", path: "/student/dashboard" },
+    { icon: Book, label: "My Classes", path: "/student/my-classes" },
+    { icon: Compass, label: "Explore Classes", path: "/student/explore" },
+    { icon: MessagesSquare, label: "Messages", path: "/student/messages" },
+    { icon: HelpCircle, label: "Help", path: "/student/help" },
   ];
 
   // Tutor navigation items - only essential ones
