@@ -63,17 +63,17 @@ const App = () => (
             <Route path="/tutor/help" element={<TutorHelp />} />
           </Route>
           
-          {/* Student Routes with Layout */}
+          {/* Student Routes with Layout - Updated with /student/ prefix */}
           <Route element={<Layout />}>
             <Route path="/student/dashboard" element={<StudentDashboardPage />} />
-            <Route path="/my-classes" element={<MyClasses />} />
-            <Route path="/explore" element={<ExploreClasses />} />
-            <Route path="/classes/:id" element={<ClassDetail />} />
-            <Route path="/checkout/:id" element={<CourseCheckout />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/help" element={<Help />} />
-            <Route path="/messages" element={<Messages />} />
-            <Route path="/tutor/:id" element={<TutorProfile />} />
+            <Route path="/student/my-classes" element={<MyClasses />} />
+            <Route path="/student/explore" element={<ExploreClasses />} />
+            <Route path="/student/classes/:id" element={<ClassDetail />} />
+            <Route path="/student/checkout/:id" element={<CourseCheckout />} />
+            <Route path="/student/profile" element={<Profile />} />
+            <Route path="/student/help" element={<Help />} />
+            <Route path="/student/messages" element={<Messages />} />
+            <Route path="/student/tutor/:id" element={<TutorProfile />} />
           </Route>
           
           <Route path="*" element={<NotFound />} />
