@@ -51,11 +51,18 @@ const Index = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 bg-white">
-                  {exploreClassesItems.map((item) => (
-                    <DropdownMenuItem key={item.title}>
-                      <Link to={item.href} className="w-full">{item.title}</Link>
-                    </DropdownMenuItem>
-                  ))}
+                  <DropdownMenuItem>
+                    <Link to="/student/explore" className="w-full">Academic Subjects</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/student/explore" className="w-full">Arts & Creativity</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/student/explore" className="w-full">Technology & Coding</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/student/explore" className="w-full">Life Skills</Link>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -67,11 +74,15 @@ const Index = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 bg-white">
-                  {howItWorksItems.map((item) => (
-                    <DropdownMenuItem key={item.title}>
-                      <Link to={item.href} className="w-full">{item.title}</Link>
-                    </DropdownMenuItem>
-                  ))}
+                  <DropdownMenuItem>
+                    <Link to="/dashboard" className="w-full">For Parents</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/dashboard" className="w-full">Class Formats</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/dashboard" className="w-full">Safety & Quality</Link>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -83,11 +94,15 @@ const Index = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 bg-white">
-                  {forTutorsItems.map((item) => (
-                    <DropdownMenuItem key={item.title}>
-                      <Link to={item.href} className="w-full">{item.title}</Link>
-                    </DropdownMenuItem>
-                  ))}
+                  <DropdownMenuItem>
+                    <Link to="/dashboard" className="w-full">Become a Tutor</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/dashboard" className="w-full">Tutor Resources</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/dashboard" className="w-full">Success Stories</Link>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -99,11 +114,15 @@ const Index = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 bg-white">
-                  {resourcesItems.map((item) => (
-                    <DropdownMenuItem key={item.title}>
-                      <Link to={item.href} className="w-full">{item.title}</Link>
-                    </DropdownMenuItem>
-                  ))}
+                  <DropdownMenuItem>
+                    <Link to="/dashboard" className="w-full">Blog & Articles</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/dashboard" className="w-full">Help Center</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/dashboard" className="w-full">Learning Guides</Link>
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             </nav>

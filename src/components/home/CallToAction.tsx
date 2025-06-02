@@ -21,7 +21,7 @@ const CallToAction = () => {
               <Link to="/student/explore">Browse Classes</Link>
             </Button>
             <Button className="bg-white text-talent-primary hover:bg-gray-100 font-medium text-lg px-8 py-6 h-auto" asChild>
-              <Link to="/for-tutors/become-tutor">Become a Tutor</Link>
+              <Link to="/dashboard">Become a Tutor</Link>
             </Button>
           </div>
         </div>
