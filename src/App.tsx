@@ -5,8 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-// New pages
-import Landing from "./pages/Landing";
+// Landing and Dashboard pages
+import Index from "./pages/dashboard/Index";
 import Dashboard from "./pages/Dashboard";
 import StudentEntry from "./pages/StudentEntry";
 import TutorEntry from "./pages/TutorEntry";
@@ -43,13 +43,13 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Landing page */}
-          <Route path="/" element={<Landing />} />
+          {/* Landing page with complete experience */}
+          <Route path="/" element={<Index />} />
           
-          {/* New Dashboard with login options */}
+          {/* Dashboard selection page */}
           <Route path="/dashboard" element={<Dashboard />} />
           
-          {/* Entry points */}
+          {/* Entry points that redirect to respective dashboards */}
           <Route path="/student" element={<StudentEntry />} />
           <Route path="/tutor" element={<TutorEntry />} />
           
