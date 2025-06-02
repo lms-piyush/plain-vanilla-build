@@ -1,6 +1,8 @@
 
 import { useEffect } from "react";
-import Navbar from "@/components/Navbar";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { GraduationCap } from "lucide-react";
 import Hero from "@/components/Hero";
 import Categories from "@/components/Categories";
 import HowItWorks from "@/components/HowItWorks";
@@ -18,7 +20,28 @@ const Index = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Navbar />
+      {/* Simple Landing Navbar */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <GraduationCap className="h-8 w-8 text-[#8A5BB7]" />
+              <h1 className="ml-2 text-2xl font-bold text-gray-900">TalentSchool</h1>
+            </div>
+            <div className="flex space-x-4">
+              <Button variant="outline" asChild>
+                <Link to="/dashboard">Dashboard</Link>
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to="/student">Student Login</Link>
+              </Button>
+              <Button asChild className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90">
+                <Link to="/tutor">Tutor Login</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </header>
       
       <main>
         <Hero />
