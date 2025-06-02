@@ -1,7 +1,5 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import Layout from "@/components/layout/Layout";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Tabs,
@@ -341,7 +339,7 @@ const ExploreClasses = () => {
   const displayedCourses = filterCourses();
   
   return (
-    <Layout>
+    <>
       <h1 className="text-2xl font-bold mb-6">Explore Classes</h1>
       
       <div className="flex flex-col md:flex-row gap-6">
@@ -539,7 +537,7 @@ const ExploreClasses = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   );
 };
 

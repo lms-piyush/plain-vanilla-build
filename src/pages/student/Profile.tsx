@@ -1,7 +1,5 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Layout from "@/components/layout/Layout";
 import {
   Tabs,
   TabsContent,
@@ -272,7 +270,7 @@ const Profile = () => {
   };
   
   return (
-    <Layout>
+    <>
       <h1 className="text-2xl font-bold mb-6">Profile</h1>
       
       <Tabs defaultValue="profile" className="w-full">
@@ -807,7 +805,7 @@ const Profile = () => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </Layout>
+    </>
   );
 };
 

@@ -1,6 +1,5 @@
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -240,19 +239,17 @@ const TutorProfile = () => {
   
   if (!tutor) {
     return (
-      <Layout>
-        <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)] p-6">
-          <h1 className="text-2xl font-bold mb-4">Tutor Not Found</h1>
-          <p className="mb-6">The tutor profile you're looking for doesn't exist or has been removed.</p>
-          <Button 
-            onClick={() => navigate(-1)} 
-            className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
-          >
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Go Back
-          </Button>
-        </div>
-      </Layout>
+      <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)] p-6">
+        <h1 className="text-2xl font-bold mb-4">Tutor Not Found</h1>
+        <p className="mb-6">The tutor profile you're looking for doesn't exist or has been removed.</p>
+        <Button 
+          onClick={() => navigate(-1)} 
+          className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
+        >
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Go Back
+        </Button>
+      </div>
     );
   }
   
@@ -286,194 +283,192 @@ const TutorProfile = () => {
   };
   
   return (
-    <Layout>
-      <div className="p-6">
-        <Button 
-          variant="ghost" 
-          className="mb-6" 
-          onClick={() => navigate(-1)}
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
+    <div className="p-6">
+      <Button 
+        variant="ghost" 
+        className="mb-6" 
+        onClick={() => navigate(-1)}
+      >
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Back
+      </Button>
+      
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mb-8">
+        <Avatar className="h-24 w-24 md:h-32 md:w-32">
+          <AvatarImage src={tutor.profileImage} />
+          <AvatarFallback className="bg-[#8A5BB7] text-white text-4xl">
+            {tutor.name.charAt(0)}
+          </AvatarFallback>
+        </Avatar>
         
-        {/* Header Section */}
-        <div className="flex flex-col md:flex-row items-center md:items-start gap-6 mb-8">
-          <Avatar className="h-24 w-24 md:h-32 md:w-32">
-            <AvatarImage src={tutor.profileImage} />
-            <AvatarFallback className="bg-[#8A5BB7] text-white text-4xl">
-              {tutor.name.charAt(0)}
-            </AvatarFallback>
-          </Avatar>
-          
-          <div className="text-center md:text-left">
-            <h1 className="text-3xl font-bold">{tutor.name}</h1>
-            <p className="text-lg text-muted-foreground">{tutor.qualifications}</p>
-          </div>
+        <div className="text-center md:text-left">
+          <h1 className="text-3xl font-bold">{tutor.name}</h1>
+          <p className="text-lg text-muted-foreground">{tutor.qualifications}</p>
         </div>
-        
-        {/* Basic Info Card */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-          <Card className="md:col-span-2">
-            <CardHeader>
-              <CardTitle>About the Tutor</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p>{tutor.bio}</p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                <div className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-[#8A5BB7]" />
-                  <div>
-                    <p className="font-medium">Years of Experience</p>
-                    <p className="text-muted-foreground">{tutor.yearsExperience} years</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Globe className="h-5 w-5 text-[#8A5BB7]" />
-                  <div>
-                    <p className="font-medium">Languages Spoken</p>
-                    <p className="text-muted-foreground">{tutor.languages.join(', ')}</p>
-                  </div>
+      </div>
+      
+      {/* Basic Info Card */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <Card className="md:col-span-2">
+          <CardHeader>
+            <CardTitle>About the Tutor</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p>{tutor.bio}</p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+              <div className="flex items-center gap-2">
+                <Clock className="h-5 w-5 text-[#8A5BB7]" />
+                <div>
+                  <p className="font-medium">Years of Experience</p>
+                  <p className="text-muted-foreground">{tutor.yearsExperience} years</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-          
-          {/* Statistics Card */}
-          <Card className="h-full">
-            <CardHeader>
-              <CardTitle>Statistics</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
-                    <Book className="h-6 w-6 text-[#8A5BB7]" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Courses</p>
-                    <p className="text-2xl font-bold">{tutor.totalCourses}</p>
-                  </div>
+              
+              <div className="flex items-center gap-2">
+                <Globe className="h-5 w-5 text-[#8A5BB7]" />
+                <div>
+                  <p className="font-medium">Languages Spoken</p>
+                  <p className="text-muted-foreground">{tutor.languages.join(', ')}</p>
                 </div>
-                
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center">
-                    <Star className="h-6 w-6 text-yellow-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Average Rating</p>
-                    <div className="flex items-center">
-                      <p className="text-2xl font-bold mr-2">{tutor.averageRating}</p>
-                      <div className="flex">
-                        {renderStarRating(tutor.averageRating)}
-                      </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+        
+        {/* Statistics Card */}
+        <Card className="h-full">
+          <CardHeader>
+            <CardTitle>Statistics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center">
+                  <Book className="h-6 w-6 text-[#8A5BB7]" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Courses</p>
+                  <p className="text-2xl font-bold">{tutor.totalCourses}</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center">
+                  <Star className="h-6 w-6 text-yellow-500" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Average Rating</p>
+                  <div className="flex items-center">
+                    <p className="text-2xl font-bold mr-2">{tutor.averageRating}</p>
+                    <div className="flex">
+                      {renderStarRating(tutor.averageRating)}
                     </div>
                   </div>
                 </div>
-                
-                <div className="flex items-center gap-4">
-                  <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
-                    <Users className="h-6 w-6 text-blue-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">Total Students</p>
-                    <p className="text-2xl font-bold">{tutor.totalStudents}</p>
-                  </div>
+              </div>
+              
+              <div className="flex items-center gap-4">
+                <div className="h-12 w-12 rounded-full bg-blue-100 flex items-center justify-center">
+                  <Users className="h-6 w-6 text-blue-500" />
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Total Students</p>
+                  <p className="text-2xl font-bold">{tutor.totalStudents}</p>
                 </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Charts Section */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Monthly Student Engagement</CardTitle>
+          </CardHeader>
+          <CardContent className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={tutor.monthlyEngagement} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <RechartsTooltip 
+                  formatter={(value) => [`${value} students`, 'Engagement']}
+                  labelFormatter={(label) => `${label} 2025`}
+                />
+                <Bar dataKey="students" fill="#8A5BB7" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
         
-        {/* Charts Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Monthly Student Engagement</CardTitle>
-            </CardHeader>
-            <CardContent className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={tutor.monthlyEngagement} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis />
-                  <RechartsTooltip 
-                    formatter={(value) => [`${value} students`, 'Engagement']}
-                    labelFormatter={(label) => `${label} 2025`}
-                  />
-                  <Bar dataKey="students" fill="#8A5BB7" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader>
-              <CardTitle>Rating Trends</CardTitle>
-            </CardHeader>
-            <CardContent className="h-[300px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={tutor.ratings} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="month" />
-                  <YAxis domain={[4, 5]} />
-                  <RechartsTooltip 
-                    formatter={(value) => [`${value}/5.0`, 'Rating']}
-                    labelFormatter={(label) => `${label} 2025`}
-                  />
-                  <Legend />
-                  <Line 
-                    type="monotone" 
-                    dataKey="onlineRating" 
-                    name="Online Classes"
-                    stroke="#8A5BB7" 
-                    activeDot={{ r: 8 }} 
-                    strokeWidth={2}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="offlineRating" 
-                    name="Offline Classes"
-                    stroke="#36A2EB" 
-                    activeDot={{ r: 8 }} 
-                    strokeWidth={2}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-        
-        {/* Courses by this Tutor Section */}
-        <div className="mb-8">
-          <h2 className="text-2xl font-bold mb-4">Courses by this Tutor</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tutor.courses && tutor.courses.map((course) => (
-              <CourseCard
-                key={course.id}
-                id={course.id}
-                title={course.title}
-                tutor={course.tutor}
-                tutorId={tutor.id}
-                rating={course.rating}
-                image={course.image}
-                description={course.description}
-                mode={course.mode}
-                format={course.format}
-                classSize={course.classSize}
-                students={course.students}
-                price={course.price}
-                isSubscription={course.isSubscription}
-                onClick={() => navigate(`/classes/${course.id}`)}
-                onTutorClick={() => {}} // No need to navigate as we're already on tutor page
-              />
-            ))}
-          </div>
+        <Card>
+          <CardHeader>
+            <CardTitle>Rating Trends</CardTitle>
+          </CardHeader>
+          <CardContent className="h-[300px]">
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={tutor.ratings} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis domain={[4, 5]} />
+                <RechartsTooltip 
+                  formatter={(value) => [`${value}/5.0`, 'Rating']}
+                  labelFormatter={(label) => `${label} 2025`}
+                />
+                <Legend />
+                <Line 
+                  type="monotone" 
+                  dataKey="onlineRating" 
+                  name="Online Classes"
+                  stroke="#8A5BB7" 
+                  activeDot={{ r: 8 }} 
+                  strokeWidth={2}
+                />
+                <Line 
+                  type="monotone" 
+                  dataKey="offlineRating" 
+                  name="Offline Classes"
+                  stroke="#36A2EB" 
+                  activeDot={{ r: 8 }} 
+                  strokeWidth={2}
+                />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      </div>
+      
+      {/* Courses by this Tutor Section */}
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold mb-4">Courses by this Tutor</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {tutor.courses && tutor.courses.map((course) => (
+            <CourseCard
+              key={course.id}
+              id={course.id}
+              title={course.title}
+              tutor={course.tutor}
+              tutorId={tutor.id}
+              rating={course.rating}
+              image={course.image}
+              description={course.description}
+              mode={course.mode}
+              format={course.format}
+              classSize={course.classSize}
+              students={course.students}
+              price={course.price}
+              isSubscription={course.isSubscription}
+              onClick={() => navigate(`/classes/${course.id}`)}
+              onTutorClick={() => {}} // No need to navigate as we're already on tutor page
+            />
+          ))}
         </div>
       </div>
-    </Layout>
+    </div>
   );
 };
 

@@ -1,7 +1,5 @@
-
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import Layout from "@/components/layout/Layout";
 import StatCard from "@/components/dashboard/StatCard";
 import CourseDistributionChart from "@/components/dashboard/CourseDistributionChart";
 import CourseCard from "@/components/dashboard/CourseCard";
@@ -111,7 +109,7 @@ const Dashboard = () => {
   };
 
   return (
-    <Layout>
+    <>
       <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
       
       {/* Statistics Section */}
@@ -192,7 +190,7 @@ const Dashboard = () => {
           </div>
         )}
       </div>
-    </Layout>
+    </>
   );
 };
 

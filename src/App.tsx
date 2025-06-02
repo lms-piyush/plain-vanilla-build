@@ -4,15 +4,21 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+// New pages
+import Landing from "./pages/Landing";
+import StudentEntry from "./pages/StudentEntry";
+import TutorEntry from "./pages/TutorEntry";
+
+// Tutor pages
 import TutorDashboard from "./pages/tutor/Dashboard";
 import Classes from "./pages/tutor/Classes";
 import Earnings from "./pages/tutor/Earnings";
 import TutorMessages from "./pages/tutor/Messages";
 import Feedback from "./pages/tutor/Feedback";
 import TutorHelp from "./pages/tutor/Help";
-import Layout from "./components/Layout";
-import NotFound from "./pages/NotFound";
 
+// Student pages
 import Dashboard from "./pages/student/Dashboard";
 import MyClasses from "./pages/student/MyClasses";
 import ExploreClasses from "./pages/student/ExploreClasses";
@@ -23,6 +29,10 @@ import Messages from "./pages/student/Messages";
 import TutorProfile from "./pages/student/TutorProfile";
 import CourseCheckout from "./pages/student/CourseCheckout";
 
+// Layouts
+import Layout from "./components/layout/Layout";
+import NotFound from "./pages/NotFound";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -32,23 +42,36 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Landing page */}
+          <Route path="/" element={<Landing />} />
+          
+          {/* Entry points */}
+          <Route path="/student" element={<StudentEntry />} />
+          <Route path="/tutor" element={<TutorEntry />} />
+          
+          {/* Tutor Routes with Layout */}
           <Route element={<Layout />}>
-            <Route path="/tutor/" element={<TutorDashboard />} />
+            <Route path="/tutor/dashboard" element={<TutorDashboard />} />
             <Route path="/tutor/classes" element={<Classes />} />
             <Route path="/tutor/earnings" element={<Earnings />} />
             <Route path="/tutor/messages" element={<TutorMessages />} />
             <Route path="/tutor/feedback" element={<Feedback />} />
             <Route path="/tutor/help" element={<TutorHelp />} />
           </Route>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/my-classes" element={<MyClasses />} />
-          <Route path="/explore" element={<ExploreClasses />} />
-          <Route path="/classes/:id" element={<ClassDetail />} />
-          <Route path="/checkout/:id" element={<CourseCheckout />} />
-          <Route path="/profile" element={<Profile />} />
-          <Route path="/help" element={<Help />} />
-          <Route path="/messages" element={<Messages />} />
-          <Route path="/tutor/:id" element={<TutorProfile />} />
+          
+          {/* Student Routes with Layout */}
+          <Route element={<Layout />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/my-classes" element={<MyClasses />} />
+            <Route path="/explore" element={<ExploreClasses />} />
+            <Route path="/classes/:id" element={<ClassDetail />} />
+            <Route path="/checkout/:id" element={<CourseCheckout />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/help" element={<Help />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/tutor/:id" element={<TutorProfile />} />
+          </Route>
+          
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

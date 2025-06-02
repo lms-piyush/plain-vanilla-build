@@ -1,6 +1,4 @@
-
 import React, { useState } from "react";
-import Layout from "@/components/layout/Layout";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -217,7 +215,7 @@ const Messages = () => {
   };
   
   return (
-    <Layout>
+    <>
       <div className="flex flex-col h-[calc(100vh-4rem)]">
         <h1 className="text-2xl font-bold mb-4">Messages</h1>
         <div className="flex flex-1 border rounded-lg overflow-hidden h-[calc(100vh-8rem)]">
@@ -393,7 +391,7 @@ const Messages = () => {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   );
 };
 

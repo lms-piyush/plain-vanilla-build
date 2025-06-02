@@ -1,7 +1,5 @@
-
 import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import Layout from "@/components/layout/Layout";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -439,7 +437,7 @@ const ClassDetail = () => {
   };
   
   return (
-    <Layout>
+    <>
       <div className="mb-6">
         <Button 
           variant="outline" 
@@ -576,7 +574,7 @@ const ClassDetail = () => {
           </TabsContent>
         </Tabs>
       </div>
-    </Layout>
+    </>
   );
 };
 
