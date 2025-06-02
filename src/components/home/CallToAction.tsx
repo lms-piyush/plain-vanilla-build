@@ -20,8 +20,8 @@ const CallToAction = () => {
             <Button className="bg-white text-talent-primary hover:bg-gray-100 font-medium text-lg px-8 py-6 h-auto" asChild>
               <Link to="/explore">Browse Classes</Link>
             </Button>
-            <Button variant="outline" className="border-white text-white hover:bg-white/10 font-medium text-lg px-8 py-6 h-auto" asChild>
-              <Link to="/tutor/dashboard">Become a Tutor</Link>
+            <Button className="bg-white text-talent-primary hover:bg-gray-100 font-medium text-lg px-8 py-6 h-auto" asChild>
+              <Link to="/for-tutors/become-tutor">Become a Tutor</Link>
             </Button>
           </div>
         </div>

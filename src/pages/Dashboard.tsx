@@ -10,6 +10,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { GraduationCap, User, BookOpen, DollarSign, MessageSquare, Star, Home, ArrowRight, ChevronDown } from 'lucide-react';
+import { 
+  exploreClassesItems, 
+  howItWorksItems, 
+  forTutorsItems, 
+  resourcesItems 
+} from '@/components/navbar/NavigationData';
 
 const Dashboard = () => {
   return (
@@ -40,18 +46,11 @@ const Dashboard = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 bg-white">
-                  <DropdownMenuItem>
-                    <Link to="/explore/academic-subjects" className="w-full">Academic Subjects</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/explore/arts-creativity" className="w-full">Arts & Creativity</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/explore/technology-coding" className="w-full">Technology & Coding</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/explore/life-skills" className="w-full">Life Skills</Link>
-                  </DropdownMenuItem>
+                  {exploreClassesItems.map((item) => (
+                    <DropdownMenuItem key={item.title}>
+                      <Link to={item.href} className="w-full">{item.title}</Link>
+                    </DropdownMenuItem>
+                  ))}
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -63,15 +62,11 @@ const Dashboard = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 bg-white">
-                  <DropdownMenuItem>
-                    <Link to="/how-it-works/for-parents" className="w-full">For Parents</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/how-it-works/class-formats" className="w-full">Class Formats</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/how-it-works/safety-quality" className="w-full">Safety & Quality</Link>
-                  </DropdownMenuItem>
+                  {howItWorksItems.map((item) => (
+                    <DropdownMenuItem key={item.title}>
+                      <Link to={item.href} className="w-full">{item.title}</Link>
+                    </DropdownMenuItem>
+                  ))}
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -83,15 +78,11 @@ const Dashboard = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 bg-white">
-                  <DropdownMenuItem>
-                    <Link to="/for-tutors/become-tutor" className="w-full">Become a Tutor</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/for-tutors/tutor-resources" className="w-full">Tutor Resources</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/for-tutors/success-stories" className="w-full">Success Stories</Link>
-                  </DropdownMenuItem>
+                  {forTutorsItems.map((item) => (
+                    <DropdownMenuItem key={item.title}>
+                      <Link to={item.href} className="w-full">{item.title}</Link>
+                    </DropdownMenuItem>
+                  ))}
                 </DropdownMenuContent>
               </DropdownMenu>
 
@@ -103,15 +94,11 @@ const Dashboard = () => {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 bg-white">
-                  <DropdownMenuItem>
-                    <Link to="/resources/help-center" className="w-full">Help Center</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/resources/blog-articles" className="w-full">Blog Articles</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/resources/learning-guides" className="w-full">Learning Guides</Link>
-                  </DropdownMenuItem>
+                  {resourcesItems.map((item) => (
+                    <DropdownMenuItem key={item.title}>
+                      <Link to={item.href} className="w-full">{item.title}</Link>
+                    </DropdownMenuItem>
+                  ))}
                 </DropdownMenuContent>
               </DropdownMenu>
 
