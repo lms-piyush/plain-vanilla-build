@@ -22,6 +22,7 @@ import TutorHelp from "./pages/tutor/Help";
 // Student pages
 import StudentDashboardPage from "./pages/student/Dashboard";
 import MyClasses from "./pages/student/MyClasses";
+import AppRoutes from "./routes/AppRoutes";
 import ExploreClasses from "./pages/student/ExploreClasses";
 import ClassDetail from "./pages/student/ClassDetail";
 import Profile from "./pages/student/Profile";
@@ -42,6 +43,7 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
+        <AppRoutes />
         <Routes>
           {/* Landing page with complete experience */}
           <Route path="/" element={<Index />} />
