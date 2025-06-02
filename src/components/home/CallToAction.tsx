@@ -1,4 +1,6 @@
+
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 
 const CallToAction = () => {
   return (
@@ -15,11 +17,11 @@ const CallToAction = () => {
             Join thousands of families who are nurturing their children's growth with TalentSchool's expert-led classes.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="bg-white text-talent-primary hover:bg-gray-100 font-medium text-lg px-8 py-6 h-auto">
-              Browse Classes
+            <Button className="bg-white text-talent-primary hover:bg-gray-100 font-medium text-lg px-8 py-6 h-auto" asChild>
+              <Link to="/explore">Browse Classes</Link>
             </Button>
-            <Button variant="outline" className="border-white text-white hover:bg-white/10 font-medium text-lg px-8 py-6 h-auto">
-              Become a Tutor
+            <Button variant="outline" className="border-white text-white hover:bg-white/10 font-medium text-lg px-8 py-6 h-auto" asChild>
+              <Link to="/tutor/dashboard">Become a Tutor</Link>
             </Button>
           </div>
         </div>

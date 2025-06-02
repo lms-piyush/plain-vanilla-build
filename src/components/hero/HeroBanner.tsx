@@ -50,9 +50,9 @@ const HeroBanner = () => {
 
             <div className="flex items-center gap-4">
               <Button asChild variant="outline" className="border-talent-primary text-talent-primary hover:bg-talent-primary hover:text-white font-medium px-6 py-6 h-auto text-lg">
-                <a href="https://talentschool-student.vercel.app/" target="_blank" rel="noopener noreferrer">
+                <Link to="/student/dashboard">
                   Student Dashboard
-                </a>
+                </Link>
               </Button>
               <Button className="bg-talent-primary hover:bg-talent-secondary text-white font-medium px-6 py-6 h-auto text-lg">
                 Explore Classes
