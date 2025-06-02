@@ -137,19 +137,19 @@ const Dashboard = () => {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 bg-white">
                   <DropdownMenuItem>
-                    <Link to="/tutor-dashboard" className="w-full">Tutor Dashboard</Link>
+                    <Link to="/tutor/dashboard" className="w-full">Tutor Dashboard</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/tutor-dashboard/classes" className="w-full">My Classes</Link>
+                    <Link to="/tutor/classes" className="w-full">My Classes</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/tutor-dashboard/earnings" className="w-full">Earnings</Link>
+                    <Link to="/tutor/earnings" className="w-full">Earnings</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/tutor-dashboard/messages" className="w-full">Messages</Link>
+                    <Link to="/tutor/messages" className="w-full">Messages</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem>
-                    <Link to="/tutor-dashboard/feedback" className="w-full">Feedback</Link>
+                    <Link to="/tutor/feedback" className="w-full">Feedback</Link>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

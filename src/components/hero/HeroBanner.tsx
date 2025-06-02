@@ -1,3 +1,4 @@
+
 import { ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
@@ -54,9 +55,11 @@ const HeroBanner = () => {
                   Student Dashboard
                 </Link>
               </Button>
-              <Button className="bg-talent-primary hover:bg-talent-secondary text-white font-medium px-6 py-6 h-auto text-lg">
-                Explore Classes
-                <ArrowRight className="ml-2 h-5 w-5" />
+              <Button asChild className="bg-talent-primary hover:bg-talent-secondary text-white font-medium px-6 py-6 h-auto text-lg">
+                <Link to="/student/explore">
+                  Explore Classes
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
               </Button>
             </div>
           </div>
