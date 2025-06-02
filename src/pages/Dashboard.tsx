@@ -1,15 +1,9 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { GraduationCap, User, BookOpen, DollarSign, MessageSquare, Star, Home, ArrowRight, ChevronDown } from 'lucide-react';
+import { GraduationCap, User, BookOpen, DollarSign, MessageSquare, Star, Home, ArrowRight } from 'lucide-react';
+import DashboardNavigation from '@/components/navbar/DashboardNavigation';
 
 const Dashboard = () => {
   return (
@@ -32,80 +26,7 @@ const Dashboard = () => {
             </div>
 
             {/* Navigation Menu */}
-            <nav className="hidden md:flex items-center space-x-6">
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
-                    Explore Classes
-                    <ChevronDown className="ml-1 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-48 bg-white">
-                  <DropdownMenuItem>
-                    <Link to="/student/explore" className="w-full">Academic Subjects</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/student/explore" className="w-full">Arts & Creativity</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/student/explore" className="w-full">Technology & Coding</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/student/explore" className="w-full">Life Skills</Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
-                    For Students
-                    <ChevronDown className="ml-1 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-48 bg-white">
-                  <DropdownMenuItem>
-                    <Link to="/student/dashboard" className="w-full">Student Dashboard</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/student/my-classes" className="w-full">My Classes</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/student/explore" className="w-full">Explore Classes</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/student/profile" className="w-full">Profile</Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
-                    For Tutors
-                    <ChevronDown className="ml-1 h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-48 bg-white">
-                  <DropdownMenuItem>
-                    <Link to="/tutor/dashboard" className="w-full">Tutor Dashboard</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/tutor/classes" className="w-full">My Classes</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/tutor/earnings" className="w-full">Earnings</Link>
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    <Link to="/tutor/messages" className="w-full">Messages</Link>
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <Link to="/student/help" className="text-gray-700 hover:text-[#8A5BB7] text-sm font-medium">
-                Help
-              </Link>
-            </nav>
+            <DashboardNavigation />
 
             {/* Right Section - Auth Buttons */}
             <div className="flex items-center space-x-4">
