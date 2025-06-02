@@ -3,12 +3,18 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { GraduationCap, User, BookOpen, DollarSign, MessageSquare, Star, Home, ArrowRight } from 'lucide-react';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { GraduationCap, User, BookOpen, DollarSign, MessageSquare, Star, Home, ArrowRight, ChevronDown } from 'lucide-react';
 
 const Dashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-indigo-100">
-      {/* Header */}
+      {/* Header with Dropdown Navigation */}
       <header className="bg-white shadow-sm border-b">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -18,11 +24,100 @@ const Dashboard = () => {
                 <span className="text-sm font-medium text-gray-600">Back to Home</span>
               </Link>
             </div>
+            
             <div className="flex items-center">
               <GraduationCap className="h-8 w-8 text-[#8A5BB7]" />
               <h1 className="ml-2 text-2xl font-bold text-gray-900">TalentSchool</h1>
             </div>
-            <div className="w-24"></div> {/* Spacer for center alignment */}
+
+            {/* Navigation Dropdown Menus */}
+            <nav className="hidden md:flex items-center space-x-8">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
+                    Explore Classes
+                    <ChevronDown className="ml-1 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-48 bg-white">
+                  <DropdownMenuItem>
+                    <Link to="/explore" className="w-full">All Classes</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/explore/academic" className="w-full">Academic Subjects</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/explore/arts" className="w-full">Arts & Creativity</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/explore/technology" className="w-full">Technology & Coding</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/explore/life-skills" className="w-full">Life Skills</Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
+                    How It Works
+                    <ChevronDown className="ml-1 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-48 bg-white">
+                  <DropdownMenuItem>
+                    <Link to="/how-it-works/parents" className="w-full">For Parents</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/how-it-works/formats" className="w-full">Class Formats</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/how-it-works/safety" className="w-full">Safety & Quality</Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
+                    For Tutors
+                    <ChevronDown className="ml-1 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-48 bg-white">
+                  <DropdownMenuItem>
+                    <Link to="/for-tutors/become" className="w-full">Become a Tutor</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/for-tutors/resources" className="w-full">Tutor Resources</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/for-tutors/success" className="w-full">Success Stories</Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
+                    Resources
+                    <ChevronDown className="ml-1 h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-48 bg-white">
+                  <DropdownMenuItem>
+                    <Link to="/resources/help" className="w-full">Help Center</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/resources/blog" className="w-full">Blog Articles</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/resources/guides" className="w-full">Learning Guides</Link>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </nav>
           </div>
         </div>
       </header>
