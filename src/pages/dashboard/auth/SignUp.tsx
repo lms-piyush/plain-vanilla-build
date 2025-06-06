@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -62,13 +63,30 @@ const SignUp = () => {
 
   const onSubmit = async (data: SignUpFormValues) => {
     try {
+      console.log("Form submission data:", data);
       await signup(data.fullName, data.email, data.password, data.role);
       setShowSuccessDialog(true);
     } catch (error: any) {
       console.error("Signup error:", error);
+      
+      let errorMessage = "There was a problem creating your account. Please try again.";
+      
+      // Handle specific error cases
+      if (error.message) {
+        if (error.message.includes("User already registered")) {
+          errorMessage = "An account with this email already exists. Please try logging in instead.";
+        } else if (error.message.includes("Invalid email")) {
+          errorMessage = "Please enter a valid email address.";
+        } else if (error.message.includes("Password")) {
+          errorMessage = "Please check your password requirements.";
+        } else {
+          errorMessage = error.message;
+        }
+      }
+      
       toast({
         title: "Error creating account",
-        description: error.message || "There was a problem creating your account. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     }

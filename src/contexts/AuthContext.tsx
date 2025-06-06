@@ -44,24 +44,35 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log("Auth state changed:", event, session);
         setSession(session);
         
         if (session?.user) {
           // Fetch user profile from profiles table
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          
-          if (profile && !error) {
-            setUser({
-              id: session.user.id,
-              fullName: profile.full_name,
-              email: session.user.email || '',
-              role: profile.role,
-              avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=" + session.user.email
-            });
+          try {
+            const { data: profile, error } = await supabase
+              .from('profiles')
+              .select('*')
+              .eq('id', session.user.id)
+              .single();
+            
+            console.log("Profile fetch result:", profile, error);
+            
+            if (profile && !error) {
+              setUser({
+                id: session.user.id,
+                fullName: profile.full_name,
+                email: session.user.email || '',
+                role: profile.role,
+                avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=" + session.user.email
+              });
+            } else {
+              console.error("Error fetching profile:", error);
+              setUser(null);
+            }
+          } catch (err) {
+            console.error("Error in profile fetch:", err);
+            setUser(null);
           }
         } else {
           setUser(null);
@@ -73,6 +84,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log("Initial session check:", session);
       setSession(session);
       if (!session) {
         setIsLoading(false);
@@ -90,7 +102,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         password,
       });
       
-      if (error) throw error;
+      if (error) {
+        console.error("Login error:", error);
+        throw error;
+      }
     } catch (error) {
       console.error("Login error:", error);
       throw error;
@@ -102,7 +117,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const signup = async (fullName: string, email: string, password: string, role: User['role']) => {
     setIsLoading(true);
     try {
-      const { error } = await supabase.auth.signUp({
+      console.log("Starting signup with:", { fullName, email, role });
+      
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -114,7 +131,18 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         },
       });
       
-      if (error) throw error;
+      console.log("Signup result:", data, error);
+      
+      if (error) {
+        console.error("Signup error:", error);
+        throw error;
+      }
+      
+      // If signup was successful but user needs email confirmation
+      if (data.user && !data.session) {
+        console.log("User created but needs email confirmation");
+      }
+      
     } catch (error) {
       console.error("Signup error:", error);
       throw error;
