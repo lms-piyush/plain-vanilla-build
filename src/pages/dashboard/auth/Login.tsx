@@ -32,7 +32,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, user } = useAuth();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -47,24 +47,28 @@ const Login = () => {
 
   const onSubmit = async (data: LoginFormValues) => {
     try {
-      // Hardcoded check for tutor credentials
-      if (data.email === "test@gmail.com" && data.password === "test") {
-        await login(data.email, data.password, "tutor");
-        
-        toast({
-          title: "Login successful!",
-          description: "Welcome back to TalentSchool.",
-        });
-        
-        navigate("/tutor-dashboard");
-      } else {
-        throw new Error("Invalid credentials");
-      }
-    } catch (error) {
+      await login(data.email, data.password);
+      
+      toast({
+        title: "Login successful!",
+        description: "Welcome back to TalentSchool.",
+      });
+      
+      // Wait a moment for user state to update, then redirect based on role
+      setTimeout(() => {
+        if (user?.role === "tutor") {
+          navigate("/tutor/dashboard");
+        } else if (user?.role === "student" || user?.role === "parent") {
+          navigate("/student/dashboard");
+        } else {
+          navigate("/dashboard");
+        }
+      }, 100);
+    } catch (error: any) {
       console.error("Login error:", error);
       toast({
         title: "Login failed",
-        description: "Please use test@gmail.com and password 'test'",
+        description: error.message || "Please check your email and password and try again.",
         variant: "destructive",
       });
     }

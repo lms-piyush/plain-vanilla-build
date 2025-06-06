@@ -5,33 +5,37 @@ import { useAuth } from "@/contexts/AuthContext";
 
 interface ProtectedRouteProps {
   children: ReactNode;
-  requiredRole?: "student" | "parent" | "tutor";
+  allowedRoles?: Array<"student" | "parent" | "tutor">;
 }
 
-const ProtectedRoute = ({ children, requiredRole }: ProtectedRouteProps) => {
-  const { isAuthenticated, isLoading, user } = useAuth();
+const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
+  const { isAuthenticated, user, isLoading } = useAuth();
   const location = useLocation();
 
-  // If still loading auth state, show nothing or a loading spinner
   if (isLoading) {
-    return <div className="flex justify-center items-center min-h-screen">Loading...</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+          <p>Loading...</p>
+        </div>
+      </div>
+    );
   }
 
-  // If not authenticated, redirect to login
   if (!isAuthenticated) {
-    return <Navigate to="/auth/login" replace state={{ from: location }} />;
+    return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  // If role is required and user doesn't have it, redirect to appropriate dashboard
-  if (requiredRole && user?.role !== requiredRole) {
-    if (user?.role === "tutor") {
-      return <Navigate to="/tutor-dashboard" replace />;
+  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+    // Redirect to appropriate dashboard based on user role
+    if (user.role === "tutor") {
+      return <Navigate to="/tutor/dashboard" replace />;
     } else {
-      return <Navigate to="/dashboard" replace />;
+      return <Navigate to="/student/dashboard" replace />;
     }
   }
 
-  // If authenticated and has required role (or no role required), render the children
   return <>{children}</>;
 };
 

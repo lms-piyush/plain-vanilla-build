@@ -1,5 +1,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { User as SupabaseUser, Session } from "@supabase/supabase-js";
 
 export interface User {
   id: string;
@@ -13,7 +15,7 @@ interface AuthContextType {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string, password: string, role: User['role']) => Promise<void>;
+  login: (email: string, password: string) => Promise<void>;
   signup: (fullName: string, email: string, password: string, role: User['role']) => Promise<void>;
   logout: () => void;
   resetPassword: (email: string) => Promise<void>;
@@ -35,35 +37,60 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user data exists in localStorage
-    const storedUser = localStorage.getItem("talentschool_user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-    setIsLoading(false);
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        
+        if (session?.user) {
+          // Fetch user profile from profiles table
+          const { data: profile, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          
+          if (profile && !error) {
+            setUser({
+              id: session.user.id,
+              fullName: profile.full_name,
+              email: session.user.email || '',
+              role: profile.role,
+              avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=" + session.user.email
+            });
+          }
+        } else {
+          setUser(null);
+        }
+        
+        setIsLoading(false);
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (!session) {
+        setIsLoading(false);
+      }
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  // Modified login function to include role selection
-  const login = async (email: string, password: string, role: User['role'] = "student") => {
+  const login = async (email: string, password: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      
-      // Mock response - in real implementation, this would come from your backend
-      const mockUser: User = {
-        id: "user_" + Math.random().toString(36).substr(2, 9),
-        fullName: email.split('@')[0].replace(/[.]/g, ' '),
+      const { error } = await supabase.auth.signInWithPassword({
         email,
-        role,
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=" + email
-      };
+        password,
+      });
       
-      setUser(mockUser);
-      localStorage.setItem("talentschool_user", JSON.stringify(mockUser));
+      if (error) throw error;
     } catch (error) {
       console.error("Login error:", error);
       throw error;
@@ -72,24 +99,22 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  // Mock signup function
   const signup = async (fullName: string, email: string, password: string, role: User['role']) => {
     setIsLoading(true);
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Mock response
-      const mockUser: User = {
-        id: "user_" + Math.random().toString(36).substr(2, 9),
-        fullName,
+      const { error } = await supabase.auth.signUp({
         email,
-        role,
-        avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=" + email
-      };
+        password,
+        options: {
+          data: {
+            full_name: fullName,
+            role: role,
+          },
+          emailRedirectTo: `${window.location.origin}/`,
+        },
+      });
       
-      setUser(mockUser);
-      localStorage.setItem("talentschool_user", JSON.stringify(mockUser));
+      if (error) throw error;
     } catch (error) {
       console.error("Signup error:", error);
       throw error;
@@ -98,17 +123,19 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const logout = () => {
+  const logout = async () => {
     setUser(null);
-    localStorage.removeItem("talentschool_user");
+    await supabase.auth.signOut();
   };
 
   const resetPassword = async (email: string) => {
     setIsLoading(true);
     try {
-      // Simulate API call delay
-      await new Promise(resolve => setTimeout(resolve, 800));
-      // In a real app, this would trigger a password reset email
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+      
+      if (error) throw error;
     } catch (error) {
       console.error("Reset password error:", error);
       throw error;

@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -65,11 +64,11 @@ const SignUp = () => {
     try {
       await signup(data.fullName, data.email, data.password, data.role);
       setShowSuccessDialog(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Signup error:", error);
       toast({
         title: "Error creating account",
-        description: "There was a problem creating your account. Please try again.",
+        description: error.message || "There was a problem creating your account. Please try again.",
         variant: "destructive"
       });
     }
@@ -80,11 +79,11 @@ const SignUp = () => {
     
     toast({
       title: "Account created successfully!",
-      description: "Welcome to TalentSchool. Your learning journey begins now.",
+      description: "Please check your email to verify your account before logging in.",
     });
     
-    // Redirect to home page after signup
-    setTimeout(() => navigate("/dashboard"), 1500);
+    // Redirect to login page after signup
+    navigate("/auth/login");
   };
 
   return (
@@ -253,10 +252,10 @@ const SignUp = () => {
           <div className="flex flex-col items-center py-6">
             <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
             <p className="text-center mb-6">
-              Thank you for joining TalentSchool! Your account has been created successfully.
+              Thank you for joining TalentSchool! Please check your email to verify your account.
             </p>
             <Button onClick={completeSignUp} className="w-full bg-primary hover:bg-primary/90">
-              Get Started
+              Continue to Login
             </Button>
           </div>
         </DialogContent>
