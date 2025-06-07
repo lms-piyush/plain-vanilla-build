@@ -2,23 +2,33 @@
 import React, { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
-import { Bell, Search, User, GraduationCap, Home, Menu, HelpCircle, Phone, MapPin, CreditCard } from "lucide-react";
+import { Bell, Search, User, GraduationCap, Home, Menu, HelpCircle, Phone, MapPin, CreditCard, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Topbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   
   const isTutorRoute = location.pathname.startsWith('/tutor');
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/");
+  };
 
   // Dummy search results for "advanced" keyword
   const searchResults = [
@@ -37,11 +47,6 @@ const Topbar = () => {
       setIsSearching(false);
     }
   };
-
-  // Profile link and user type based on route
-  const profileLink = isTutorRoute ? "/tutor/dashboard" : "/profile";
-  const userType = isTutorRoute ? "Tutor" : "Student";
-  const UserIcon = isTutorRoute ? GraduationCap : User;
 
   if (isTutorRoute) {
     // Tutor design - White theme with profile dropdown
@@ -127,78 +132,64 @@ const Topbar = () => {
           {/* Profile Button with detailed dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 px-3"
-              >
-                <div className="h-8 w-8 rounded-full bg-slate-900 flex items-center justify-center text-white">
-                  <span className="text-sm font-medium">T</span>
-                </div>
+              <Button variant="ghost" className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 px-3">
+                <Avatar className="h-8 w-8">
+                  <AvatarImage src={user?.avatar} alt={user?.fullName} />
+                  <AvatarFallback className="bg-slate-900 text-white text-sm font-medium">
+                    {user?.fullName?.charAt(0).toUpperCase() || 'T'}
+                  </AvatarFallback>
+                </Avatar>
                 <div className="hidden md:block text-left">
-                  <div className="text-sm font-medium text-gray-900">Tutor</div>
+                  <div className="text-sm font-medium text-gray-900">{user?.fullName || 'Tutor'}</div>
+                  <div className="text-xs text-gray-500">Tutor</div>
                 </div>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-72 bg-white border-gray-200">
-              <div className="p-6">
-                <div className="flex items-center mb-6">
-                  <div className="h-12 w-12 rounded-full bg-slate-900 flex items-center justify-center text-white text-lg font-medium">
-                    T
-                  </div>
+              <DropdownMenuLabel className="font-normal">
+                <div className="flex items-center mb-4">
+                  <Avatar className="h-12 w-12">
+                    <AvatarImage src={user?.avatar} alt={user?.fullName} />
+                    <AvatarFallback className="bg-slate-900 text-white text-lg font-medium">
+                      {user?.fullName?.charAt(0).toUpperCase() || 'T'}
+                    </AvatarFallback>
+                  </Avatar>
                   <div className="ml-3">
-                    <h3 className="font-semibold text-gray-800">John Doe</h3>
+                    <h3 className="font-semibold text-gray-800">{user?.fullName || 'Tutor Name'}</h3>
                     <p className="text-sm text-gray-500">Math & Science Tutor</p>
                   </div>
                 </div>
-                
-                <div className="space-y-4">
-                  <div className="flex items-start">
-                    <User className="h-5 w-5 text-gray-500 mt-0.5" />
-                    <div className="ml-3">
-                      <p className="text-xs text-gray-500">Full Name</p>
-                      <p className="text-sm font-medium">John Doe</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start">
-                    <Phone className="h-5 w-5 text-gray-500 mt-0.5" />
-                    <div className="ml-3">
-                      <p className="text-xs text-gray-500">Contact Number</p>
-                      <p className="text-sm font-medium">+91 9876543210</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start">
-                    <MapPin className="h-5 w-5 text-gray-500 mt-0.5" />
-                    <div className="ml-3">
-                      <p className="text-xs text-gray-500">Address</p>
-                      <p className="text-sm font-medium">123 Education St, Bangalore</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start">
-                    <GraduationCap className="h-5 w-5 text-gray-500 mt-0.5" />
-                    <div className="ml-3">
-                      <p className="text-xs text-gray-500">Qualification</p>
-                      <p className="text-sm font-medium">M.Sc. Mathematics, B.Ed</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start">
-                    <CreditCard className="h-5 w-5 text-gray-500 mt-0.5" />
-                    <div className="ml-3">
-                      <p className="text-xs text-gray-500">Bank Account</p>
-                      <p className="text-sm font-medium">HDFC Bank •••• 3456</p>
-                    </div>
+              </DropdownMenuLabel>
+              
+              <div className="px-6 space-y-4">
+                <div className="flex items-start">
+                  <User className="h-5 w-5 text-gray-500 mt-0.5" />
+                  <div className="ml-3">
+                    <p className="text-xs text-gray-500">Full Name</p>
+                    <p className="text-sm font-medium">{user?.fullName || 'Not provided'}</p>
                   </div>
                 </div>
                 
-                <div className="mt-6">
-                  <button className="w-full py-2 px-4 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-sm font-medium transition-colors">
-                    Edit Profile
-                  </button>
+                <div className="flex items-start">
+                  <Phone className="h-5 w-5 text-gray-500 mt-0.5" />
+                  <div className="ml-3">
+                    <p className="text-xs text-gray-500">Email</p>
+                    <p className="text-sm font-medium">{user?.email || 'Not provided'}</p>
+                  </div>
                 </div>
               </div>
+              
+              <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/tutor/dashboard" className="cursor-pointer">
+                  <GraduationCap className="mr-2 h-4 w-4" />
+                  <span>Dashboard</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                <LogOut className="mr-2 h-4 w-4" />
+                <span>Logout</span>
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -327,21 +318,50 @@ const Topbar = () => {
           </DropdownMenuContent>
         </DropdownMenu>
         
-        {/* Profile Button */}
-        <Button 
-          variant="outline" 
-          asChild 
-          className="flex items-center space-x-2 border border-gray-200 hover:bg-[#E5D0FF] hover:text-black active:bg-[#8A5BB7] active:text-white focus:bg-[#8A5BB7] focus:text-white px-3"
-        >
-          <Link to={profileLink}>
-            <div className="flex items-center space-x-2">
-              <div className="h-8 w-8 rounded-full bg-[#8A5BB7] flex items-center justify-center text-white">
-                <UserIcon className="h-5 w-5" />
+        {/* Profile Button with User Info */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button 
+              variant="outline" 
+              className="flex items-center space-x-2 border border-gray-200 hover:bg-[#E5D0FF] hover:text-black active:bg-[#8A5BB7] active:text-white focus:bg-[#8A5BB7] focus:text-white px-3"
+            >
+              <Avatar className="h-8 w-8">
+                <AvatarImage src={user?.avatar} alt={user?.fullName} />
+                <AvatarFallback className="bg-[#8A5BB7] text-white">
+                  {user?.fullName?.charAt(0).toUpperCase() || 'S'}
+                </AvatarFallback>
+              </Avatar>
+              <div className="hidden md:block text-left">
+                <div className="text-sm font-medium">{user?.fullName || 'Student'}</div>
+                <div className="text-xs text-gray-500">
+                  {user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1) || 'Student'}
+                </div>
               </div>
-              <span className="text-sm font-medium hidden md:inline-block">{userType}</span>
-            </div>
-          </Link>
-        </Button>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-56">
+            <DropdownMenuLabel className="font-normal">
+              <div className="flex flex-col space-y-1">
+                <p className="text-sm font-medium leading-none">{user?.fullName}</p>
+                <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                <p className="text-xs leading-none text-muted-foreground">
+                  {user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1)} Account
+                </p>
+              </div>
+            </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link to="/student/dashboard" className="cursor-pointer">
+                <User className="mr-2 h-4 w-4" />
+                <span>Dashboard</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+              <LogOut className="mr-2 h-4 w-4" />
+              <span>Log out</span>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
     </div>
   );

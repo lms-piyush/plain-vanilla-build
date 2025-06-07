@@ -13,11 +13,12 @@ export interface User {
 
 interface AuthContextType {
   user: User | null;
+  session: Session | null;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
   signup: (fullName: string, email: string, password: string, role: User['role']) => Promise<void>;
-  logout: () => void;
+  logout: () => Promise<void>;
   resetPassword: (email: string) => Promise<void>;
 }
 
@@ -40,16 +41,36 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Load user data from localStorage on initialization
   useEffect(() => {
+    const storedUser = localStorage.getItem('talentschool_user');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (error) {
+        console.error("Error parsing stored user data:", error);
+        localStorage.removeItem('talentschool_user');
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    let mounted = true;
+
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      (event, session) => {
+      async (event, session) => {
         console.log("Auth state changed:", event, session);
+        
+        if (!mounted) return;
+        
         setSession(session);
         
         if (session?.user) {
           // Use setTimeout to prevent deadlock in auth callback
           setTimeout(async () => {
+            if (!mounted) return;
+            
             try {
               const { data: profile, error } = await supabase
                 .from('profiles')
@@ -59,26 +80,38 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
               
               console.log("Profile fetch result:", profile, error);
               
-              if (profile && !error) {
-                setUser({
+              if (profile && !error && mounted) {
+                const userData = {
                   id: session.user.id,
                   fullName: profile.full_name,
                   email: session.user.email || '',
                   role: profile.role,
                   avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.email}`
-                });
-              } else if (error) {
+                };
+                
+                setUser(userData);
+                // Store user data in localStorage for persistence
+                localStorage.setItem('talentschool_user', JSON.stringify(userData));
+              } else if (error && mounted) {
                 console.error("Error fetching profile:", error);
                 setUser(null);
+                localStorage.removeItem('talentschool_user');
               }
             } catch (err) {
               console.error("Error in profile fetch:", err);
-              setUser(null);
+              if (mounted) {
+                setUser(null);
+                localStorage.removeItem('talentschool_user');
+              }
             }
-            setIsLoading(false);
+            
+            if (mounted) {
+              setIsLoading(false);
+            }
           }, 0);
         } else {
           setUser(null);
+          localStorage.removeItem('talentschool_user');
           setIsLoading(false);
         }
       }
@@ -87,12 +120,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log("Initial session check:", session);
-      if (!session) {
+      if (!session && mounted) {
         setIsLoading(false);
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const login = async (email: string, password: string) => {
@@ -127,7 +163,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
             full_name: fullName,
             role: role,
           },
-          emailRedirectTo: `${window.location.origin}/`,
+          emailRedirectTo: `${window.location.origin}/auth/redirect`,
         },
       });
       
@@ -152,8 +188,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   };
 
   const logout = async () => {
-    setUser(null);
-    await supabase.auth.signOut();
+    try {
+      setUser(null);
+      setSession(null);
+      localStorage.removeItem('talentschool_user');
+      await supabase.auth.signOut();
+      console.log("User logged out successfully");
+    } catch (error) {
+      console.error("Logout error:", error);
+    }
   };
 
   const resetPassword = async (email: string) => {
@@ -174,7 +217,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const value = {
     user,
-    isAuthenticated: !!user,
+    session,
+    isAuthenticated: !!user && !!session,
     isLoading,
     login,
     signup,

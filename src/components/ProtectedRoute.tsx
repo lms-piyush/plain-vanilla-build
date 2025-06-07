@@ -23,16 +23,21 @@ const ProtectedRoute = ({ children, allowedRoles }: ProtectedRouteProps) => {
     );
   }
 
-  if (!isAuthenticated) {
+  if (!isAuthenticated || !user) {
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
-  if (allowedRoles && user && !allowedRoles.includes(user.role)) {
+  // Check if user role is allowed for this route
+  if (allowedRoles && !allowedRoles.includes(user.role)) {
+    console.log(`Access denied: User role '${user.role}' not in allowed roles:`, allowedRoles);
+    
     // Redirect to appropriate dashboard based on user role
     if (user.role === "tutor") {
       return <Navigate to="/tutor/dashboard" replace />;
-    } else {
+    } else if (user.role === "student" || user.role === "parent") {
       return <Navigate to="/student/dashboard" replace />;
+    } else {
+      return <Navigate to="/auth/login" replace />;
     }
   }
 
