@@ -9,6 +9,7 @@ const AuthRedirect = () => {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated && user) {
+      console.log("Redirecting user based on role:", user.role);
       // Redirect based on user role
       if (user.role === "tutor") {
         navigate("/tutor/dashboard", { replace: true });

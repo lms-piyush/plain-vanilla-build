@@ -1,7 +1,7 @@
-
 import { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AuthRedirect from "@/components/AuthRedirect";
 import NotFound from "@/pages/NotFound";
 
 // Landing and Dashboard pages
@@ -94,6 +94,7 @@ const AppRoutes = () => {
       <Route path="/auth/login" element={<Login />} />
       <Route path="/auth/signup" element={<SignUp />} />
       <Route path="/auth/forgot-password" element={<ForgotPassword />} />
+      <Route path="/auth/redirect" element={<AuthRedirect />} />
       
       {/* User Dashboard */}
       <Route 
@@ -120,50 +121,95 @@ const AppRoutes = () => {
       {/* Tutor Dashboard */}
       <Route 
         path="/tutor-dashboard" 
-        element={<ProtectedRoute><TutorDashboard /></ProtectedRoute>} 
+        element={<ProtectedRoute allowedRoles={["tutor"]}><TutorDashboard /></ProtectedRoute>} 
       />
       <Route 
         path="/tutor-dashboard/earnings" 
-        element={<ProtectedRoute><Earnings /></ProtectedRoute>} 
+        element={<ProtectedRoute allowedRoles={["tutor"]}><Earnings /></ProtectedRoute>} 
       />
       <Route 
         path="/tutor-dashboard/classes" 
-        element={<ProtectedRoute><MyClasses /></ProtectedRoute>} 
+        element={<ProtectedRoute allowedRoles={["tutor"]}><MyClasses /></ProtectedRoute>} 
       />
       <Route 
         path="/tutor-dashboard/classes/:id" 
-        element={<ProtectedRoute><ClassDetails /></ProtectedRoute>} 
+        element={<ProtectedRoute allowedRoles={["tutor"]}><ClassDetails /></ProtectedRoute>} 
       />
       <Route 
         path="/tutor-dashboard/messages" 
-        element={<ProtectedRoute><Messages /></ProtectedRoute>} 
+        element={<ProtectedRoute allowedRoles={["tutor"]}><Messages /></ProtectedRoute>} 
       />
       <Route 
         path="/tutor-dashboard/feedback" 
-        element={<ProtectedRoute><Feedback /></ProtectedRoute>} 
+        element={<ProtectedRoute allowedRoles={["tutor"]}><Feedback /></ProtectedRoute>} 
       />
       
       {/* Tutor Routes with Layout */}
       <Route element={<Layout />}>
-        <Route path="/tutor/dashboard" element={<TutorDashboardMain />} />
-        <Route path="/tutor/classes" element={<TutorClasses />} />
-        <Route path="/tutor/earnings" element={<TutorEarnings />} />
-        <Route path="/tutor/messages" element={<TutorMessages />} />
-        <Route path="/tutor/feedback" element={<TutorFeedback />} />
-        <Route path="/tutor/help" element={<TutorHelp />} />
+        <Route 
+          path="/tutor/dashboard" 
+          element={<ProtectedRoute allowedRoles={["tutor"]}><TutorDashboardMain /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/tutor/classes" 
+          element={<ProtectedRoute allowedRoles={["tutor"]}><TutorClasses /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/tutor/earnings" 
+          element={<ProtectedRoute allowedRoles={["tutor"]}><TutorEarnings /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/tutor/messages" 
+          element={<ProtectedRoute allowedRoles={["tutor"]}><TutorMessages /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/tutor/feedback" 
+          element={<ProtectedRoute allowedRoles={["tutor"]}><TutorFeedback /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/tutor/help" 
+          element={<ProtectedRoute allowedRoles={["tutor"]}><TutorHelp /></ProtectedRoute>} 
+        />
       </Route>
       
       {/* Student Routes with Layout - with /student/ prefix */}
       <Route element={<Layout />}>
-        <Route path="/student/dashboard" element={<StudentDashboardPage />} />
-        <Route path="/student/my-classes" element={<StudentMyClasses />} />
-        <Route path="/student/explore" element={<ExploreClasses />} />
-        <Route path="/student/classes/:id" element={<ClassDetail />} />
-        <Route path="/student/checkout/:id" element={<CourseCheckout />} />
-        <Route path="/student/profile" element={<Profile />} />
-        <Route path="/student/help" element={<Help />} />
-        <Route path="/student/messages" element={<StudentMessages />} />
-        <Route path="/student/tutor/:id" element={<TutorProfile />} />
+        <Route 
+          path="/student/dashboard" 
+          element={<ProtectedRoute allowedRoles={["student", "parent"]}><StudentDashboardPage /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/student/my-classes" 
+          element={<ProtectedRoute allowedRoles={["student", "parent"]}><StudentMyClasses /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/student/explore" 
+          element={<ProtectedRoute allowedRoles={["student", "parent"]}><ExploreClasses /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/student/classes/:id" 
+          element={<ProtectedRoute allowedRoles={["student", "parent"]}><ClassDetail /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/student/checkout/:id" 
+          element={<ProtectedRoute allowedRoles={["student", "parent"]}><CourseCheckout /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/student/profile" 
+          element={<ProtectedRoute allowedRoles={["student", "parent"]}><Profile /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/student/help" 
+          element={<ProtectedRoute allowedRoles={["student", "parent"]}><Help /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/student/messages" 
+          element={<ProtectedRoute allowedRoles={["student", "parent"]}><StudentMessages /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/student/tutor/:id" 
+          element={<ProtectedRoute allowedRoles={["student", "parent"]}><TutorProfile /></ProtectedRoute>} 
+        />
       </Route>
       
       {/* Explore */}

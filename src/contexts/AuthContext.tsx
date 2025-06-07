@@ -43,49 +43,50 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   useEffect(() => {
     // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
+      (event, session) => {
         console.log("Auth state changed:", event, session);
         setSession(session);
         
         if (session?.user) {
-          // Fetch user profile from profiles table
-          try {
-            const { data: profile, error } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', session.user.id)
-              .single();
-            
-            console.log("Profile fetch result:", profile, error);
-            
-            if (profile && !error) {
-              setUser({
-                id: session.user.id,
-                fullName: profile.full_name,
-                email: session.user.email || '',
-                role: profile.role,
-                avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=" + session.user.email
-              });
-            } else {
-              console.error("Error fetching profile:", error);
+          // Use setTimeout to prevent deadlock in auth callback
+          setTimeout(async () => {
+            try {
+              const { data: profile, error } = await supabase
+                .from('profiles')
+                .select('*')
+                .eq('id', session.user.id)
+                .maybeSingle();
+              
+              console.log("Profile fetch result:", profile, error);
+              
+              if (profile && !error) {
+                setUser({
+                  id: session.user.id,
+                  fullName: profile.full_name,
+                  email: session.user.email || '',
+                  role: profile.role,
+                  avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.email}`
+                });
+              } else if (error) {
+                console.error("Error fetching profile:", error);
+                setUser(null);
+              }
+            } catch (err) {
+              console.error("Error in profile fetch:", err);
               setUser(null);
             }
-          } catch (err) {
-            console.error("Error in profile fetch:", err);
-            setUser(null);
-          }
+            setIsLoading(false);
+          }, 0);
         } else {
           setUser(null);
+          setIsLoading(false);
         }
-        
-        setIsLoading(false);
       }
     );
 
     // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log("Initial session check:", session);
-      setSession(session);
       if (!session) {
         setIsLoading(false);
       }
@@ -108,9 +109,8 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       }
     } catch (error) {
       console.error("Login error:", error);
-      throw error;
-    } finally {
       setIsLoading(false);
+      throw error;
     }
   };
 

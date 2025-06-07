@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -65,7 +64,15 @@ const SignUp = () => {
     try {
       console.log("Form submission data:", data);
       await signup(data.fullName, data.email, data.password, data.role);
-      setShowSuccessDialog(true);
+      
+      toast({
+        title: "Account created successfully!",
+        description: "Please check your email to verify your account before logging in.",
+      });
+      
+      // Redirect to login page after successful signup
+      navigate("/auth/login");
+      
     } catch (error: any) {
       console.error("Signup error:", error);
       
@@ -90,18 +97,6 @@ const SignUp = () => {
         variant: "destructive"
       });
     }
-  };
-
-  const completeSignUp = () => {
-    setShowSuccessDialog(false);
-    
-    toast({
-      title: "Account created successfully!",
-      description: "Please check your email to verify your account before logging in.",
-    });
-    
-    // Redirect to login page after signup
-    navigate("/auth/login");
   };
 
   return (
@@ -260,24 +255,6 @@ const SignUp = () => {
           </form>
         </Form>
       </div>
-
-      {/* Success Dialog */}
-      <Dialog open={showSuccessDialog} onOpenChange={setShowSuccessDialog}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-center">Account Created Successfully!</DialogTitle>
-          </DialogHeader>
-          <div className="flex flex-col items-center py-6">
-            <CheckCircle className="h-16 w-16 text-green-500 mb-4" />
-            <p className="text-center mb-6">
-              Thank you for joining TalentSchool! Please check your email to verify your account.
-            </p>
-            <Button onClick={completeSignUp} className="w-full bg-primary hover:bg-primary/90">
-              Continue to Login
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
     </PageLayout>
   );
 };
