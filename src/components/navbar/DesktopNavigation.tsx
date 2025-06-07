@@ -36,6 +36,18 @@ const DesktopNavigation = () => {
     return user.role.charAt(0).toUpperCase() + user.role.slice(1);
   };
 
+  const getDashboardRoute = () => {
+    if (!user) return "/";
+    
+    if (user.role === "tutor") {
+      return "/tutor/dashboard";
+    } else if (user.role === "student" || user.role === "parent") {
+      return "/student/dashboard";
+    } else {
+      return "/dashboard";
+    }
+  };
+
   return (
     <>
       <div className="hidden md:flex items-center space-x-1">
@@ -76,6 +88,12 @@ const DesktopNavigation = () => {
                   </div>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to={getDashboardRoute()} className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Dashboard</span>
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>Log out</span>
