@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { User as SupabaseUser, Session } from "@supabase/supabase-js";
@@ -141,8 +140,13 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       
       if (error) {
         console.error("Login error:", error);
+        setIsLoading(false);
         throw error;
       }
+      
+      // Don't set isLoading to false here - let the auth state change handle it
+      // This prevents the race condition where we redirect before user state is updated
+      
     } catch (error) {
       console.error("Login error:", error);
       setIsLoading(false);

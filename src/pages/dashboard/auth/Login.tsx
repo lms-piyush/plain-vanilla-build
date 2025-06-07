@@ -32,7 +32,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { login, isLoading, user } = useAuth();
+  const { login, isLoading } = useAuth();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -54,16 +54,9 @@ const Login = () => {
         description: "Welcome back to TalentSchool.",
       });
       
-      // Wait a moment for user state to update, then redirect based on role
-      setTimeout(() => {
-        if (user?.role === "tutor") {
-          navigate("/tutor/dashboard");
-        } else if (user?.role === "student" || user?.role === "parent") {
-          navigate("/student/dashboard");
-        } else {
-          navigate("/dashboard");
-        }
-      }, 100);
+      // Don't redirect here - let the AuthContext and auth state changes handle it
+      // The onAuthStateChange listener will update the user state and trigger redirects
+      
     } catch (error: any) {
       console.error("Login error:", error);
       toast({

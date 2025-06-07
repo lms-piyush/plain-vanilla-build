@@ -8,8 +8,10 @@ const AuthRedirect = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Only redirect if we're not loading and user is authenticated
     if (!isLoading && isAuthenticated && user) {
       console.log("Redirecting user based on role:", user.role);
+      
       // Redirect based on user role
       if (user.role === "tutor") {
         navigate("/tutor/dashboard", { replace: true });
@@ -18,6 +20,9 @@ const AuthRedirect = () => {
       } else {
         navigate("/dashboard", { replace: true });
       }
+    } else if (!isLoading && !isAuthenticated) {
+      // If not authenticated and not loading, redirect to login
+      navigate("/auth/login", { replace: true });
     }
   }, [user, isAuthenticated, isLoading, navigate]);
 
