@@ -1,10 +1,22 @@
-
-import React from 'react';
+import React, { useState } from 'react';
 import { Plus, ArrowRight, BookOpen, Calendar, Users, DollarSign, MessageSquare, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { Area, AreaChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Bar, BarChart } from 'recharts';
+import SimpleCreateClassDialog from '@/components/tutor-dashboard/SimpleCreateClassDialog';
+import { useTutorClasses } from '@/hooks/use-tutor-classes';
 
 const Dashboard = () => {
+  const [createClassDialogOpen, setCreateClassDialogOpen] = useState(false);
+  const { refetch } = useTutorClasses();
+
+  const handleCreateClass = () => {
+    setCreateClassDialogOpen(true);
+  };
+
+  const handleClassCreated = () => {
+    refetch();
+  };
+
   // Mock data for the chart
   const teachingProgressData = [
     { month: 'Jun', teachingHours: 45, students: 52 },
@@ -48,11 +60,21 @@ const Dashboard = () => {
         <h1 className="text-xl md:text-2xl font-semibold text-gray-800">Good Evening, Tutor!</h1>
         <p className="text-gray-600 mt-1">Here's what's happening with your teaching journey.</p>
         
-        <button className="mt-4 inline-flex items-center bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors">
+        <button 
+          onClick={handleCreateClass}
+          className="mt-4 inline-flex items-center bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
+        >
           <Plus size={18} className="mr-2" />
           Create New Class
         </button>
       </div>
+      
+      {/* Create Class Dialog */}
+      <SimpleCreateClassDialog
+        open={createClassDialogOpen}
+        onOpenChange={setCreateClassDialogOpen}
+        onClassCreated={handleClassCreated}
+      />
       
       {/* Stats Row */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
@@ -227,7 +249,10 @@ const Dashboard = () => {
           </div>
           
           <div className="mt-6 w-full lg:mt-0 lg:w-auto lg:ml-6 flex justify-center">
-            <button className="inline-flex items-center justify-center bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors">
+            <button 
+              onClick={handleCreateClass}
+              className="inline-flex items-center justify-center bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
+            >
               <Plus size={18} className="mr-2" />
               Create new Session
             </button>
