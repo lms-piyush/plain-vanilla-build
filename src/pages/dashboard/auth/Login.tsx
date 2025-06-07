@@ -32,7 +32,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { login, isLoading } = useAuth();
+  const { login, isLoading, user } = useAuth();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -45,6 +45,16 @@ const Login = () => {
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
+  const getDashboardRoute = (userRole: string) => {
+    if (userRole === "tutor") {
+      return "/tutor/dashboard";
+    } else if (userRole === "student" || userRole === "parent") {
+      return "/student/dashboard";
+    } else {
+      return "/dashboard";
+    }
+  };
+
   const onSubmit = async (data: LoginFormValues) => {
     try {
       await login(data.email, data.password);
@@ -54,8 +64,13 @@ const Login = () => {
         description: "Welcome back to TalentSchool.",
       });
       
-      // Don't redirect here - let the AuthContext and auth state changes handle it
-      // The onAuthStateChange listener will update the user state and trigger redirects
+      // Wait a moment for auth state to update, then redirect based on user role
+      setTimeout(() => {
+        if (user) {
+          const dashboardRoute = getDashboardRoute(user.role);
+          navigate(dashboardRoute, { replace: true });
+        }
+      }, 100);
       
     } catch (error: any) {
       console.error("Login error:", error);
