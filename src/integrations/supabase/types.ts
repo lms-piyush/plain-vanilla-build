@@ -9,6 +9,229 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      class_locations: {
+        Row: {
+          city: string | null
+          class_id: string
+          country: string | null
+          created_at: string
+          id: string
+          meeting_link: string | null
+          state: string | null
+          street: string | null
+          zip_code: string | null
+        }
+        Insert: {
+          city?: string | null
+          class_id: string
+          country?: string | null
+          created_at?: string
+          id?: string
+          meeting_link?: string | null
+          state?: string | null
+          street?: string | null
+          zip_code?: string | null
+        }
+        Update: {
+          city?: string | null
+          class_id?: string
+          country?: string | null
+          created_at?: string
+          id?: string
+          meeting_link?: string | null
+          state?: string | null
+          street?: string | null
+          zip_code?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_locations_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_schedules: {
+        Row: {
+          class_id: string
+          created_at: string
+          end_date: string | null
+          frequency: string | null
+          id: string
+          start_date: string | null
+          total_sessions: number | null
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          end_date?: string | null
+          frequency?: string | null
+          id?: string
+          start_date?: string | null
+          total_sessions?: number | null
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          end_date?: string | null
+          frequency?: string | null
+          id?: string
+          start_date?: string | null
+          total_sessions?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_schedules_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_syllabus: {
+        Row: {
+          class_id: string
+          created_at: string
+          description: string | null
+          id: string
+          learning_objectives: string[] | null
+          title: string
+          week_number: number
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          learning_objectives?: string[] | null
+          title: string
+          week_number: number
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          learning_objectives?: string[] | null
+          title?: string
+          week_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_syllabus_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_time_slots: {
+        Row: {
+          class_id: string
+          created_at: string
+          day_of_week: string
+          end_time: string
+          id: string
+          start_time: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          day_of_week: string
+          end_time: string
+          id?: string
+          start_time: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          day_of_week?: string
+          end_time?: string
+          id?: string
+          start_time?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_time_slots_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      classes: {
+        Row: {
+          auto_renewal: boolean | null
+          class_format: Database["public"]["Enums"]["class_format"]
+          class_size: Database["public"]["Enums"]["class_size"]
+          created_at: string
+          currency: string | null
+          delivery_mode: Database["public"]["Enums"]["delivery_mode"]
+          description: string | null
+          duration_type: Database["public"]["Enums"]["duration_type"]
+          id: string
+          max_students: number | null
+          price: number | null
+          status: Database["public"]["Enums"]["class_status"]
+          subject: string | null
+          thumbnail_url: string | null
+          title: string
+          tutor_id: string
+          updated_at: string
+        }
+        Insert: {
+          auto_renewal?: boolean | null
+          class_format: Database["public"]["Enums"]["class_format"]
+          class_size: Database["public"]["Enums"]["class_size"]
+          created_at?: string
+          currency?: string | null
+          delivery_mode: Database["public"]["Enums"]["delivery_mode"]
+          description?: string | null
+          duration_type: Database["public"]["Enums"]["duration_type"]
+          id?: string
+          max_students?: number | null
+          price?: number | null
+          status?: Database["public"]["Enums"]["class_status"]
+          subject?: string | null
+          thumbnail_url?: string | null
+          title: string
+          tutor_id: string
+          updated_at?: string
+        }
+        Update: {
+          auto_renewal?: boolean | null
+          class_format?: Database["public"]["Enums"]["class_format"]
+          class_size?: Database["public"]["Enums"]["class_size"]
+          created_at?: string
+          currency?: string | null
+          delivery_mode?: Database["public"]["Enums"]["delivery_mode"]
+          description?: string | null
+          duration_type?: Database["public"]["Enums"]["duration_type"]
+          id?: string
+          max_students?: number | null
+          price?: number | null
+          status?: Database["public"]["Enums"]["class_status"]
+          subject?: string | null
+          thumbnail_url?: string | null
+          title?: string
+          tutor_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classes_tutor_id_fkey"
+            columns: ["tutor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string | null
@@ -41,6 +264,11 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      class_format: "live" | "recorded" | "inbound" | "outbound"
+      class_size: "group" | "one-on-one"
+      class_status: "draft" | "active" | "inactive" | "completed"
+      delivery_mode: "online" | "offline"
+      duration_type: "recurring" | "fixed"
       user_role: "student" | "parent" | "tutor"
     }
     CompositeTypes: {
@@ -157,6 +385,11 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      class_format: ["live", "recorded", "inbound", "outbound"],
+      class_size: ["group", "one-on-one"],
+      class_status: ["draft", "active", "inactive", "completed"],
+      delivery_mode: ["online", "offline"],
+      duration_type: ["recurring", "fixed"],
       user_role: ["student", "parent", "tutor"],
     },
   },
