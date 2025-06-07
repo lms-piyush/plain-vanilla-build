@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -32,7 +32,7 @@ const Login = () => {
   const [showPassword, setShowPassword] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { login, isLoading, user } = useAuth();
+  const { login, isLoading, user, isAuthenticated } = useAuth();
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -55,6 +55,14 @@ const Login = () => {
     }
   };
 
+  // Redirect when user becomes authenticated after login
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const dashboardRoute = getDashboardRoute(user.role);
+      navigate(dashboardRoute, { replace: true });
+    }
+  }, [isAuthenticated, user, navigate]);
+
   const onSubmit = async (data: LoginFormValues) => {
     try {
       await login(data.email, data.password);
@@ -64,13 +72,7 @@ const Login = () => {
         description: "Welcome back to TalentSchool.",
       });
       
-      // Wait a moment for auth state to update, then redirect based on user role
-      setTimeout(() => {
-        if (user) {
-          const dashboardRoute = getDashboardRoute(user.role);
-          navigate(dashboardRoute, { replace: true });
-        }
-      }, 100);
+      // The useEffect above will handle the redirect when auth state updates
       
     } catch (error: any) {
       console.error("Login error:", error);
