@@ -37,20 +37,6 @@ const Index = () => {
     navigate("/");
   };
 
-  const getDashboardUrl = () => {
-    if (!user) return "/dashboard";
-    
-    switch (user.role) {
-      case "tutor":
-        return "/tutor/dashboard";
-      case "student":
-      case "parent":
-        return "/student/dashboard";
-      default:
-        return "/dashboard";
-    }
-  };
-
   const getUserDisplayRole = () => {
     if (!user) return "";
     return user.role.charAt(0).toUpperCase() + user.role.slice(1);
@@ -75,11 +61,6 @@ const Index = () => {
             <div className="flex items-center space-x-4">
               {isAuthenticated && user ? (
                 <>
-                  {/* Go to Dashboard Button */}
-                  <Button className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90" asChild>
-                    <Link to={getDashboardUrl()}>Go to {getUserDisplayRole()} Dashboard</Link>
-                  </Button>
-                  
                   {/* User Profile Dropdown */}
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -104,13 +85,6 @@ const Index = () => {
                           <p className="text-xs leading-none text-muted-foreground">{getUserDisplayRole()} Account</p>
                         </div>
                       </DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem asChild>
-                        <Link to={getDashboardUrl()} className="cursor-pointer">
-                          <User className="mr-2 h-4 w-4" />
-                          <span>Dashboard</span>
-                        </Link>
-                      </DropdownMenuItem>
                       <DropdownMenuSeparator />
                       <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                         <LogOut className="mr-2 h-4 w-4" />

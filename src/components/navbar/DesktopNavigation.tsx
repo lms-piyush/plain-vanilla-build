@@ -27,21 +27,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 const DesktopNavigation = () => {
   const { isAuthenticated, user, logout } = useAuth();
 
-  // Determine the correct dashboard URL based on user role
-  const getDashboardUrl = () => {
-    if (!user) return "/dashboard";
-    
-    switch (user.role) {
-      case "tutor":
-        return "/tutor/dashboard";
-      case "student":
-      case "parent":
-        return "/student/dashboard";
-      default:
-        return "/dashboard";
-    }
-  };
-
   const handleLogout = () => {
     logout();
   };
@@ -67,10 +52,6 @@ const DesktopNavigation = () => {
       <div className="hidden md:flex items-center gap-3">
         {isAuthenticated && user ? (
           <>
-            <Button className="bg-talent-primary hover:bg-talent-secondary text-white font-medium transition-all" asChild>
-              <Link to={getDashboardUrl()}>Go to {getUserDisplayRole()} Dashboard</Link>
-            </Button>
-            
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="flex items-center space-x-2 h-auto p-2">
@@ -94,13 +75,6 @@ const DesktopNavigation = () => {
                     <p className="text-xs leading-none text-muted-foreground">{getUserDisplayRole()} Account</p>
                   </div>
                 </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem asChild>
-                  <Link to={getDashboardUrl()} className="cursor-pointer">
-                    <User className="mr-2 h-4 w-4" />
-                    <span>Dashboard</span>
-                  </Link>
-                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
                   <LogOut className="mr-2 h-4 w-4" />

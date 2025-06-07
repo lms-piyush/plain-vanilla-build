@@ -1,30 +1,35 @@
 
 import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 
 const AuthRedirect = () => {
   const { user, isAuthenticated, isLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    // Only redirect if we're not loading and user is authenticated
-    if (!isLoading && isAuthenticated && user) {
-      console.log("Redirecting user based on role:", user.role);
-      
-      // Redirect based on user role
-      if (user.role === "tutor") {
-        navigate("/tutor/dashboard", { replace: true });
-      } else if (user.role === "student" || user.role === "parent") {
-        navigate("/student/dashboard", { replace: true });
+    // Only redirect if we're not loading
+    if (!isLoading) {
+      if (isAuthenticated && user) {
+        console.log("Redirecting user based on role:", user.role);
+        
+        // Redirect based on user role
+        if (user.role === "tutor") {
+          navigate("/tutor/dashboard", { replace: true });
+        } else if (user.role === "student" || user.role === "parent") {
+          navigate("/student/dashboard", { replace: true });
+        } else {
+          navigate("/dashboard", { replace: true });
+        }
       } else {
-        navigate("/dashboard", { replace: true });
+        // If not authenticated, redirect to login only if not already on auth pages
+        if (!location.pathname.startsWith('/auth') && location.pathname !== '/') {
+          navigate("/auth/login", { replace: true });
+        }
       }
-    } else if (!isLoading && !isAuthenticated) {
-      // If not authenticated and not loading, redirect to login
-      navigate("/auth/login", { replace: true });
     }
-  }, [user, isAuthenticated, isLoading, navigate]);
+  }, [user, isAuthenticated, isLoading, navigate, location.pathname]);
 
   if (isLoading) {
     return (
