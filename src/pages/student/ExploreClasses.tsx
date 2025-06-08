@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Tabs } from "@/components/ui/tabs";
@@ -37,11 +36,24 @@ const ExploreClasses = () => {
     classes: allClasses, 
     totalCount, 
     isLoading,
+    error,
     refetch 
   } = useAllClasses({
     page: activeTab === "all" ? currentPage : 1,
     pageSize: activeTab === "all" ? classesPerPage : 1000
   });
+
+  // Debug logging
+  useEffect(() => {
+    console.log("ExploreClasses - Component state:", {
+      activeTab,
+      allClasses,
+      totalCount,
+      isLoading,
+      error,
+      classesLength: allClasses.length
+    });
+  }, [activeTab, allClasses, totalCount, isLoading, error]);
 
   // Effect to handle format options based on class mode
   useEffect(() => {
@@ -132,6 +144,8 @@ const ExploreClasses = () => {
   const getFilteredClasses = () => {
     let filtered = [...allClasses];
     
+    console.log("Filtering classes:", filtered.length, "total classes");
+    
     // Apply filters if they've been set
     if (filterOpen) {
       // Apply mode filter
@@ -187,9 +201,29 @@ const ExploreClasses = () => {
   const displayedClasses = activeTab === "saved" ? getSavedClasses() : getFilteredClasses();
   const totalPages = Math.ceil(totalCount / classesPerPage);
 
+  console.log("Final displayed classes:", displayedClasses.length);
+
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
+
+  // Show error state if there's an error
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <h1 className="text-2xl font-bold mb-6">Explore Classes</h1>
+        <div className="text-red-500 mb-4">
+          Error loading classes: {error}
+        </div>
+        <button 
+          onClick={() => refetch()}
+          className="px-4 py-2 bg-[#8A5BB7] text-white rounded hover:bg-[#8A5BB7]/90"
+        >
+          Try Again
+        </button>
+      </div>
+    );
+  }
   
   return (
     <>

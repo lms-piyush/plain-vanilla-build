@@ -56,12 +56,25 @@ export const useAllClasses = (options: UseAllClassesOptions = {}) => {
   const fetchClasses = async () => {
     try {
       setIsLoading(true);
+      console.log("Fetching classes with options:", { page, pageSize });
+      
+      // First check if there are any classes at all (regardless of status)
+      const { data: allClassesData, error: allClassesError } = await supabase
+        .from("classes")
+        .select("id, status, tutor_id")
+        .limit(5);
+      
+      console.log("All classes in database:", allClassesData);
+      console.log("Error fetching all classes:", allClassesError);
       
       // Get total count first for active classes only
-      const { count } = await supabase
+      const { count, error: countError } = await supabase
         .from("classes")
         .select("*", { count: 'exact', head: true })
         .eq("status", "active");
+
+      console.log("Active classes count:", count);
+      console.log("Count error:", countError);
 
       setTotalCount(count || 0);
 
@@ -96,6 +109,9 @@ export const useAllClasses = (options: UseAllClassesOptions = {}) => {
         .eq("status", "active")
         .order("created_at", { ascending: false })
         .range(from, to);
+
+      console.log("Fetched active classes:", data);
+      console.log("Fetch error:", error);
 
       if (error) throw error;
 
