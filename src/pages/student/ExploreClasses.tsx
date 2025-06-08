@@ -35,7 +35,7 @@ import {
   PaginationPrevious,
 } from "@/components/ui/pagination";
 import CourseCard from "@/components/dashboard/CourseCard";
-import { useTutorClasses, TutorClass } from "@/hooks/use-tutor-classes";
+import { useAllClasses, TutorClass } from "@/hooks/use-all-classes";
 import { useToast } from "@/hooks/use-toast";
 
 const ExploreClasses = () => {
@@ -67,7 +67,7 @@ const ExploreClasses = () => {
     totalCount, 
     isLoading,
     refetch 
-  } = useTutorClasses({
+  } = useAllClasses({
     page: activeTab === "all" ? currentPage : 1,
     pageSize: activeTab === "all" ? classesPerPage : 1000
   });

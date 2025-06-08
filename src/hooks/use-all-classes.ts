@@ -1,7 +1,6 @@
 
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
 
 export interface TutorClass {
   id: string;
@@ -42,33 +41,27 @@ export interface TutorClass {
   }[];
 }
 
-interface UseTutorClassesOptions {
+interface UseAllClassesOptions {
   page?: number;
   pageSize?: number;
 }
 
-export const useTutorClasses = (options: UseTutorClassesOptions = {}) => {
-  const { page = 1, pageSize = 10 } = options;
+export const useAllClasses = (options: UseAllClassesOptions = {}) => {
+  const { page = 1, pageSize = 9 } = options;
   const [classes, setClasses] = useState<TutorClass[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { user } = useAuth();
 
   const fetchClasses = async () => {
-    if (!user) {
-      setIsLoading(false);
-      return;
-    }
-
     try {
       setIsLoading(true);
       
-      // Get total count first
+      // Get total count first for active classes only
       const { count } = await supabase
         .from("classes")
         .select("*", { count: 'exact', head: true })
-        .eq("tutor_id", user.id);
+        .eq("status", "active");
 
       setTotalCount(count || 0);
 
@@ -100,7 +93,7 @@ export const useTutorClasses = (options: UseTutorClassesOptions = {}) => {
             total_sessions
           )
         `)
-        .eq("tutor_id", user.id)
+        .eq("status", "active")
         .order("created_at", { ascending: false })
         .range(from, to);
 
@@ -118,7 +111,7 @@ export const useTutorClasses = (options: UseTutorClassesOptions = {}) => {
 
   useEffect(() => {
     fetchClasses();
-  }, [user, page, pageSize]);
+  }, [page, pageSize]);
 
   return {
     classes,
