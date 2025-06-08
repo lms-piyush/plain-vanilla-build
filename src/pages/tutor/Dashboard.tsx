@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, ArrowRight, BookOpen, Calendar, Users, DollarSign, MessageSquare, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -39,15 +38,28 @@ const Dashboard = () => {
   const today = new Date();
   const todayDateString = today.toISOString().split('T')[0]; // YYYY-MM-DD format
   
-  // Filter classes based on the session filter and check if any time slots match today
+  // Filter classes based on the session filter and check schedule dates
   const getFilteredClasses = () => {
     if (sessionFilter === 'today') {
       return classes.filter(classItem => {
-        // Check if any time slot matches today's day of the week
-        const todayDayName = today.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-        return classItem.class_time_slots?.some(slot => 
-          slot.day_of_week.toLowerCase() === todayDayName
-        );
+        // Check if any schedule includes today's date
+        if (classItem.class_schedules && classItem.class_schedules.length > 0) {
+          return classItem.class_schedules.some(schedule => {
+            const startDate = schedule.start_date ? new Date(schedule.start_date) : null;
+            const endDate = schedule.end_date ? new Date(schedule.end_date) : null;
+            
+            if (startDate && endDate) {
+              // Check if today is within the schedule range
+              const todayDate = new Date(todayDateString);
+              return todayDate >= startDate && todayDate <= endDate;
+            } else if (startDate) {
+              // If only start date, check if today matches start date
+              return startDate.toISOString().split('T')[0] === todayDateString;
+            }
+            return false;
+          });
+        }
+        return false;
       });
     }
     return classes;
@@ -55,7 +67,43 @@ const Dashboard = () => {
 
   const filteredClasses = getFilteredClasses();
 
+  // Count today's sessions based on schedule dates
+  const getTodaysSessionsCount = () => {
+    return classes.filter(classItem => {
+      if (classItem.class_schedules && classItem.class_schedules.length > 0) {
+        return classItem.class_schedules.some(schedule => {
+          const startDate = schedule.start_date ? new Date(schedule.start_date) : null;
+          const endDate = schedule.end_date ? new Date(schedule.end_date) : null;
+          
+          if (startDate && endDate) {
+            const todayDate = new Date(todayDateString);
+            return todayDate >= startDate && todayDate <= endDate;
+          } else if (startDate) {
+            return startDate.toISOString().split('T')[0] === todayDateString;
+          }
+          return false;
+        });
+      }
+      return false;
+    }).length;
+  };
+
   const formatClassTimeInfo = (classItem: any) => {
+    // Schedule information
+    let scheduleInfo = 'Not scheduled';
+    if (classItem.class_schedules && classItem.class_schedules.length > 0) {
+      const schedule = classItem.class_schedules[0];
+      const startDate = schedule.start_date ? new Date(schedule.start_date).toLocaleDateString() : null;
+      
+      if (sessionFilter === 'today') {
+        scheduleInfo = startDate ? `Scheduled: ${startDate}` : 'Not scheduled';
+      } else {
+        scheduleInfo = startDate ? `Starts: ${startDate}` : 'Not scheduled';
+      }
+    }
+
+    // Time slot information  
+    let timeInfo = 'Time not set';
     if (classItem.class_time_slots && classItem.class_time_slots.length > 0) {
       const timeSlot = classItem.class_time_slots[0];
       const startTime = timeSlot.start_time;
@@ -69,15 +117,12 @@ const Dashboard = () => {
         return `${hour12}:${minutes} ${ampm}`;
       };
 
-      return {
-        date: sessionFilter === 'today' ? 'Today' : timeSlot.day_of_week,
-        time: `${formatTime(startTime)} - ${formatTime(endTime)}`
-      };
+      timeInfo = `${formatTime(startTime)} - ${formatTime(endTime)}`;
     }
-    
+
     return {
-      date: sessionFilter === 'today' ? 'Today' : 'Not scheduled',
-      time: 'Time not set'
+      date: scheduleInfo,
+      time: timeInfo
     };
   };
 
@@ -130,12 +175,7 @@ const Dashboard = () => {
           <div className="flex items-start justify-between">
             <div>
               <h3 className="text-gray-500 text-sm font-medium">Today's Sessions</h3>
-              <p className="text-2xl font-semibold mt-1">{classes.filter(classItem => {
-                const todayDayName = today.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-                return classItem.class_time_slots?.some(slot => 
-                  slot.day_of_week.toLowerCase() === todayDayName
-                );
-              }).length}</p>
+              <p className="text-2xl font-semibold mt-1">{getTodaysSessionsCount()}</p>
               <p className="text-sm text-gray-500 mt-1">Scheduled for today</p>
               <p className="text-xs text-gray-500 mt-2">
                 <span className="text-green-500">Live Classes</span>
@@ -250,12 +290,7 @@ const Dashboard = () => {
                   : 'text-gray-500 hover:bg-gray-100'
               }`}
             >
-              Today's Sessions ({classes.filter(classItem => {
-                const todayDayName = today.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
-                return classItem.class_time_slots?.some(slot => 
-                  slot.day_of_week.toLowerCase() === todayDayName
-                );
-              }).length})
+              Today's Sessions ({getTodaysSessionsCount()})
             </button>
             <button 
               onClick={() => setSessionFilter('all')}

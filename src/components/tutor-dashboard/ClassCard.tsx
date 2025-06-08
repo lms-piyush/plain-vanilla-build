@@ -39,14 +39,37 @@ const ClassCard = ({ classItem, onEdit, onManage }: ClassCardProps) => {
     return maxStudents ? `Max ${maxStudents} students` : 'No limit';
   };
 
-  const formatDateTime = () => {
-    const createdDate = new Date(classItem.created_at);
-    const dateStr = createdDate.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-    return { dateStr };
+  const getScheduleInfo = () => {
+    // Check if class has schedule data
+    if (classItem.class_schedules && classItem.class_schedules.length > 0) {
+      const schedule = classItem.class_schedules[0];
+      const startDate = schedule.start_date ? new Date(schedule.start_date) : null;
+      const endDate = schedule.end_date ? new Date(schedule.end_date) : null;
+      
+      const formatDate = (date: Date) => {
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'short',
+          day: 'numeric'
+        });
+      };
+
+      return {
+        startDate: startDate ? formatDate(startDate) : 'Not set',
+        endDate: endDate ? formatDate(endDate) : 'Not set',
+        frequency: schedule.frequency || 'Not specified',
+        totalSessions: schedule.total_sessions || 'Not specified',
+        hasSchedule: !!(startDate || endDate)
+      };
+    }
+    
+    return {
+      startDate: 'Not scheduled',
+      endDate: 'Not scheduled', 
+      frequency: 'Not specified',
+      totalSessions: 'Not specified',
+      hasSchedule: false
+    };
   };
 
   const getClassTimeInfo = () => {
@@ -81,7 +104,7 @@ const ClassCard = ({ classItem, onEdit, onManage }: ClassCardProps) => {
     };
   };
 
-  const { dateStr } = formatDateTime();
+  const scheduleInfo = getScheduleInfo();
   const timeInfo = getClassTimeInfo();
 
   return (
@@ -103,9 +126,19 @@ const ClassCard = ({ classItem, onEdit, onManage }: ClassCardProps) => {
         <p className="text-gray-600 text-sm mb-3 line-clamp-2">{classItem.description || "No description available"}</p>
         
         <div className="space-y-2 mb-4">
-          <div className="flex items-center text-sm text-gray-500">
-            <Calendar className="h-4 w-4 mr-2" />
-            <span>Created: {dateStr}</span>
+          {/* Schedule Date Section */}
+          <div className="bg-blue-50 p-2 rounded-md">
+            <div className="flex items-center text-sm text-blue-700 font-medium mb-1">
+              <Calendar className="h-4 w-4 mr-2" />
+              <span>Schedule Dates</span>
+            </div>
+            <div className="text-xs text-blue-600 space-y-1">
+              <div>Start: {scheduleInfo.startDate}</div>
+              <div>End: {scheduleInfo.endDate}</div>
+              {scheduleInfo.frequency && scheduleInfo.frequency !== 'Not specified' && (
+                <div>Frequency: {scheduleInfo.frequency}</div>
+              )}
+            </div>
           </div>
           
           <div className="flex items-center text-sm text-gray-500">

@@ -34,6 +34,13 @@ export interface TutorClass {
     start_time: string;
     end_time: string;
   }[];
+  class_schedules?: {
+    id: string;
+    start_date: string | null;
+    end_date: string | null;
+    frequency: string | null;
+    total_sessions: number | null;
+  }[];
 }
 
 export const useTutorClasses = () => {
@@ -67,6 +74,13 @@ export const useTutorClasses = () => {
             day_of_week,
             start_time,
             end_time
+          ),
+          class_schedules (
+            id,
+            start_date,
+            end_date,
+            frequency,
+            total_sessions
           )
         `)
         .eq("tutor_id", user.id)
