@@ -40,11 +40,9 @@ const ClassCard = ({ classItem, onEdit, onManage }: ClassCardProps) => {
   };
 
   const getScheduleInfo = () => {
-    // Check if class has schedule data
     if (classItem.class_schedules && classItem.class_schedules.length > 0) {
       const schedule = classItem.class_schedules[0];
       const startDate = schedule.start_date ? new Date(schedule.start_date) : null;
-      const endDate = schedule.end_date ? new Date(schedule.end_date) : null;
       
       const formatDate = (date: Date) => {
         return date.toLocaleDateString('en-US', {
@@ -56,31 +54,25 @@ const ClassCard = ({ classItem, onEdit, onManage }: ClassCardProps) => {
 
       return {
         startDate: startDate ? formatDate(startDate) : 'Not set',
-        endDate: endDate ? formatDate(endDate) : 'Not set',
-        frequency: schedule.frequency || 'Not specified',
         totalSessions: schedule.total_sessions || 'Not specified',
-        hasSchedule: !!(startDate || endDate)
+        hasSchedule: !!startDate
       };
     }
     
     return {
       startDate: 'Not scheduled',
-      endDate: 'Not scheduled', 
-      frequency: 'Not specified',
       totalSessions: 'Not specified',
       hasSchedule: false
     };
   };
 
   const getClassTimeInfo = () => {
-    // Check if class has time slots data
     if (classItem.class_time_slots && classItem.class_time_slots.length > 0) {
-      const timeSlot = classItem.class_time_slots[0]; // Get first time slot
+      const timeSlot = classItem.class_time_slots[0];
       const startTime = timeSlot.start_time;
       const endTime = timeSlot.end_time;
       const dayOfWeek = timeSlot.day_of_week;
       
-      // Format time from "HH:MM:SS" to "HH:MM AM/PM"
       const formatTime = (timeStr: string) => {
         const [hours, minutes] = timeStr.split(':');
         const hour12 = parseInt(hours) % 12 || 12;
@@ -130,13 +122,12 @@ const ClassCard = ({ classItem, onEdit, onManage }: ClassCardProps) => {
           <div className="bg-blue-50 p-2 rounded-md">
             <div className="flex items-center text-sm text-blue-700 font-medium mb-1">
               <Calendar className="h-4 w-4 mr-2" />
-              <span>Schedule Dates</span>
+              <span>Schedule Date</span>
             </div>
             <div className="text-xs text-blue-600 space-y-1">
               <div>Start: {scheduleInfo.startDate}</div>
-              <div>End: {scheduleInfo.endDate}</div>
-              {scheduleInfo.frequency && scheduleInfo.frequency !== 'Not specified' && (
-                <div>Frequency: {scheduleInfo.frequency}</div>
+              {scheduleInfo.totalSessions && scheduleInfo.totalSessions !== 'Not specified' && (
+                <div>Sessions: {scheduleInfo.totalSessions}</div>
               )}
             </div>
           </div>

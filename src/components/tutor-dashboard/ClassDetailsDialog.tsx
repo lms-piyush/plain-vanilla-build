@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Globe, MapPin, Users, Calendar, Clock } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -46,7 +45,6 @@ const ClassDetailsDialog = ({ open, onOpenChange, selectedClass }: ClassDetailsD
     if (selectedClass.class_schedules && selectedClass.class_schedules.length > 0) {
       const schedule = selectedClass.class_schedules[0];
       const startDate = schedule.start_date ? new Date(schedule.start_date) : null;
-      const endDate = schedule.end_date ? new Date(schedule.end_date) : null;
       
       const formatDate = (date: Date) => {
         return date.toLocaleDateString('en-US', {
@@ -59,17 +57,13 @@ const ClassDetailsDialog = ({ open, onOpenChange, selectedClass }: ClassDetailsD
 
       return {
         startDate: startDate ? formatDate(startDate) : 'Not set',
-        endDate: endDate ? formatDate(endDate) : 'Not set',
-        frequency: schedule.frequency || 'Not specified',
         totalSessions: schedule.total_sessions || 'Not specified',
-        hasSchedule: !!(startDate || endDate)
+        hasSchedule: !!startDate
       };
     }
     
     return {
       startDate: 'Not scheduled',
-      endDate: 'Not scheduled', 
-      frequency: 'Not specified',
       totalSessions: 'Not specified',
       hasSchedule: false
     };
@@ -127,16 +121,6 @@ const ClassDetailsDialog = ({ open, onOpenChange, selectedClass }: ClassDetailsD
                     <div>
                       <span className="text-sm font-medium text-blue-700">Start Date:</span>
                       <p className="text-sm text-blue-900">{scheduleInfo.startDate}</p>
-                    </div>
-                    <div>
-                      <span className="text-sm font-medium text-blue-700">End Date:</span>
-                      <p className="text-sm text-blue-900">{scheduleInfo.endDate}</p>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div>
-                      <span className="text-sm font-medium text-blue-700">Frequency:</span>
-                      <p className="text-sm text-blue-900">{scheduleInfo.frequency}</p>
                     </div>
                     <div>
                       <span className="text-sm font-medium text-blue-700">Total Sessions:</span>

@@ -14,13 +14,14 @@ const Classes = () => {
   const [manageDialogOpen, setManageDialogOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<TutorClass | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const { classes, isLoading, error, refetch } = useTutorClasses();
   
-  const classesPerPage = 10;
-  const totalPages = Math.ceil(classes.length / classesPerPage);
-  const startIndex = (currentPage - 1) * classesPerPage;
-  const endIndex = startIndex + classesPerPage;
-  const currentClasses = classes.slice(startIndex, endIndex);
+  const classesPerPage = 12;
+  const { classes, totalCount, isLoading, error, refetch } = useTutorClasses({
+    page: currentPage,
+    pageSize: classesPerPage
+  });
+  
+  const totalPages = Math.ceil(totalCount / classesPerPage);
 
   const handleCreateClass = () => {
     setCreateClassDialogOpen(true);
@@ -60,7 +61,7 @@ const Classes = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
         <div>
           <h1 className="text-xl md:text-2xl font-semibold text-gray-800">My Classes</h1>
-          <p className="text-gray-600 mt-1">Manage all your classes here. You currently have {classes.length} classes.</p>
+          <p className="text-gray-600 mt-1">Manage all your classes here. You currently have {totalCount} classes.</p>
         </div>
         <button 
           onClick={handleCreateClass}
@@ -101,7 +102,7 @@ const Classes = () => {
         <>
           <div className="mb-8">
             <ClassesGrid
-              classes={currentClasses}
+              classes={classes}
               onEditClass={handleEditClass}
               onManageClass={handleManageClass}
               onCreateClass={handleCreateClass}

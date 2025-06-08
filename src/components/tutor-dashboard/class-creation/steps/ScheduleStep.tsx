@@ -3,7 +3,6 @@ import { useState, useEffect } from "react";
 import { 
   useClassCreationStore, 
   TimeSlot, 
-  Frequency, 
   DayOfWeek 
 } from "@/hooks/use-class-creation-store";
 import { Button } from "@/components/ui/button";
@@ -34,13 +33,6 @@ const daysOfWeek: { value: DayOfWeek; label: string }[] = [
   { value: "sunday", label: "Sunday" }
 ];
 
-const frequencies: { value: Frequency; label: string }[] = [
-  { value: "daily", label: "Daily" },
-  { value: "weekly", label: "Weekly" },
-  { value: "biweekly", label: "Biweekly" },
-  { value: "monthly", label: "Monthly" }
-];
-
 const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   const { 
     formState, 
@@ -50,9 +42,7 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
     updateTimeSlot 
   } = useClassCreationStore();
   
-  const [frequency, setFrequency] = useState<Frequency | null>(formState.frequency);
   const [startDate, setStartDate] = useState(formState.startDate || "");
-  const [endDate, setEndDate] = useState(formState.endDate || "");
   const [totalSessions, setTotalSessions] = useState(formState.totalSessions?.toString() || "");
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(
     formState.timeSlots.length > 0 
@@ -61,18 +51,14 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   );
   
   const [errors, setErrors] = useState({
-    frequency: "",
     startDate: "",
-    endDate: "",
     totalSessions: "",
     timeSlots: ""
   });
   
   const validateForm = () => {
     const newErrors = {
-      frequency: !frequency ? "Frequency is required" : "",
       startDate: !startDate ? "Start date is required" : "",
-      endDate: formState.durationType === "fixed" && !endDate ? "End date is required" : "",
       totalSessions: formState.durationType === "fixed" && !totalSessions ? "Total sessions is required" : "",
       timeSlots: timeSlots.length === 0 ? "At least one time slot is required" : ""
     };
@@ -82,11 +68,6 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
       newErrors.timeSlots = "All time slot fields are required";
     }
     
-    // Validate end date is after start date
-    if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
-      newErrors.endDate = "End date must be after start date";
-    }
-    
     setErrors(newErrors);
     return !Object.values(newErrors).some(error => error);
   };
@@ -94,15 +75,15 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   const handleNext = () => {
     if (validateForm()) {
       setSchedule({
-        frequency,
+        frequency: null,
         startDate,
-        endDate: formState.durationType === "fixed" ? endDate : null,
+        endDate: null,
         totalSessions: formState.durationType === "fixed" ? parseInt(totalSessions) : null
       });
       
       // Update time slots in store
       formState.timeSlots.forEach((_, index) => {
-        removeTimeSlot(0); // Always remove the first one until all are gone
+        removeTimeSlot(0);
       });
       
       timeSlots.forEach(slot => {
@@ -137,30 +118,6 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
       <div className="grid md:grid-cols-2 gap-6">
         <div className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="frequency" className="text-base">
-              Class Frequency <span className="text-red-500">*</span>
-            </Label>
-            <Select
-              value={frequency || undefined}
-              onValueChange={(value) => setFrequency(value as Frequency)}
-            >
-              <SelectTrigger id="frequency" className={errors.frequency ? "border-red-500" : ""}>
-                <SelectValue placeholder="Select frequency" />
-              </SelectTrigger>
-              <SelectContent>
-                {frequencies.map((f) => (
-                  <SelectItem key={f.value} value={f.value}>
-                    {f.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.frequency && (
-              <p className="text-red-500 text-sm">{errors.frequency}</p>
-            )}
-          </div>
-          
-          <div className="space-y-2">
             <Label htmlFor="startDate" className="text-base">
               Start Date <span className="text-red-500">*</span>
             </Label>
@@ -178,41 +135,22 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
           </div>
           
           {formState.durationType === "fixed" && (
-            <>
-              <div className="space-y-2">
-                <Label htmlFor="endDate" className="text-base">
-                  End Date <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="endDate"
-                  type="date"
-                  value={endDate}
-                  min={startDate || format(new Date(), 'yyyy-MM-dd')}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  className={errors.endDate ? "border-red-500" : ""}
-                />
-                {errors.endDate && (
-                  <p className="text-red-500 text-sm">{errors.endDate}</p>
-                )}
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="totalSessions" className="text-base">
-                  Total Sessions <span className="text-red-500">*</span>
-                </Label>
-                <Input
-                  id="totalSessions"
-                  type="number"
-                  min="1"
-                  value={totalSessions}
-                  onChange={(e) => setTotalSessions(e.target.value)}
-                  className={errors.totalSessions ? "border-red-500" : ""}
-                />
-                {errors.totalSessions && (
-                  <p className="text-red-500 text-sm">{errors.totalSessions}</p>
-                )}
-              </div>
-            </>
+            <div className="space-y-2">
+              <Label htmlFor="totalSessions" className="text-base">
+                Total Sessions <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="totalSessions"
+                type="number"
+                min="1"
+                value={totalSessions}
+                onChange={(e) => setTotalSessions(e.target.value)}
+                className={errors.totalSessions ? "border-red-500" : ""}
+              />
+              {errors.totalSessions && (
+                <p className="text-red-500 text-sm">{errors.totalSessions}</p>
+              )}
+            </div>
           )}
         </div>
         

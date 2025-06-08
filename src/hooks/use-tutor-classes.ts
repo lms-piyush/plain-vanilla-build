@@ -37,14 +37,19 @@ export interface TutorClass {
   class_schedules?: {
     id: string;
     start_date: string | null;
-    end_date: string | null;
-    frequency: string | null;
     total_sessions: number | null;
   }[];
 }
 
-export const useTutorClasses = () => {
+interface UseTutorClassesOptions {
+  page?: number;
+  pageSize?: number;
+}
+
+export const useTutorClasses = (options: UseTutorClassesOptions = {}) => {
+  const { page = 1, pageSize = 10 } = options;
   const [classes, setClasses] = useState<TutorClass[]>([]);
+  const [totalCount, setTotalCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
@@ -57,6 +62,19 @@ export const useTutorClasses = () => {
 
     try {
       setIsLoading(true);
+      
+      // Get total count first
+      const { count } = await supabase
+        .from("classes")
+        .select("*", { count: 'exact', head: true })
+        .eq("tutor_id", user.id);
+
+      setTotalCount(count || 0);
+
+      // Get paginated data
+      const from = (page - 1) * pageSize;
+      const to = from + pageSize - 1;
+
       const { data, error } = await supabase
         .from("classes")
         .select(`
@@ -78,13 +96,12 @@ export const useTutorClasses = () => {
           class_schedules (
             id,
             start_date,
-            end_date,
-            frequency,
             total_sessions
           )
         `)
         .eq("tutor_id", user.id)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .range(from, to);
 
       if (error) throw error;
 
@@ -100,10 +117,11 @@ export const useTutorClasses = () => {
 
   useEffect(() => {
     fetchClasses();
-  }, [user]);
+  }, [user, page, pageSize]);
 
   return {
     classes,
+    totalCount,
     isLoading,
     error,
     refetch: fetchClasses,
