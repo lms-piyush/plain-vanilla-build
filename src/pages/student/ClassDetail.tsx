@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -16,79 +16,176 @@ import {
 } from "@/components/ui/tabs";
 import { toast } from "@/components/ui/use-toast";
 import { Star, MapPin, User, Calendar, Clock, Video } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface ClassData {
+  id: string;
+  title: string;
+  tutor: {
+    name: string;
+    tutorId: string;
+    qualifications: string;
+    totalCourses: number;
+    totalStudents: number;
+  };
+  type: string;
+  format: string;
+  duration: string;
+  price: string;
+  isSubscription: boolean;
+  enrolled: number;
+  maxStudents: number;
+  classSize: string;
+  image: string;
+  overview: string;
+  lessons: any[];
+  rating: number;
+  reviews: number;
+  address?: string;
+  meetingLink?: string;
+}
 
 const ClassDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [classData, setClassData] = useState<ClassData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const today = new Date();
-  
-  // In a real app, this would come from an API call
-  const classData = {
-    id,
-    title: "Introduction to Python Programming",
-    tutor: {
-      name: "Dr. Smith",
-      tutorId: "tutor1",
-      qualifications: "Ph.D in Computer Science",
-      totalCourses: 8,
-      totalStudents: 1240,
-    },
-    type: "Online", // Online or Offline
-    format: "Live", // Live, Recorded, Inbound, Outbound
-    duration: "Finite", // Finite or Infinite
-    price: "₹5,000",
-    isSubscription: false, // true for monthly subscription
-    enrolled: 34,
-    maxStudents: 40,
-    classSize: "Group", // Group or 1-on-1
-    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800",
-    overview: "This course introduces students to the Python programming language and its fundamental concepts. Students will learn about variables, data types, control structures, functions, and basic object-oriented programming principles.",
-    lessons: [
-      {
-        title: "Introduction and Setup",
-        description: "Overview of Python and setting up the development environment.",
-        resources: ["Setup Guide.pdf", "Introduction Slides.ppt"],
-        date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 3), // Past class
-        time: "18:00 - 19:30",
-        video: id === "course3" ? "https://www.example.com/recorded-video" : null,
-      },
-      {
-        title: "Variables and Data Types",
-        description: "Understanding Python variables, strings, numbers, and lists.",
-        resources: ["Variables Cheatsheet.pdf", "Practice Problems.py"],
-        date: new Date(today.getFullYear(), today.getMonth(), today.getDate()), // Today
-        time: "18:00 - 19:30",
-        video: id === "course3" ? "https://www.example.com/recorded-video" : null,
-      },
-      {
-        title: "Control Structures",
-        description: "If statements, loops, and conditional expressions.",
-        resources: ["Control Flow Diagram.png", "Examples.py"],
-        date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 5), // Future class
-        time: "18:00 - 19:30",
-        video: id === "course3" ? "https://www.example.com/recorded-video" : null,
-      },
-      {
-        title: "Functions and Modules",
-        description: "Creating and using functions, importing modules.",
-        resources: ["Function Reference.pdf", "Module Examples.zip"],
-        date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 10), // Future class
-        time: "18:00 - 19:30",
-        video: id === "course3" ? "https://www.example.com/recorded-video" : null,
-      },
-      {
-        title: "Introduction to Object-Oriented Programming",
-        description: "Classes, objects, inheritance, and polymorphism.",
-        resources: ["OOP Concepts.pdf", "Class Examples.py"],
-        date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 15), // Future class
-        time: "18:00 - 19:30",
-        video: id === "course3" ? "https://www.example.com/recorded-video" : null,
-      },
-    ],
-    rating: 4.8,
-    reviews: 128,
-    address: id === "course5" ? "123 Learning St, New York, NY" : undefined,
-  };
+
+  // Fetch class data from database
+  useEffect(() => {
+    const fetchClassData = async () => {
+      if (!id) return;
+
+      try {
+        setIsLoading(true);
+        
+        // Fetch class details with related data
+        const { data: classInfo, error: classError } = await supabase
+          .from('classes')
+          .select(`
+            *,
+            class_locations (
+              meeting_link,
+              street,
+              city,
+              state,
+              zip_code,
+              country
+            ),
+            class_time_slots (
+              day_of_week,
+              start_time,
+              end_time
+            ),
+            class_schedules (
+              start_date,
+              total_sessions
+            )
+          `)
+          .eq('id', id)
+          .single();
+
+        if (classError) throw classError;
+
+        // Fetch tutor information
+        const { data: tutorInfo, error: tutorError } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', classInfo.tutor_id)
+          .single();
+
+        if (tutorError) console.error('Error fetching tutor:', tutorError);
+
+        // Build class data object with real data and dummy fallbacks
+        const formattedClassData: ClassData = {
+          id: classInfo.id,
+          title: classInfo.title,
+          tutor: {
+            name: tutorInfo?.full_name || "Dr. Smith",
+            tutorId: classInfo.tutor_id,
+            qualifications: "Ph.D in Computer Science", // Dummy data
+            totalCourses: 8, // Dummy data
+            totalStudents: 1240, // Dummy data
+          },
+          type: classInfo.delivery_mode === 'online' ? 'Online' : 'Offline',
+          format: classInfo.class_format === 'live' ? 'Live' : 
+                 classInfo.class_format === 'recorded' ? 'Recorded' :
+                 classInfo.class_format === 'inbound' ? 'Inbound' : 'Outbound',
+          duration: classInfo.duration_type === 'recurring' ? 'Infinite' : 'Finite',
+          price: classInfo.price ? `₹${classInfo.price}` : '₹5,000',
+          isSubscription: classInfo.duration_type === 'recurring',
+          enrolled: 34, // Dummy data - would come from enrollments table
+          maxStudents: classInfo.max_students || 40,
+          classSize: classInfo.class_size === 'group' ? 'Group' : '1-on-1',
+          image: classInfo.thumbnail_url || "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=800",
+          overview: classInfo.description || "This course introduces students to the Python programming language and its fundamental concepts. Students will learn about variables, data types, control structures, functions, and basic object-oriented programming principles.",
+          lessons: [
+            // Dummy lesson data - in real app would come from class_syllabus table
+            {
+              title: "Introduction and Setup",
+              description: "Overview of Python and setting up the development environment.",
+              resources: ["Setup Guide.pdf", "Introduction Slides.ppt"],
+              date: new Date(today.getFullYear(), today.getMonth(), today.getDate() - 3),
+              time: "18:00 - 19:30",
+              video: classInfo.class_format === 'recorded' ? "https://www.example.com/recorded-video" : null,
+            },
+            {
+              title: "Variables and Data Types",
+              description: "Understanding Python variables, strings, numbers, and lists.",
+              resources: ["Variables Cheatsheet.pdf", "Practice Problems.py"],
+              date: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
+              time: "18:00 - 19:30",
+              video: classInfo.class_format === 'recorded' ? "https://www.example.com/recorded-video" : null,
+            },
+            {
+              title: "Control Structures",
+              description: "If statements, loops, and conditional expressions.",
+              resources: ["Control Flow Diagram.png", "Examples.py"],
+              date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 5),
+              time: "18:00 - 19:30",
+              video: classInfo.class_format === 'recorded' ? "https://www.example.com/recorded-video" : null,
+            },
+            {
+              title: "Functions and Modules",
+              description: "Creating and using functions, importing modules.",
+              resources: ["Function Reference.pdf", "Module Examples.zip"],
+              date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 10),
+              time: "18:00 - 19:30",
+              video: classInfo.class_format === 'recorded' ? "https://www.example.com/recorded-video" : null,
+            },
+            {
+              title: "Introduction to Object-Oriented Programming",
+              description: "Classes, objects, inheritance, and polymorphism.",
+              resources: ["OOP Concepts.pdf", "Class Examples.py"],
+              date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 15),
+              time: "18:00 - 19:30",
+              video: classInfo.class_format === 'recorded' ? "https://www.example.com/recorded-video" : null,
+            },
+          ],
+          rating: 4.8, // Dummy data - would come from reviews
+          reviews: 128, // Dummy data - would come from reviews count
+          address: classInfo.class_locations?.[0] ? 
+            `${classInfo.class_locations[0].street || ''} ${classInfo.class_locations[0].city || ''} ${classInfo.class_locations[0].state || ''}`.trim() : 
+            (classInfo.delivery_mode === 'offline' ? "123 Learning St, New York, NY" : undefined),
+          meetingLink: classInfo.class_locations?.[0]?.meeting_link || undefined
+        };
+
+        setClassData(formattedClassData);
+      } catch (error) {
+        console.error('Error fetching class data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load class details. Please try again.",
+          variant: "destructive"
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchClassData();
+  }, [id]);
 
   const handlePurchase = () => {
     navigate(`/checkout/${id}`);
@@ -97,7 +194,7 @@ const ClassDetail = () => {
   const handleJoinClass = (lessonIndex: number) => {
     toast({
       title: "Joining class",
-      description: `You're now joining ${classData.lessons[lessonIndex].title}`,
+      description: `You're now joining ${classData?.lessons[lessonIndex].title}`,
     });
     // In a real app, this would navigate to a video conference page
   };
@@ -435,6 +532,25 @@ const ClassDetail = () => {
     
     return null;
   };
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#8A5BB7]"></div>
+      </div>
+    );
+  }
+
+  if (!classData) {
+    return (
+      <div className="text-center py-12">
+        <h1 className="text-2xl font-bold mb-4">Class Not Found</h1>
+        <Button onClick={() => navigate(-1)} variant="outline">
+          Go Back
+        </Button>
+      </div>
+    );
+  }
   
   return (
     <>
