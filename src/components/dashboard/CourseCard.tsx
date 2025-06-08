@@ -44,84 +44,89 @@ const CourseCard = ({
 }: CourseCardProps) => {
   return (
     <Card 
-      className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer h-full flex flex-col"
+      className="overflow-hidden hover:shadow-lg transition-all duration-300 cursor-pointer h-full flex flex-col group"
       onClick={onClick}
     >
-      <div className="relative h-40">
+      <div className="relative h-48">
         <img 
           src={image} 
           alt={title} 
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
         />
         {onWishlistToggle && (
           <button 
-            className="absolute top-2 right-2 p-1 rounded-full bg-white/80 hover:bg-white"
+            className="absolute top-3 right-3 p-2 rounded-full bg-white/90 hover:bg-white shadow-md transition-all duration-200"
             onClick={(e) => {
               e.stopPropagation();
               onWishlistToggle();
             }}
           >
             <Heart 
-              className={`h-5 w-5 ${wishListed ? 'fill-red-500 text-red-500' : 'text-gray-500'}`} 
+              className={`h-5 w-5 ${wishListed ? 'fill-red-500 text-red-500' : 'text-gray-600 hover:text-red-500'} transition-colors`} 
             />
           </button>
         )}
       </div>
-      <CardContent className="p-4 flex flex-col flex-grow">
-        <h3 className="font-medium text-base mb-1 line-clamp-1">{title}</h3>
-        
-        <div className="flex items-center mb-2">
-          {onTutorClick ? (
-            <button 
-              className="text-sm font-medium text-[#8A5BB7] hover:underline"
-              onClick={(e) => {
-                e.stopPropagation();
-                onTutorClick();
-              }}
-            >
-              {tutor}
-            </button>
-          ) : (
-            <span className="text-sm text-gray-600">{tutor}</span>
-          )}
-          <div className="flex items-center ml-4">
-            <Star className="h-3 w-3 fill-yellow-400 stroke-yellow-400 mr-1" />
-            <span className="text-xs font-medium">{rating.toFixed(1)}</span>
+      <CardContent className="p-5 flex flex-col flex-grow">
+        <div className="flex-grow">
+          <h3 className="font-semibold text-lg mb-2 line-clamp-2 text-gray-900">{title}</h3>
+          
+          <div className="flex items-center justify-between mb-3">
+            {onTutorClick ? (
+              <button 
+                className="text-sm font-medium text-[#8A5BB7] hover:text-[#6B46C1] hover:underline transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onTutorClick();
+                }}
+              >
+                {tutor}
+              </button>
+            ) : (
+              <span className="text-sm text-gray-600 font-medium">{tutor}</span>
+            )}
+            <div className="flex items-center">
+              <Star className="h-4 w-4 fill-yellow-400 stroke-yellow-400 mr-1" />
+              <span className="text-sm font-semibold text-gray-700">{rating.toFixed(1)}</span>
+            </div>
           </div>
-        </div>
-        
-        {description && (
-          <p className="text-xs text-gray-500 mb-3 line-clamp-2">{description}</p>
-        )}
-        
-        {(mode || format || classSize) && (
-          <div className="mt-auto">
-            <div className="flex flex-wrap gap-2 text-xs mb-3">
+          
+          {description && (
+            <p className="text-sm text-gray-600 mb-4 line-clamp-2 leading-relaxed">{description}</p>
+          )}
+          
+          {(mode || format || classSize) && (
+            <div className="flex flex-wrap gap-2 mb-4">
               {mode && (
-                <span className="px-2 py-1 rounded-full bg-gray-100">
+                <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-medium">
                   {mode}
                 </span>
               )}
               {format && (
-                <span className="px-2 py-1 rounded-full bg-gray-100">
+                <span className="px-3 py-1 rounded-full bg-green-100 text-green-800 text-xs font-medium">
                   {format}
                 </span>
               )}
               {classSize && (
-                <span className="px-2 py-1 rounded-full bg-gray-100">
-                  {classSize === "Group" && students ? `Students: ${students}` : "1-on-1"}
+                <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-medium">
+                  {classSize === "Group" && students ? `${students} students` : classSize}
                 </span>
               )}
             </div>
-            
-            {price && (
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-[#8A5BB7]">
-                  {price}
-                  {isSubscription && <span className="text-xs font-normal">/month</span>}
-                </span>
+          )}
+        </div>
+        
+        {price && (
+          <div className="mt-auto pt-3 border-t border-gray-100">
+            <div className="flex items-center justify-between">
+              <span className="text-xl font-bold text-[#8A5BB7]">
+                {price}
+                {isSubscription && <span className="text-sm font-normal text-gray-500">/month</span>}
+              </span>
+              <div className="text-xs text-gray-500">
+                {isSubscription ? "Subscription" : "One-time"}
               </div>
-            )}
+            </div>
           </div>
         )}
       </CardContent>
