@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Plus, ArrowRight, BookOpen, Calendar, Users, DollarSign, MessageSquare, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -7,6 +8,7 @@ import { useTutorClasses } from '@/hooks/use-tutor-classes';
 
 const Dashboard = () => {
   const [createClassDialogOpen, setCreateClassDialogOpen] = useState(false);
+  const [sessionFilter, setSessionFilter] = useState<'today' | 'all'>('today');
   const { refetch } = useTutorClasses();
 
   const handleCreateClass = () => {
@@ -33,8 +35,8 @@ const Dashboard = () => {
     { month: 'May', teachingHours: 115, students: 190 },
   ];
   
-  // Sessions data
-  const sessionData = [
+  // All sessions data
+  const allSessionsData = [
     {
       id: 1,
       title: "Introduction to Integers",
@@ -50,8 +52,28 @@ const Dashboard = () => {
       date: "Monday, 21 May 2023",
       time: "10:00 AM - 11:00 AM",
       students: 12
+    },
+    {
+      id: 3,
+      title: "Advanced Calculus",
+      description: "Deep dive into calculus concepts and problem solving.",
+      date: "Tuesday, 22 May 2023",
+      time: "2:00 PM - 3:30 PM",
+      students: 8
+    },
+    {
+      id: 4,
+      title: "Physics Workshop",
+      description: "Hands-on physics experiments and theory.",
+      date: "Wednesday, 23 May 2023",
+      time: "11:00 AM - 12:00 PM",
+      students: 15
     }
   ];
+
+  // Filter sessions based on selected filter
+  const todaysSessions = allSessionsData.slice(0, 2); // Mock today's sessions
+  const sessionData = sessionFilter === 'today' ? todaysSessions : allSessionsData;
 
   return (
     <div>
@@ -205,10 +227,28 @@ const Dashboard = () => {
       {/* Sessions Section */}
       <div className="mb-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Today's Sessions</h2>
+          <h2 className="text-lg font-semibold">Sessions</h2>
           <div className="flex space-x-2">
-            <button className="text-sm px-4 py-2 rounded-md bg-primary-hover text-primary">Today's Sessions</button>
-            <button className="text-sm px-4 py-2 rounded-md text-gray-500 hover:bg-gray-100">All Sessions</button>
+            <button 
+              onClick={() => setSessionFilter('today')}
+              className={`text-sm px-4 py-2 rounded-md transition-colors ${
+                sessionFilter === 'today' 
+                  ? 'bg-primary text-white' 
+                  : 'text-gray-500 hover:bg-gray-100'
+              }`}
+            >
+              Today's Sessions
+            </button>
+            <button 
+              onClick={() => setSessionFilter('all')}
+              className={`text-sm px-4 py-2 rounded-md transition-colors ${
+                sessionFilter === 'all' 
+                  ? 'bg-primary text-white' 
+                  : 'text-gray-500 hover:bg-gray-100'
+              }`}
+            >
+              All Sessions
+            </button>
           </div>
         </div>
         

@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -31,6 +31,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { TutorClass } from "@/hooks/use-tutor-classes";
 
 const createClassSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -51,12 +52,14 @@ interface SimpleCreateClassDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onClassCreated: () => void;
+  editingClass?: TutorClass | null;
 }
 
-const SimpleCreateClassDialog = ({ open, onOpenChange, onClassCreated }: SimpleCreateClassDialogProps) => {
+const SimpleCreateClassDialog = ({ open, onOpenChange, onClassCreated, editingClass }: SimpleCreateClassDialogProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const isEditing = !!editingClass;
 
   const form = useForm<CreateClassFormValues>({
     resolver: zodResolver(createClassSchema),
@@ -72,6 +75,32 @@ const SimpleCreateClassDialog = ({ open, onOpenChange, onClassCreated }: SimpleC
   });
 
   const deliveryMode = form.watch("deliveryMode");
+
+  // Reset form when editing class changes
+  useEffect(() => {
+    if (editingClass) {
+      form.reset({
+        title: editingClass.title,
+        description: editingClass.description || "",
+        deliveryMode: editingClass.delivery_mode,
+        sessionLink: editingClass.class_locations?.[0]?.meeting_link || "",
+        offlineType: editingClass.class_size as "group" | "one-on-one",
+        scheduleDate: new Date(), // Default to today since we don't have schedule data
+        startTime: "09:00",
+        endTime: "10:00",
+      });
+    } else {
+      form.reset({
+        title: "",
+        description: "",
+        deliveryMode: "online",
+        sessionLink: "",
+        offlineType: "group",
+        startTime: "09:00",
+        endTime: "10:00",
+      });
+    }
+  }, [editingClass, form]);
 
   const onSubmit = async (data: CreateClassFormValues) => {
     if (!user) {
@@ -95,73 +124,106 @@ const SimpleCreateClassDialog = ({ open, onOpenChange, onClassCreated }: SimpleC
 
     setIsLoading(true);
     try {
-      // Create the main class record
-      const { data: classData, error: classError } = await supabase
-        .from("classes")
-        .insert({
-          tutor_id: user.id,
-          title: data.title,
-          description: data.description || "",
-          delivery_mode: data.deliveryMode,
-          class_format: data.deliveryMode === "online" ? "live" : "inbound",
-          class_size: data.deliveryMode === "online" ? "group" : (data.offlineType || "group"),
-          duration_type: "fixed",
-          status: "draft",
-        })
-        .select()
-        .single();
+      if (isEditing && editingClass) {
+        // Update existing class
+        const { error: classError } = await supabase
+          .from("classes")
+          .update({
+            title: data.title,
+            description: data.description || "",
+            delivery_mode: data.deliveryMode,
+            class_format: data.deliveryMode === "online" ? "live" : "inbound",
+            class_size: data.deliveryMode === "online" ? "group" : (data.offlineType || "group"),
+          })
+          .eq("id", editingClass.id);
 
-      if (classError) throw classError;
+        if (classError) throw classError;
 
-      // Create schedule record
-      const { error: scheduleError } = await supabase
-        .from("class_schedules")
-        .insert({
-          class_id: classData.id,
-          frequency: "weekly",
-          start_date: format(data.scheduleDate, 'yyyy-MM-dd'),
-          total_sessions: 1,
+        // Update location if online class with session link
+        if (data.deliveryMode === "online" && data.sessionLink) {
+          const { error: locationError } = await supabase
+            .from("class_locations")
+            .upsert({
+              class_id: editingClass.id,
+              meeting_link: data.sessionLink,
+            });
+
+          if (locationError) throw locationError;
+        }
+
+        toast({
+          title: "Success",
+          description: "Class updated successfully!",
         });
+      } else {
+        // Create new class
+        const { data: classData, error: classError } = await supabase
+          .from("classes")
+          .insert({
+            tutor_id: user.id,
+            title: data.title,
+            description: data.description || "",
+            delivery_mode: data.deliveryMode,
+            class_format: data.deliveryMode === "online" ? "live" : "inbound",
+            class_size: data.deliveryMode === "online" ? "group" : (data.offlineType || "group"),
+            duration_type: "fixed",
+            status: "draft",
+          })
+          .select()
+          .single();
 
-      if (scheduleError) throw scheduleError;
+        if (classError) throw classError;
 
-      // Create time slot record
-      const { error: timeSlotError } = await supabase
-        .from("class_time_slots")
-        .insert({
-          class_id: classData.id,
-          day_of_week: format(data.scheduleDate, 'EEEE').toLowerCase(),
-          start_time: data.startTime,
-          end_time: data.endTime,
-        });
-
-      if (timeSlotError) throw timeSlotError;
-
-      // If online class with session link, create location record
-      if (data.deliveryMode === "online" && data.sessionLink) {
-        const { error: locationError } = await supabase
-          .from("class_locations")
+        // Create schedule record
+        const { error: scheduleError } = await supabase
+          .from("class_schedules")
           .insert({
             class_id: classData.id,
-            meeting_link: data.sessionLink,
+            frequency: "weekly",
+            start_date: format(data.scheduleDate, 'yyyy-MM-dd'),
+            total_sessions: 1,
           });
 
-        if (locationError) throw locationError;
-      }
+        if (scheduleError) throw scheduleError;
 
-      toast({
-        title: "Success",
-        description: "Class created successfully!",
-      });
+        // Create time slot record
+        const { error: timeSlotError } = await supabase
+          .from("class_time_slots")
+          .insert({
+            class_id: classData.id,
+            day_of_week: format(data.scheduleDate, 'EEEE').toLowerCase(),
+            start_time: data.startTime,
+            end_time: data.endTime,
+          });
+
+        if (timeSlotError) throw timeSlotError;
+
+        // If online class with session link, create location record
+        if (data.deliveryMode === "online" && data.sessionLink) {
+          const { error: locationError } = await supabase
+            .from("class_locations")
+            .insert({
+              class_id: classData.id,
+              meeting_link: data.sessionLink,
+            });
+
+          if (locationError) throw locationError;
+        }
+
+        toast({
+          title: "Success",
+          description: "Class created successfully!",
+        });
+      }
 
       form.reset();
       onClassCreated();
       onOpenChange(false);
     } catch (error: any) {
-      console.error("Error creating class:", error);
+      console.error("Error saving class:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to create class. Please try again.",
+        description: error.message || `Failed to ${isEditing ? 'update' : 'create'} class. Please try again.`,
         variant: "destructive",
       });
     } finally {
@@ -173,7 +235,9 @@ const SimpleCreateClassDialog = ({ open, onOpenChange, onClassCreated }: SimpleC
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-[#1F4E79]">Create New Class</DialogTitle>
+          <DialogTitle className="text-xl font-semibold text-[#1F4E79]">
+            {isEditing ? 'Edit Class' : 'Create New Class'}
+          </DialogTitle>
         </DialogHeader>
         
         <Form {...form}>
@@ -278,76 +342,78 @@ const SimpleCreateClassDialog = ({ open, onOpenChange, onClassCreated }: SimpleC
               />
             )}
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name="scheduleDate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Schedule Date</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) => date < new Date()}
-                          initialFocus
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {!isEditing && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <FormField
+                  control={form.control}
+                  name="scheduleDate"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col">
+                      <FormLabel>Schedule Date</FormLabel>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <FormControl>
+                            <Button
+                              variant={"outline"}
+                              className={cn(
+                                "w-full pl-3 text-left font-normal",
+                                !field.value && "text-muted-foreground"
+                              )}
+                            >
+                              {field.value ? (
+                                format(field.value, "PPP")
+                              ) : (
+                                <span>Pick a date</span>
+                              )}
+                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                            </Button>
+                          </FormControl>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-auto p-0" align="start">
+                          <Calendar
+                            mode="single"
+                            selected={field.value}
+                            onSelect={field.onChange}
+                            disabled={(date) => date < new Date()}
+                            initialFocus
+                            className="pointer-events-auto"
+                          />
+                        </PopoverContent>
+                      </Popover>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="startTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Start Time</FormLabel>
-                    <FormControl>
-                      <Input type="time" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+                <FormField
+                  control={form.control}
+                  name="startTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Start Time</FormLabel>
+                      <FormControl>
+                        <Input type="time" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
-              <FormField
-                control={form.control}
-                name="endTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>End Time</FormLabel>
-                    <FormControl>
-                      <Input type="time" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                <FormField
+                  control={form.control}
+                  name="endTime"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>End Time</FormLabel>
+                      <FormControl>
+                        <Input type="time" {...field} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            )}
 
             <DialogFooter>
               <Button 
@@ -363,7 +429,7 @@ const SimpleCreateClassDialog = ({ open, onOpenChange, onClassCreated }: SimpleC
                 className="bg-[#1F4E79] hover:bg-[#1a4369]"
                 disabled={isLoading}
               >
-                {isLoading ? "Creating..." : "Create Class"}
+                {isLoading ? (isEditing ? "Updating..." : "Creating...") : (isEditing ? "Update Class" : "Create Class")}
               </Button>
             </DialogFooter>
           </form>
