@@ -63,7 +63,12 @@ const Dashboard = () => {
     return classes;
   };
 
-  const filteredClasses = getFilteredClasses();
+  const allFilteredClasses = getFilteredClasses();
+
+  // Calculate pagination for filtered classes
+  const startIndex = (currentPage - 1) * classesPerPage;
+  const endIndex = startIndex + classesPerPage;
+  const paginatedFilteredClasses = allFilteredClasses.slice(startIndex, endIndex);
 
   // Count today's sessions based on schedule dates
   const getTodaysSessionsCount = () => {
@@ -84,21 +89,13 @@ const Dashboard = () => {
 
   // Calculate pagination info for filtered classes
   const getFilteredPaginationInfo = () => {
-    if (sessionFilter === 'today') {
-      const todaysTotalCount = getTodaysSessionsCount();
-      const todaysFilteredPages = Math.ceil(todaysTotalCount / classesPerPage);
-      
-      return {
-        totalFilteredCount: todaysTotalCount,
-        totalFilteredPages: todaysFilteredPages,
-        shouldShowPagination: todaysFilteredPages > 1
-      };
-    }
+    const totalFilteredCount = allFilteredClasses.length;
+    const totalFilteredPages = Math.ceil(totalFilteredCount / classesPerPage);
     
     return {
-      totalFilteredCount: totalCount,
-      totalFilteredPages: totalPages,
-      shouldShowPagination: totalPages > 1
+      totalFilteredCount,
+      totalFilteredPages,
+      shouldShowPagination: totalFilteredPages > 1
     };
   };
 
@@ -126,7 +123,7 @@ const Dashboard = () => {
       <SessionsSection
         sessionFilter={sessionFilter}
         onFilterChange={handleFilterChange}
-        filteredClasses={filteredClasses}
+        filteredClasses={paginatedFilteredClasses}
         todaysSessionsCount={getTodaysSessionsCount()}
         totalCount={totalCount}
         currentPage={currentPage}
