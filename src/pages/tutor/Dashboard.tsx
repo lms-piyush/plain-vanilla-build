@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Plus, ArrowRight, BookOpen, Calendar, Users, DollarSign, MessageSquare, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -30,6 +29,11 @@ const Dashboard = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handleFilterChange = (filter: 'today' | 'all') => {
+    setSessionFilter(filter);
+    setCurrentPage(1); // Reset to first page when changing filters
   };
 
   // Mock data for the chart
@@ -92,6 +96,42 @@ const Dashboard = () => {
       return false;
     }).length;
   };
+
+  // Calculate pagination info for filtered classes
+  const getFilteredPaginationInfo = () => {
+    if (sessionFilter === 'today') {
+      // For today's sessions, we need to count total today's classes across all pages
+      const allTodaysClasses = classes.filter(classItem => {
+        if (classItem.class_schedules && classItem.class_schedules.length > 0) {
+          return classItem.class_schedules.some(schedule => {
+            const startDate = schedule.start_date ? new Date(schedule.start_date) : null;
+            if (startDate) {
+              return startDate.toISOString().split('T')[0] === todayDateString;
+            }
+            return false;
+          });
+        }
+        return false;
+      });
+      
+      const todaysTotalCount = getTodaysSessionsCount();
+      const todaysFilteredPages = Math.ceil(todaysTotalCount / classesPerPage);
+      
+      return {
+        totalFilteredCount: todaysTotalCount,
+        totalFilteredPages: todaysFilteredPages,
+        shouldShowPagination: todaysFilteredPages > 1
+      };
+    }
+    
+    return {
+      totalFilteredCount: totalCount,
+      totalFilteredPages: totalPages,
+      shouldShowPagination: totalPages > 1
+    };
+  };
+
+  const paginationInfo = getFilteredPaginationInfo();
 
   const formatClassTimeInfo = (classItem: any) => {
     // Schedule information
@@ -288,7 +328,7 @@ const Dashboard = () => {
           <h2 className="text-lg font-semibold">Sessions</h2>
           <div className="flex space-x-2">
             <button 
-              onClick={() => setSessionFilter('today')}
+              onClick={() => handleFilterChange('today')}
               className={`text-sm px-4 py-2 rounded-md transition-colors ${
                 sessionFilter === 'today' 
                   ? 'bg-primary text-white' 
@@ -298,7 +338,7 @@ const Dashboard = () => {
               Today's Sessions ({getTodaysSessionsCount()})
             </button>
             <button 
-              onClick={() => setSessionFilter('all')}
+              onClick={() => handleFilterChange('all')}
               className={`text-sm px-4 py-2 rounded-md transition-colors ${
                 sessionFilter === 'all' 
                   ? 'bg-primary text-white' 
@@ -370,12 +410,12 @@ const Dashboard = () => {
           </div>
         </div>
 
-        {/* Pagination for All Sessions */}
-        {sessionFilter === 'all' && totalPages > 1 && (
+        {/* Pagination for both Today's Sessions and All Sessions */}
+        {paginationInfo.shouldShowPagination && (
           <div className="mt-8">
             <ClassesPagination
               currentPage={currentPage}
-              totalPages={totalPages}
+              totalPages={paginationInfo.totalFilteredPages}
               onPageChange={handlePageChange}
             />
           </div>
