@@ -93,7 +93,7 @@ const ClassDetail = () => {
           .from('profiles')
           .select('full_name')
           .eq('id', classInfo.tutor_id)
-          .single();
+          .maybeSingle();
 
         if (tutorError) console.error('Error fetching tutor:', tutorError);
 
@@ -113,7 +113,7 @@ const ClassDetail = () => {
                  classInfo.class_format === 'recorded' ? 'Recorded' :
                  classInfo.class_format === 'inbound' ? 'Inbound' : 'Outbound',
           duration: classInfo.duration_type === 'recurring' ? 'Infinite' : 'Finite',
-          price: classInfo.price ? `₹${classInfo.price}` : '₹5,000',
+          price: classInfo.price ? `₹${classInfo.price}` : 'Free',
           isSubscription: classInfo.duration_type === 'recurring',
           enrolled: 34, // Dummy data - would come from enrollments table
           maxStudents: classInfo.max_students || 40,
@@ -196,7 +196,6 @@ const ClassDetail = () => {
       title: "Joining class",
       description: `You're now joining ${classData?.lessons[lessonIndex].title}`,
     });
-    // In a real app, this would navigate to a video conference page
   };
   
   const isToday = (date: Date) => {
@@ -216,9 +215,7 @@ const ClassDetail = () => {
     return date.toLocaleDateString(undefined, options);
   };
   
-  // Helper to render lesson layout based on class type
   const renderLessonLayout = (lesson: any, index: number) => {
-    // Case 1: Online - Live - Finite
     if (classData.type === "Online" && classData.format === "Live" && classData.duration === "Finite") {
       return (
         <Card key={index} className="mb-4">
@@ -278,7 +275,6 @@ const ClassDetail = () => {
       );
     }
     
-    // Case 2: Online - Live - Infinite
     if (classData.type === "Online" && classData.format === "Live" && classData.duration === "Infinite") {
       return (
         <Card key={index} className="mb-4">
@@ -342,7 +338,6 @@ const ClassDetail = () => {
       );
     }
     
-    // Case 3: Online - Recorded - Finite
     if (classData.type === "Online" && classData.format === "Recorded" && classData.duration === "Finite") {
       return (
         <Card key={index} className="mb-4">
@@ -386,7 +381,6 @@ const ClassDetail = () => {
       );
     }
     
-    // Case 4: Online - Recorded - Infinite
     if (classData.type === "Online" && classData.format === "Recorded" && classData.duration === "Infinite") {
       return (
         <Card key={index} className="mb-4">
@@ -434,7 +428,6 @@ const ClassDetail = () => {
       );
     }
     
-    // Case 5: Offline - Inbound - Finite/Infinite
     if (classData.type === "Offline" && classData.format === "Inbound") {
       return (
         <Card key={index} className="mb-4">
@@ -483,7 +476,6 @@ const ClassDetail = () => {
       );
     }
     
-    // Case 6: Offline - Outbound - Finite/Infinite
     if (classData.type === "Offline" && classData.format === "Outbound") {
       return (
         <Card key={index} className="mb-4">
@@ -564,7 +556,7 @@ const ClassDetail = () => {
         </Button>
       </div>
       
-      {/* Course Header Section - Using reference design from screenshot */}
+      {/* Course Header Section */}
       <div className="bg-white rounded-lg overflow-hidden shadow-sm mb-6">
         <div className="relative aspect-video">
           <img
@@ -599,7 +591,7 @@ const ClassDetail = () => {
             {/* Class Size */}
             <div className="text-sm">
               {classData.classSize === "Group" ? 
-                `${classData.enrolled} students` : 
+                `${classData.maxStudents} students` : 
                 <span className="px-2 py-1 rounded-full bg-gray-100 text-xs">1-on-1</span>
               }
             </div>
@@ -619,7 +611,7 @@ const ClassDetail = () => {
               {classData.format}
             </span>
             <span className="px-2 py-1 rounded-full bg-gray-100 text-xs">
-              {classData.duration}
+              {classData.classSize === "Group" ? `${classData.maxStudents} students` : "1-on-1"}
             </span>
           </div>
           

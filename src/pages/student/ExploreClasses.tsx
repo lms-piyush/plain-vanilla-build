@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Tabs } from "@/components/ui/tabs";
@@ -21,6 +20,7 @@ const ExploreClasses = () => {
   const [sortBy, setSortBy] = useState("popular");
   const [currentPage, setCurrentPage] = useState(1);
   const [tutorNames, setTutorNames] = useState<{[key: string]: string}>({});
+  const [tutorNamesLoading, setTutorNamesLoading] = useState(true);
   
   // Wishlist state - in a real app, this would come from the database
   const [wishlistedCourses, setWishlistedCourses] = useState<string[]>([]);
@@ -50,6 +50,7 @@ const ExploreClasses = () => {
   useEffect(() => {
     const fetchTutorNames = async () => {
       if (allClasses.length > 0) {
+        setTutorNamesLoading(true);
         const tutorIds = [...new Set(allClasses.map(cls => cls.tutor_id))];
         
         const { data: profiles, error } = await supabase
@@ -65,6 +66,7 @@ const ExploreClasses = () => {
           
           setTutorNames(nameMap);
         }
+        setTutorNamesLoading(false);
       }
     };
 
@@ -153,7 +155,7 @@ const ExploreClasses = () => {
     return {
       id: tutorClass.id,
       title: tutorClass.title,
-      tutor: tutorNames[tutorClass.tutor_id] || "Loading...",
+      tutor: tutorNamesLoading ? "Loading..." : (tutorNames[tutorClass.tutor_id] || "Unknown Tutor"),
       tutorId: tutorClass.tutor_id,
       rating: 4.5, // This would come from reviews in real app
       image: tutorClass.thumbnail_url || "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=300",
