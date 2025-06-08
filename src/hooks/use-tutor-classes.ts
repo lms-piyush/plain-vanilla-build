@@ -71,7 +71,7 @@ export const useTutorClasses = (options: UseTutorClassesOptions = {}) => {
 
       setTotalCount(count || 0);
 
-      // Get paginated data
+      // Get paginated data with explicit foreign key relationship names
       const from = (page - 1) * pageSize;
       const to = from + pageSize - 1;
 
@@ -79,7 +79,7 @@ export const useTutorClasses = (options: UseTutorClassesOptions = {}) => {
         .from("classes")
         .select(`
           *,
-          class_locations (
+          class_locations!class_locations_class_id_fkey (
             meeting_link,
             street,
             city,
@@ -87,13 +87,13 @@ export const useTutorClasses = (options: UseTutorClassesOptions = {}) => {
             zip_code,
             country
           ),
-          class_time_slots (
+          class_time_slots!class_time_slots_class_id_fkey (
             id,
             day_of_week,
             start_time,
             end_time
           ),
-          class_schedules (
+          class_schedules!class_schedules_class_id_fkey (
             id,
             start_date,
             total_sessions
