@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -32,6 +33,7 @@ const SimpleCreateClassDialog = ({
   const [status, setStatus] = useState<'draft' | 'active' | 'inactive' | 'completed'>('draft');
   const [price, setPrice] = useState('');
   const [maxStudents, setMaxStudents] = useState('');
+  const [meetingLink, setMeetingLink] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Reset form when dialog opens/closes or when editing class changes
@@ -47,6 +49,7 @@ const SimpleCreateClassDialog = ({
       setStatus(editingClass.status);
       setPrice(editingClass.price?.toString() || '');
       setMaxStudents(editingClass.max_students?.toString() || '');
+      setMeetingLink(''); // We'll need to fetch this from class_locations table
     } else {
       // Reset form for new class
       setTitle('');
@@ -59,8 +62,16 @@ const SimpleCreateClassDialog = ({
       setStatus('draft');
       setPrice('');
       setMaxStudents('');
+      setMeetingLink('');
     }
   }, [editingClass, open]);
+
+  // Auto-set max students when class size changes
+  useEffect(() => {
+    if (classSize === 'one-on-one') {
+      setMaxStudents('1');
+    }
+  }, [classSize]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -199,6 +210,20 @@ const SimpleCreateClassDialog = ({
               </Select>
             </div>
 
+            {/* Meeting Link field - only show when delivery mode is online */}
+            {deliveryMode === 'online' && (
+              <div>
+                <Label htmlFor="meeting-link">Meeting Link</Label>
+                <Input
+                  id="meeting-link"
+                  value={meetingLink}
+                  onChange={(e) => setMeetingLink(e.target.value)}
+                  placeholder="https://zoom.us/j/..."
+                  type="url"
+                />
+              </div>
+            )}
+
             <div>
               <Label htmlFor="class-format">Class Format</Label>
               <Select value={classFormat} onValueChange={(value: 'live' | 'recorded' | 'inbound' | 'outbound') => setClassFormat(value)}>
@@ -262,7 +287,14 @@ const SimpleCreateClassDialog = ({
                 onChange={(e) => setMaxStudents(e.target.value)}
                 placeholder="Enter maximum students"
                 min="1"
+                disabled={classSize === 'one-on-one'}
+                className={classSize === 'one-on-one' ? 'bg-gray-100 cursor-not-allowed' : ''}
               />
+              {classSize === 'one-on-one' && (
+                <p className="text-sm text-gray-500 mt-1">
+                  Max students is automatically set to 1 for one-on-one classes
+                </p>
+              )}
             </div>
           </div>
 
