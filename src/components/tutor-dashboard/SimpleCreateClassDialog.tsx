@@ -1,51 +1,14 @@
-import { useState, useEffect } from "react";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle,
-  DialogFooter
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
-import { cn } from "@/lib/utils";
-import { TutorClass } from "@/hooks/use-tutor-classes";
 
-const createClassSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z.string().optional(),
-  deliveryMode: z.enum(["online", "offline"]),
-  sessionLink: z.string().optional(),
-  offlineType: z.enum(["group", "one-on-one"]).optional(),
-  scheduleDate: z.date({
-    required_error: "Schedule date is required",
-  }),
-  startTime: z.string().min(1, "Start time is required"),
-  endTime: z.string().min(1, "End time is required"),
-});
-
-type CreateClassFormValues = z.infer<typeof createClassSchema>;
+import React, { useState, useEffect } from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/sonner';
+import { TutorClass } from '@/hooks/use-tutor-classes';
 
 interface SimpleCreateClassDialogProps {
   open: boolean;
@@ -54,463 +17,276 @@ interface SimpleCreateClassDialogProps {
   editingClass?: TutorClass | null;
 }
 
-const SimpleCreateClassDialog = ({ open, onOpenChange, onClassCreated, editingClass }: SimpleCreateClassDialogProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-  const { user } = useAuth();
-  const isEditing = !!editingClass;
+const SimpleCreateClassDialog = ({ 
+  open, 
+  onOpenChange, 
+  onClassCreated, 
+  editingClass 
+}: SimpleCreateClassDialogProps) => {
+  const [title, setTitle] = useState('');
+  const [description, setDescription] = useState('');
+  const [subject, setSubject] = useState('');
+  const [deliveryMode, setDeliveryMode] = useState<'online' | 'offline'>('online');
+  const [classFormat, setClassFormat] = useState<'live' | 'recorded' | 'inbound' | 'outbound'>('live');
+  const [classSize, setClassSize] = useState<'group' | 'one-on-one'>('group');
+  const [durationType, setDurationType] = useState<'recurring' | 'fixed'>('fixed');
+  const [status, setStatus] = useState<'draft' | 'active' | 'inactive' | 'completed'>('draft');
+  const [price, setPrice] = useState('');
+  const [maxStudents, setMaxStudents] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<CreateClassFormValues>({
-    resolver: zodResolver(createClassSchema),
-    defaultValues: {
-      title: "",
-      description: "",
-      deliveryMode: "online",
-      sessionLink: "",
-      offlineType: "group",
-      startTime: "09:00",
-      endTime: "10:00",
-    },
-  });
-
-  const deliveryMode = form.watch("deliveryMode");
-
-  // Reset form when editing class changes or dialog opens
+  // Reset form when dialog opens/closes or when editing class changes
   useEffect(() => {
-    if (editingClass && open) {
-      // Get existing schedule data
-      const getScheduleData = async () => {
-        try {
-          const { data: scheduleData } = await supabase
-            .from("class_schedules")
-            .select("start_date")
-            .eq("class_id", editingClass.id)
-            .single();
+    if (editingClass) {
+      setTitle(editingClass.title || '');
+      setDescription(editingClass.description || '');
+      setSubject(editingClass.subject || '');
+      setDeliveryMode(editingClass.delivery_mode);
+      setClassFormat(editingClass.class_format);
+      setClassSize(editingClass.class_size);
+      setDurationType(editingClass.duration_type);
+      setStatus(editingClass.status);
+      setPrice(editingClass.price?.toString() || '');
+      setMaxStudents(editingClass.max_students?.toString() || '');
+    } else {
+      // Reset form for new class
+      setTitle('');
+      setDescription('');
+      setSubject('');
+      setDeliveryMode('online');
+      setClassFormat('live');
+      setClassSize('group');
+      setDurationType('fixed');
+      setStatus('draft');
+      setPrice('');
+      setMaxStudents('');
+    }
+  }, [editingClass, open]);
 
-          const { data: timeSlotData } = await supabase
-            .from("class_time_slots")
-            .select("start_time, end_time")
-            .eq("class_id", editingClass.id)
-            .single();
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!title.trim()) {
+      toast.error('Please enter a class title');
+      return;
+    }
 
-          form.reset({
-            title: editingClass.title,
-            description: editingClass.description || "",
-            deliveryMode: editingClass.delivery_mode,
-            sessionLink: editingClass.class_locations?.[0]?.meeting_link || "",
-            offlineType: editingClass.class_size as "group" | "one-on-one",
-            scheduleDate: scheduleData?.start_date ? new Date(scheduleData.start_date) : new Date(),
-            startTime: timeSlotData?.start_time || "09:00",
-            endTime: timeSlotData?.end_time || "10:00",
-          });
-        } catch (error) {
-          console.error("Error fetching schedule data:", error);
-          form.reset({
-            title: editingClass.title,
-            description: editingClass.description || "",
-            deliveryMode: editingClass.delivery_mode,
-            sessionLink: editingClass.class_locations?.[0]?.meeting_link || "",
-            offlineType: editingClass.class_size as "group" | "one-on-one",
-            scheduleDate: new Date(),
-            startTime: "09:00",
-            endTime: "10:00",
-          });
-        }
+    setIsSubmitting(true);
+
+    try {
+      const classData = {
+        title: title.trim(),
+        description: description.trim() || null,
+        subject: subject.trim() || null,
+        delivery_mode: deliveryMode,
+        class_format: classFormat,
+        class_size: classSize,
+        duration_type: durationType,
+        status: status,
+        price: price ? parseFloat(price) : null,
+        max_students: maxStudents ? parseInt(maxStudents) : null,
+        currency: 'USD'
       };
 
-      getScheduleData();
-    } else if (open) {
-      form.reset({
-        title: "",
-        description: "",
-        deliveryMode: "online",
-        sessionLink: "",
-        offlineType: "group",
-        startTime: "09:00",
-        endTime: "10:00",
-        scheduleDate: new Date(),
-      });
-    }
-  }, [editingClass, form, open]);
-
-  const onSubmit = async (data: CreateClassFormValues) => {
-    if (!user) {
-      toast({
-        title: "Error",
-        description: "You must be logged in to create a class.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Validate end time is after start time
-    if (data.startTime >= data.endTime) {
-      toast({
-        title: "Error",
-        description: "End time must be after start time.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      if (isEditing && editingClass) {
+      if (editingClass) {
         // Update existing class
-        const { error: classError } = await supabase
-          .from("classes")
+        const { error } = await supabase
+          .from('classes')
           .update({
-            title: data.title,
-            description: data.description || "",
-            delivery_mode: data.deliveryMode,
-            class_format: data.deliveryMode === "online" ? "live" : "inbound",
-            class_size: data.deliveryMode === "online" ? "group" : (data.offlineType || "group"),
+            ...classData,
+            updated_at: new Date().toISOString()
           })
-          .eq("id", editingClass.id);
+          .eq('id', editingClass.id);
 
-        if (classError) throw classError;
-
-        // Update schedule
-        const { error: scheduleError } = await supabase
-          .from("class_schedules")
-          .update({
-            start_date: format(data.scheduleDate, 'yyyy-MM-dd'),
-          })
-          .eq("class_id", editingClass.id);
-
-        if (scheduleError) throw scheduleError;
-
-        // Update time slot
-        const { error: timeSlotError } = await supabase
-          .from("class_time_slots")
-          .update({
-            day_of_week: format(data.scheduleDate, 'EEEE').toLowerCase(),
-            start_time: data.startTime,
-            end_time: data.endTime,
-          })
-          .eq("class_id", editingClass.id);
-
-        if (timeSlotError) throw timeSlotError;
-
-        // Handle location updates based on delivery mode
-        if (data.deliveryMode === "online") {
-          if (data.sessionLink) {
-            // Update or insert meeting link
-            const { error: locationError } = await supabase
-              .from("class_locations")
-              .upsert({
-                class_id: editingClass.id,
-                meeting_link: data.sessionLink,
-                street: null,
-                city: null,
-                state: null,
-                zip_code: null,
-                country: null,
-              });
-
-            if (locationError) throw locationError;
-          } else {
-            // Remove location if no meeting link provided
-            const { error: deleteError } = await supabase
-              .from("class_locations")
-              .delete()
-              .eq("class_id", editingClass.id);
-
-            if (deleteError) throw deleteError;
-          }
-        } else {
-          // For offline classes, remove meeting link but keep other location data
-          const { error: locationError } = await supabase
-            .from("class_locations")
-            .update({
-              meeting_link: null,
-            })
-            .eq("class_id", editingClass.id);
-
-          if (locationError) throw locationError;
-        }
-
-        toast({
-          title: "Success",
-          description: "Class updated successfully!",
-        });
+        if (error) throw error;
+        toast.success('Class updated successfully!');
       } else {
-        // Create new class logic remains the same
-        const { data: classData, error: classError } = await supabase
-          .from("classes")
-          .insert({
-            tutor_id: user.id,
-            title: data.title,
-            description: data.description || "",
-            delivery_mode: data.deliveryMode,
-            class_format: data.deliveryMode === "online" ? "live" : "inbound",
-            class_size: data.deliveryMode === "online" ? "group" : (data.offlineType || "group"),
-            duration_type: "fixed",
-            status: "draft",
-          })
-          .select()
-          .single();
-
-        if (classError) throw classError;
-
-        // Create schedule record
-        const { error: scheduleError } = await supabase
-          .from("class_schedules")
-          .insert({
-            class_id: classData.id,
-            frequency: "weekly",
-            start_date: format(data.scheduleDate, 'yyyy-MM-dd'),
-            total_sessions: 1,
-          });
-
-        if (scheduleError) throw scheduleError;
-
-        // Create time slot record
-        const { error: timeSlotError } = await supabase
-          .from("class_time_slots")
-          .insert({
-            class_id: classData.id,
-            day_of_week: format(data.scheduleDate, 'EEEE').toLowerCase(),
-            start_time: data.startTime,
-            end_time: data.endTime,
-          });
-
-        if (timeSlotError) throw timeSlotError;
-
-        // If online class with session link, create location record
-        if (data.deliveryMode === "online" && data.sessionLink) {
-          const { error: locationError } = await supabase
-            .from("class_locations")
-            .insert({
-              class_id: classData.id,
-              meeting_link: data.sessionLink,
-            });
-
-          if (locationError) throw locationError;
+        // Create new class
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          toast.error('You must be logged in to create a class');
+          return;
         }
 
-        toast({
-          title: "Success",
-          description: "Class created successfully!",
-        });
+        const { error } = await supabase
+          .from('classes')
+          .insert({
+            ...classData,
+            tutor_id: user.id
+          });
+
+        if (error) throw error;
+        toast.success('Class created successfully!');
       }
 
-      form.reset();
       onClassCreated();
       onOpenChange(false);
     } catch (error: any) {
-      console.error("Error saving class:", error);
-      toast({
-        title: "Error",
-        description: error.message || `Failed to ${isEditing ? 'update' : 'create'} class. Please try again.`,
-        variant: "destructive",
-      });
+      console.error('Error saving class:', error);
+      toast.error(`Failed to ${editingClass ? 'update' : 'create'} class: ${error.message}`);
     } finally {
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-xl font-semibold text-[#1F4E79]">
-            {isEditing ? 'Edit Class' : 'Create New Class'}
+          <DialogTitle>
+            {editingClass ? 'Edit Class' : 'Create New Class'}
           </DialogTitle>
         </DialogHeader>
-        
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Class Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Enter class title" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
 
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Enter class description" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="deliveryMode"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Class Type</FormLabel>
-                  <FormControl>
-                    <RadioGroup
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                      className="flex flex-row space-x-6"
-                    >
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="online" id="online" />
-                        <Label htmlFor="online">Online</Label>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="offline" id="offline" />
-                        <Label htmlFor="offline">Offline</Label>
-                      </div>
-                    </RadioGroup>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            {deliveryMode === "online" && (
-              <FormField
-                control={form.control}
-                name="sessionLink"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Session Link (Optional)</FormLabel>
-                    <FormControl>
-                      <Input placeholder="Enter meeting link (e.g., Zoom, Google Meet)" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            {deliveryMode === "offline" && (
-              <FormField
-                control={form.control}
-                name="offlineType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Session Type</FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="flex flex-row space-x-6"
-                      >
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="group" id="group" />
-                          <Label htmlFor="group">Group Session</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          <RadioGroupItem value="one-on-one" id="one-on-one" />
-                          <Label htmlFor="one-on-one">One-to-One Session</Label>
-                        </div>
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <FormField
-                control={form.control}
-                name="scheduleDate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col">
-                    <FormLabel>Schedule Date</FormLabel>
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <FormControl>
-                          <Button
-                            variant={"outline"}
-                            className={cn(
-                              "w-full pl-3 text-left font-normal",
-                              !field.value && "text-muted-foreground"
-                            )}
-                          >
-                            {field.value ? (
-                              format(field.value, "PPP")
-                            ) : (
-                              <span>Pick a date</span>
-                            )}
-                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                          </Button>
-                        </FormControl>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0" align="start">
-                        <Calendar
-                          mode="single"
-                          selected={field.value}
-                          onSelect={field.onChange}
-                          disabled={(date) => !isEditing && date < new Date()}
-                          initialFocus
-                          className="pointer-events-auto"
-                        />
-                      </PopoverContent>
-                    </Popover>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="startTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Start Time</FormLabel>
-                    <FormControl>
-                      <Input type="time" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="endTime"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>End Time</FormLabel>
-                    <FormControl>
-                      <Input type="time" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="md:col-span-2">
+              <Label htmlFor="title">Class Title *</Label>
+              <Input
+                id="title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Enter class title"
+                required
               />
             </div>
 
-            <DialogFooter>
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => onOpenChange(false)}
-                disabled={isLoading}
-              >
-                Cancel
-              </Button>
-              <Button 
-                type="submit" 
-                className="bg-[#1F4E79] hover:bg-[#1a4369]"
-                disabled={isLoading}
-              >
-                {isLoading ? (isEditing ? "Updating..." : "Creating...") : (isEditing ? "Update Class" : "Create Class")}
-              </Button>
-            </DialogFooter>
-          </form>
-        </Form>
+            <div className="md:col-span-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                placeholder="Enter class description"
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="subject">Subject</Label>
+              <Input
+                id="subject"
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="e.g., Mathematics, Science"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="delivery-mode">Delivery Mode</Label>
+              <Select value={deliveryMode} onValueChange={(value: 'online' | 'offline') => setDeliveryMode(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="online">Online</SelectItem>
+                  <SelectItem value="offline">Offline</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="class-format">Class Format</Label>
+              <Select value={classFormat} onValueChange={(value: 'live' | 'recorded' | 'inbound' | 'outbound') => setClassFormat(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="live">Live</SelectItem>
+                  <SelectItem value="recorded">Recorded</SelectItem>
+                  <SelectItem value="inbound">Inbound</SelectItem>
+                  <SelectItem value="outbound">Outbound</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="class-size">Class Size</Label>
+              <Select value={classSize} onValueChange={(value: 'group' | 'one-on-one') => setClassSize(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="group">Group</SelectItem>
+                  <SelectItem value="one-on-one">One-on-One</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="duration-type">Duration Type</Label>
+              <Select value={durationType} onValueChange={(value: 'recurring' | 'fixed') => setDurationType(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recurring">Recurring</SelectItem>
+                  <SelectItem value="fixed">Fixed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="status">Class Status</Label>
+              <Select value={status} onValueChange={(value: 'draft' | 'active' | 'inactive' | 'completed') => setStatus(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="draft">Draft</SelectItem>
+                  <SelectItem value="active">Active</SelectItem>
+                  <SelectItem value="inactive">Inactive</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="price">Price (USD)</Label>
+              <Input
+                id="price"
+                type="number"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                placeholder="0.00"
+                min="0"
+                step="0.01"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="max-students">Max Students</Label>
+              <Input
+                id="max-students"
+                type="number"
+                value={maxStudents}
+                onChange={(e) => setMaxStudents(e.target.value)}
+                placeholder="Enter maximum students"
+                min="1"
+              />
+            </div>
+          </div>
+
+          <div className="flex justify-end space-x-2 pt-4">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              disabled={isSubmitting}
+            >
+              Cancel
+            </Button>
+            <Button 
+              type="submit" 
+              disabled={isSubmitting}
+            >
+              {isSubmitting 
+                ? (editingClass ? 'Updating...' : 'Creating...') 
+                : (editingClass ? 'Update Class' : 'Create Class')
+              }
+            </Button>
+          </div>
+        </form>
       </DialogContent>
     </Dialog>
   );
