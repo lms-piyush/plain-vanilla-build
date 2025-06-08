@@ -1,15 +1,29 @@
 
-import React from 'react';
-import { Calendar, Users, Globe, MapPin, Eye, Edit, Clock } from 'lucide-react';
+import React, { useState } from 'react';
+import { Calendar, Users, Globe, MapPin, Eye, Edit, Clock, Trash2 } from 'lucide-react';
 import { TutorClass } from '@/hooks/use-tutor-classes';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface ClassCardProps {
   classItem: TutorClass;
   onEdit: (classItem: TutorClass) => void;
   onManage: (classItem: TutorClass) => void;
+  onDelete: (classItem: TutorClass) => void;
 }
 
-const ClassCard = ({ classItem, onEdit, onManage }: ClassCardProps) => {
+const ClassCard = ({ classItem, onEdit, onManage, onDelete }: ClassCardProps) => {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
   const getDeliveryIcon = (deliveryMode: string) => {
     return deliveryMode === 'online' ? (
       <Globe className="h-4 w-4 text-blue-600" />
@@ -94,6 +108,11 @@ const ClassCard = ({ classItem, onEdit, onManage }: ClassCardProps) => {
     };
   };
 
+  const handleDeleteConfirm = () => {
+    onDelete(classItem);
+    setShowDeleteDialog(false);
+  };
+
   const scheduleInfo = getScheduleInfo();
   const timeInfo = getClassTimeInfo();
 
@@ -157,6 +176,31 @@ const ClassCard = ({ classItem, onEdit, onManage }: ClassCardProps) => {
           >
             <Edit className="h-4 w-4" />
           </button>
+          
+          <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+            <AlertDialogTrigger asChild>
+              <button className="px-3 py-2 border border-red-300 text-red-600 rounded-md text-sm hover:bg-red-50 transition-colors flex items-center justify-center">
+                <Trash2 className="h-4 w-4" />
+              </button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete Class</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Are you sure you want to delete "{classItem.title}"? This action cannot be undone and will permanently remove the class and all its associated data including schedules, time slots, and locations.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction 
+                  onClick={handleDeleteConfirm}
+                  className="bg-red-600 hover:bg-red-700"
+                >
+                  Delete Class
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     </div>

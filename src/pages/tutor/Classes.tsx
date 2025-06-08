@@ -7,6 +7,8 @@ import ClassesGrid from '@/components/tutor-dashboard/ClassesGrid';
 import ClassesPagination from '@/components/tutor-dashboard/ClassesPagination';
 import { useTutorClasses } from '@/hooks/use-tutor-classes';
 import { TutorClass } from '@/hooks/use-tutor-classes';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const Classes = () => {
   const [createClassDialogOpen, setCreateClassDialogOpen] = useState(false);
@@ -22,6 +24,7 @@ const Classes = () => {
   });
   
   const totalPages = Math.ceil(totalCount / classesPerPage);
+  const { toast } = useToast();
 
   const handleCreateClass = () => {
     setCreateClassDialogOpen(true);
@@ -35,6 +38,32 @@ const Classes = () => {
   const handleManageClass = (classItem: TutorClass) => {
     setSelectedClass(classItem);
     setManageDialogOpen(true);
+  };
+
+  const handleDeleteClass = async (classItem: TutorClass) => {
+    try {
+      const { error } = await supabase
+        .from('classes')
+        .delete()
+        .eq('id', classItem.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Class deleted",
+        description: `"${classItem.title}" has been successfully deleted.`,
+      });
+
+      // Refetch the classes to update the list
+      refetch();
+    } catch (error: any) {
+      console.error('Error deleting class:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete the class. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   const handleClassCreated = () => {
@@ -109,6 +138,7 @@ const Classes = () => {
               onEditClass={handleEditClass}
               onManageClass={handleManageClass}
               onCreateClass={handleCreateClass}
+              onDeleteClass={handleDeleteClass}
             />
           </div>
 
