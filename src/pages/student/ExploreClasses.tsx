@@ -1,40 +1,11 @@
 
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { Filter } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination";
-import CourseCard from "@/components/dashboard/CourseCard";
+import { Tabs } from "@/components/ui/tabs";
+import ExploreClassesHeader from "@/components/explore/ExploreClassesHeader";
+import FilterSheet from "@/components/explore/FilterSheet";
+import ClassesList from "@/components/explore/ClassesList";
+import ClassesPagination from "@/components/explore/ClassesPagination";
 import { useAllClasses, TutorClass } from "@/hooks/use-all-classes";
 import { useToast } from "@/hooks/use-toast";
 
@@ -219,34 +190,6 @@ const ExploreClasses = () => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
-
-  const renderPaginationNumbers = () => {
-    const pages = [];
-    const maxVisiblePages = 5;
-    
-    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
-    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-    
-    if (endPage - startPage + 1 < maxVisiblePages) {
-      startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
-    
-    for (let i = startPage; i <= endPage; i++) {
-      pages.push(
-        <PaginationItem key={i}>
-          <PaginationLink
-            isActive={currentPage === i}
-            onClick={() => handlePageChange(i)}
-            className="cursor-pointer"
-          >
-            {i}
-          </PaginationLink>
-        </PaginationItem>
-      );
-    }
-    
-    return pages;
-  };
   
   return (
     <>
@@ -254,225 +197,46 @@ const ExploreClasses = () => {
       
       <div className="flex flex-col md:flex-row gap-6">
         <div className="w-full">
-          <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-            <Tabs defaultValue={activeTab} className="mb-8 w-full" onValueChange={setActiveTab}>
-              <div className="flex justify-between items-center">
-                <TabsList>
-                  <TabsTrigger value="all">All Classes</TabsTrigger>
-                  <TabsTrigger value="saved">Saved Classes ({wishlistedCourses.length})</TabsTrigger>
-                </TabsList>
-                
-                <div className="flex items-center space-x-2">
-                  <Select value={sortBy} onValueChange={setSortBy}>
-                    <SelectTrigger className="w-[150px]">
-                      <SelectValue placeholder="Sort by" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="popular">Most Popular</SelectItem>
-                      <SelectItem value="rating">Highest Rating</SelectItem>
-                      <SelectItem value="newest">Newest</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  
-                  {activeTab === "all" && (
-                    <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
-                      <SheetTrigger asChild>
-                        <Button variant="outline" size="sm">
-                          <Filter className="h-4 w-4 mr-2" />
-                          Filter
-                        </Button>
-                      </SheetTrigger>
-                      <SheetContent className="overflow-y-auto">
-                        <SheetHeader>
-                          <SheetTitle>Filters</SheetTitle>
-                        </SheetHeader>
-                        <div className="p-4 space-y-6">
-                          {/* Class Mode */}
-                          <div className="space-y-2">
-                            <h3 className="text-sm font-medium">Class Mode</h3>
-                            <RadioGroup 
-                              value={classMode} 
-                              onValueChange={(value) => setClassMode(value as "online" | "offline")}
-                              className="flex flex-col space-y-1"
-                            >
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="online" id="mode-online" />
-                                <Label htmlFor="mode-online">Online</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="offline" id="mode-offline" />
-                                <Label htmlFor="mode-offline">Offline</Label>
-                              </div>
-                            </RadioGroup>
-                          </div>
-                          
-                          <Separator />
-                          
-                          {/* Class Format */}
-                          <div className="space-y-2">
-                            <h3 className="text-sm font-medium">Class Format</h3>
-                            {classMode === "online" ? (
-                              <RadioGroup 
-                                value={classFormat} 
-                                onValueChange={(value) => setClassFormat(value as "live" | "recorded")}
-                                className="flex flex-col space-y-1"
-                              >
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem value="live" id="format-live" />
-                                  <Label htmlFor="format-live">Live</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem value="recorded" id="format-recorded" />
-                                  <Label htmlFor="format-recorded">Recorded</Label>
-                                </div>
-                              </RadioGroup>
-                            ) : (
-                              <RadioGroup 
-                                value={classFormat} 
-                                onValueChange={(value) => setClassFormat(value as "inbound" | "outbound")}
-                                className="flex flex-col space-y-1"
-                              >
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem value="inbound" id="format-inbound" />
-                                  <Label htmlFor="format-inbound">Inbound</Label>
-                                </div>
-                                <div className="flex items-center space-x-2">
-                                  <RadioGroupItem value="outbound" id="format-outbound" />
-                                  <Label htmlFor="format-outbound">Outbound</Label>
-                                </div>
-                              </RadioGroup>
-                            )}
-                          </div>
-                          
-                          <Separator />
-                          
-                          {/* Class Size */}
-                          <div className="space-y-2">
-                            <h3 className="text-sm font-medium">Class Size</h3>
-                            <RadioGroup 
-                              value={classSize} 
-                              onValueChange={(value) => setClassSize(value as "group" | "1-on-1")}
-                              className="flex flex-col space-y-1"
-                              disabled={classFormat === "outbound"}
-                            >
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="group" id="size-group" disabled={classFormat === "outbound"} />
-                                <Label htmlFor="size-group" className={classFormat === "outbound" ? "text-gray-400" : ""}>Group</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="1-on-1" id="size-1on1" />
-                                <Label htmlFor="size-1on1">1-on-1</Label>
-                              </div>
-                            </RadioGroup>
-                          </div>
-                          
-                          <Separator />
-                          
-                          {/* Class Duration */}
-                          <div className="space-y-2">
-                            <h3 className="text-sm font-medium">Class Duration</h3>
-                            <RadioGroup 
-                              value={classDuration} 
-                              onValueChange={(value) => setClassDuration(value as "finite" | "infinite")}
-                              className="flex flex-col space-y-1"
-                            >
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="finite" id="duration-finite" />
-                                <Label htmlFor="duration-finite">Finite classes</Label>
-                              </div>
-                              <div className="flex items-center space-x-2">
-                                <RadioGroupItem value="infinite" id="duration-infinite" />
-                                <Label htmlFor="duration-infinite">Infinite classes</Label>
-                              </div>
-                            </RadioGroup>
-                          </div>
-                          
-                          <div className="flex justify-end pt-4">
-                            <Button 
-                              className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
-                              onClick={() => setFilterOpen(false)}
-                            >
-                              Save Filters
-                            </Button>
-                          </div>
-                        </div>
-                      </SheetContent>
-                    </Sheet>
-                  )}
-                </div>
-              </div>
-              
-              <TabsContent value={activeTab} className="mt-6">
-                {isLoading ? (
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    {[...Array(9)].map((_, i) => (
-                      <div key={i} className="animate-pulse">
-                        <div className="bg-gray-200 h-40 rounded-lg mb-4"></div>
-                        <div className="bg-gray-200 h-4 rounded mb-2"></div>
-                        <div className="bg-gray-200 h-4 rounded w-3/4"></div>
-                      </div>
-                    ))}
-                  </div>
-                ) : displayedClasses.length > 0 ? (
-                  <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {displayedClasses.map((course) => (
-                        <CourseCard
-                          key={course.id}
-                          {...convertToClassCard(course)}
-                          onClick={() => navigate(`/student/classes/${course.id}`)}
-                          onTutorClick={() => navigate(`/student/tutor/${course.tutor_id}`)}
-                          onWishlistToggle={() => toggleWishlist(course.id)}
-                        />
-                      ))}
-                    </div>
-                    
-                    {/* Pagination for All Classes */}
-                    {activeTab === "all" && totalPages > 1 && (
-                      <div className="mt-8 flex justify-center">
-                        <Pagination>
-                          <PaginationContent>
-                            <PaginationItem>
-                              <PaginationPrevious 
-                                onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
-                                className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                              />
-                            </PaginationItem>
-                            
-                            {renderPaginationNumbers()}
-                            
-                            <PaginationItem>
-                              <PaginationNext 
-                                onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
-                                className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
-                              />
-                            </PaginationItem>
-                          </PaginationContent>
-                        </Pagination>
-                      </div>
-                    )}
-                  </>
-                ) : (
-                  <div className="text-center py-12">
-                    <p className="text-gray-500 mb-4">
-                      {activeTab === "saved" 
-                        ? "No saved classes yet. Start exploring and save classes you're interested in!"
-                        : "No courses found. Try adjusting your filters."
-                      }
-                    </p>
-                    {activeTab === "saved" && (
-                      <Button 
-                        onClick={() => setActiveTab("all")}
-                        className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
-                      >
-                        Explore Classes
-                      </Button>
-                    )}
-                  </div>
-                )}
-              </TabsContent>
-            </Tabs>
-          </div>
+          <ExploreClassesHeader
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            sortBy={sortBy}
+            setSortBy={setSortBy}
+            wishlistedCourses={wishlistedCourses}
+            filterOpen={filterOpen}
+            setFilterOpen={setFilterOpen}
+          >
+            <FilterSheet
+              classMode={classMode}
+              setClassMode={setClassMode}
+              classFormat={classFormat}
+              setClassFormat={setClassFormat}
+              classSize={classSize}
+              setClassSize={setClassSize}
+              classDuration={classDuration}
+              setClassDuration={setClassDuration}
+              setFilterOpen={setFilterOpen}
+            />
+          </ExploreClassesHeader>
+          
+          <Tabs defaultValue={activeTab} className="w-full" onValueChange={setActiveTab}>
+            <ClassesList
+              activeTab={activeTab}
+              isLoading={isLoading}
+              displayedClasses={displayedClasses}
+              convertToClassCard={convertToClassCard}
+              navigate={navigate}
+              toggleWishlist={toggleWishlist}
+              setActiveTab={setActiveTab}
+            />
+            
+            <ClassesPagination
+              activeTab={activeTab}
+              totalPages={totalPages}
+              currentPage={currentPage}
+              handlePageChange={handlePageChange}
+            />
+          </Tabs>
         </div>
       </div>
     </>
