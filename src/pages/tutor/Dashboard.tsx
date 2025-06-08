@@ -41,17 +41,19 @@ const Dashboard = () => {
       id: 1,
       title: "Introduction to Integers",
       description: "Learn about positive and negative numbers and how to work with them.",
-      date: "Monday, 21 May 2023",
+      date: "Today",
       time: "10:00 AM - 11:00 AM",
-      students: 12
+      students: 12,
+      isToday: true
     },
     {
       id: 2,
       title: "Imaginary Numbers",
       description: "Explore the concept of imaginary numbers and their applications.",
-      date: "Monday, 21 May 2023",
-      time: "10:00 AM - 11:00 AM",
-      students: 12
+      date: "Today",
+      time: "2:00 PM - 3:00 PM",
+      students: 8,
+      isToday: true
     },
     {
       id: 3,
@@ -59,7 +61,8 @@ const Dashboard = () => {
       description: "Deep dive into calculus concepts and problem solving.",
       date: "Tuesday, 22 May 2023",
       time: "2:00 PM - 3:30 PM",
-      students: 8
+      students: 8,
+      isToday: false
     },
     {
       id: 4,
@@ -67,13 +70,33 @@ const Dashboard = () => {
       description: "Hands-on physics experiments and theory.",
       date: "Wednesday, 23 May 2023",
       time: "11:00 AM - 12:00 PM",
-      students: 15
+      students: 15,
+      isToday: false
+    },
+    {
+      id: 5,
+      title: "Chemistry Basics",
+      description: "Introduction to basic chemistry concepts.",
+      date: "Thursday, 24 May 2023",
+      time: "9:00 AM - 10:00 AM",
+      students: 10,
+      isToday: false
+    },
+    {
+      id: 6,
+      title: "Biology Lab",
+      description: "Laboratory experiments in biology.",
+      date: "Friday, 25 May 2023",
+      time: "1:00 PM - 2:30 PM",
+      students: 12,
+      isToday: false
     }
   ];
 
   // Filter sessions based on selected filter
-  const todaysSessions = allSessionsData.slice(0, 2); // Mock today's sessions
-  const sessionData = sessionFilter === 'today' ? todaysSessions : allSessionsData;
+  const filteredSessions = sessionFilter === 'today' 
+    ? allSessionsData.filter(session => session.isToday)
+    : allSessionsData;
 
   return (
     <div>
@@ -82,13 +105,22 @@ const Dashboard = () => {
         <h1 className="text-xl md:text-2xl font-semibold text-gray-800">Good Evening, Tutor!</h1>
         <p className="text-gray-600 mt-1">Here's what's happening with your teaching journey.</p>
         
-        <button 
-          onClick={handleCreateClass}
-          className="mt-4 inline-flex items-center bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
-        >
-          <Plus size={18} className="mr-2" />
-          Create New Class
-        </button>
+        <div className="flex flex-col sm:flex-row gap-2 mt-4">
+          <button 
+            onClick={handleCreateClass}
+            className="inline-flex items-center bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
+          >
+            <Plus size={18} className="mr-2" />
+            Create New Class
+          </button>
+          <button 
+            onClick={handleCreateClass}
+            className="inline-flex items-center bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
+          >
+            <Plus size={18} className="mr-2" />
+            Create New Session
+          </button>
+        </div>
       </div>
       
       {/* Create Class Dialog */}
@@ -122,10 +154,10 @@ const Dashboard = () => {
           <div className="flex items-start justify-between">
             <div>
               <h3 className="text-gray-500 text-sm font-medium">Today's Sessions</h3>
-              <p className="text-2xl font-semibold mt-1">2</p>
+              <p className="text-2xl font-semibold mt-1">{allSessionsData.filter(s => s.isToday).length}</p>
               <p className="text-sm text-gray-500 mt-1">Live Classes</p>
               <p className="text-xs text-gray-500 mt-2">
-                <span className="text-red-500">-1</span> from yesterday
+                <span className="text-green-500">+1</span> from yesterday
               </p>
             </div>
             <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center text-green-600">
@@ -237,7 +269,7 @@ const Dashboard = () => {
                   : 'text-gray-500 hover:bg-gray-100'
               }`}
             >
-              Today's Sessions
+              Today's Sessions ({allSessionsData.filter(s => s.isToday).length})
             </button>
             <button 
               onClick={() => setSessionFilter('all')}
@@ -247,14 +279,14 @@ const Dashboard = () => {
                   : 'text-gray-500 hover:bg-gray-100'
               }`}
             >
-              All Sessions
+              All Sessions ({allSessionsData.length})
             </button>
           </div>
         </div>
         
         <div className="flex justify-between flex-wrap">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
-            {sessionData.map(session => (
+            {filteredSessions.map(session => (
               <div key={session.id} className="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
                 <h3 className="font-medium text-gray-800">{session.title}</h3>
                 <p className="text-sm text-gray-500 mt-1 line-clamp-2">{session.description}</p>

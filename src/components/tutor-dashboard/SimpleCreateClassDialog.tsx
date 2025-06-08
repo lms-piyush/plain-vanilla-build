@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -76,20 +75,51 @@ const SimpleCreateClassDialog = ({ open, onOpenChange, onClassCreated, editingCl
 
   const deliveryMode = form.watch("deliveryMode");
 
-  // Reset form when editing class changes
+  // Reset form when editing class changes or dialog opens
   useEffect(() => {
-    if (editingClass) {
-      form.reset({
-        title: editingClass.title,
-        description: editingClass.description || "",
-        deliveryMode: editingClass.delivery_mode,
-        sessionLink: editingClass.class_locations?.[0]?.meeting_link || "",
-        offlineType: editingClass.class_size as "group" | "one-on-one",
-        scheduleDate: new Date(), // Default to today since we don't have schedule data
-        startTime: "09:00",
-        endTime: "10:00",
-      });
-    } else {
+    if (editingClass && open) {
+      // Get existing schedule data
+      const getScheduleData = async () => {
+        try {
+          const { data: scheduleData } = await supabase
+            .from("class_schedules")
+            .select("start_date")
+            .eq("class_id", editingClass.id)
+            .single();
+
+          const { data: timeSlotData } = await supabase
+            .from("class_time_slots")
+            .select("start_time, end_time")
+            .eq("class_id", editingClass.id)
+            .single();
+
+          form.reset({
+            title: editingClass.title,
+            description: editingClass.description || "",
+            deliveryMode: editingClass.delivery_mode,
+            sessionLink: editingClass.class_locations?.[0]?.meeting_link || "",
+            offlineType: editingClass.class_size as "group" | "one-on-one",
+            scheduleDate: scheduleData?.start_date ? new Date(scheduleData.start_date) : new Date(),
+            startTime: timeSlotData?.start_time || "09:00",
+            endTime: timeSlotData?.end_time || "10:00",
+          });
+        } catch (error) {
+          console.error("Error fetching schedule data:", error);
+          form.reset({
+            title: editingClass.title,
+            description: editingClass.description || "",
+            deliveryMode: editingClass.delivery_mode,
+            sessionLink: editingClass.class_locations?.[0]?.meeting_link || "",
+            offlineType: editingClass.class_size as "group" | "one-on-one",
+            scheduleDate: new Date(),
+            startTime: "09:00",
+            endTime: "10:00",
+          });
+        }
+      };
+
+      getScheduleData();
+    } else if (open) {
       form.reset({
         title: "",
         description: "",
@@ -98,9 +128,10 @@ const SimpleCreateClassDialog = ({ open, onOpenChange, onClassCreated, editingCl
         offlineType: "group",
         startTime: "09:00",
         endTime: "10:00",
+        scheduleDate: new Date(),
       });
     }
-  }, [editingClass, form]);
+  }, [editingClass, form, open]);
 
   const onSubmit = async (data: CreateClassFormValues) => {
     if (!user) {
@@ -139,14 +170,62 @@ const SimpleCreateClassDialog = ({ open, onOpenChange, onClassCreated, editingCl
 
         if (classError) throw classError;
 
-        // Update location if online class with session link
-        if (data.deliveryMode === "online" && data.sessionLink) {
+        // Update schedule
+        const { error: scheduleError } = await supabase
+          .from("class_schedules")
+          .update({
+            start_date: format(data.scheduleDate, 'yyyy-MM-dd'),
+          })
+          .eq("class_id", editingClass.id);
+
+        if (scheduleError) throw scheduleError;
+
+        // Update time slot
+        const { error: timeSlotError } = await supabase
+          .from("class_time_slots")
+          .update({
+            day_of_week: format(data.scheduleDate, 'EEEE').toLowerCase(),
+            start_time: data.startTime,
+            end_time: data.endTime,
+          })
+          .eq("class_id", editingClass.id);
+
+        if (timeSlotError) throw timeSlotError;
+
+        // Handle location updates based on delivery mode
+        if (data.deliveryMode === "online") {
+          if (data.sessionLink) {
+            // Update or insert meeting link
+            const { error: locationError } = await supabase
+              .from("class_locations")
+              .upsert({
+                class_id: editingClass.id,
+                meeting_link: data.sessionLink,
+                street: null,
+                city: null,
+                state: null,
+                zip_code: null,
+                country: null,
+              });
+
+            if (locationError) throw locationError;
+          } else {
+            // Remove location if no meeting link provided
+            const { error: deleteError } = await supabase
+              .from("class_locations")
+              .delete()
+              .eq("class_id", editingClass.id);
+
+            if (deleteError) throw deleteError;
+          }
+        } else {
+          // For offline classes, remove meeting link but keep other location data
           const { error: locationError } = await supabase
             .from("class_locations")
-            .upsert({
-              class_id: editingClass.id,
-              meeting_link: data.sessionLink,
-            });
+            .update({
+              meeting_link: null,
+            })
+            .eq("class_id", editingClass.id);
 
           if (locationError) throw locationError;
         }
@@ -156,7 +235,7 @@ const SimpleCreateClassDialog = ({ open, onOpenChange, onClassCreated, editingCl
           description: "Class updated successfully!",
         });
       } else {
-        // Create new class
+        // Create new class logic remains the same
         const { data: classData, error: classError } = await supabase
           .from("classes")
           .insert({
@@ -303,7 +382,7 @@ const SimpleCreateClassDialog = ({ open, onOpenChange, onClassCreated, editingCl
                 name="sessionLink"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Session Link</FormLabel>
+                    <FormLabel>Session Link (Optional)</FormLabel>
                     <FormControl>
                       <Input placeholder="Enter meeting link (e.g., Zoom, Google Meet)" {...field} />
                     </FormControl>
@@ -342,78 +421,76 @@ const SimpleCreateClassDialog = ({ open, onOpenChange, onClassCreated, editingCl
               />
             )}
 
-            {!isEditing && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <FormField
-                  control={form.control}
-                  name="scheduleDate"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col">
-                      <FormLabel>Schedule Date</FormLabel>
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <Button
-                              variant={"outline"}
-                              className={cn(
-                                "w-full pl-3 text-left font-normal",
-                                !field.value && "text-muted-foreground"
-                              )}
-                            >
-                              {field.value ? (
-                                format(field.value, "PPP")
-                              ) : (
-                                <span>Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </Button>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={field.onChange}
-                            disabled={(date) => date < new Date()}
-                            initialFocus
-                            className="pointer-events-auto"
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="scheduleDate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel>Schedule Date</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full pl-3 text-left font-normal",
+                              !field.value && "text-muted-foreground"
+                            )}
+                          >
+                            {field.value ? (
+                              format(field.value, "PPP")
+                            ) : (
+                              <span>Pick a date</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value}
+                          onSelect={field.onChange}
+                          disabled={(date) => !isEditing && date < new Date()}
+                          initialFocus
+                          className="pointer-events-auto"
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="startTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Start Time</FormLabel>
-                      <FormControl>
-                        <Input type="time" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <FormField
+                control={form.control}
+                name="startTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Start Time</FormLabel>
+                    <FormControl>
+                      <Input type="time" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-                <FormField
-                  control={form.control}
-                  name="endTime"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>End Time</FormLabel>
-                      <FormControl>
-                        <Input type="time" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-            )}
+              <FormField
+                control={form.control}
+                name="endTime"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>End Time</FormLabel>
+                    <FormControl>
+                      <Input type="time" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
 
             <DialogFooter>
               <Button 

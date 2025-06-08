@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Calendar, Users, Globe, MapPin, Eye, Edit } from 'lucide-react';
+import { Calendar, Users, Globe, MapPin, Eye, Edit, Clock } from 'lucide-react';
 import { TutorClass } from '@/hooks/use-tutor-classes';
 
 interface ClassCardProps {
@@ -39,6 +39,23 @@ const ClassCard = ({ classItem, onEdit, onManage }: ClassCardProps) => {
     return maxStudents ? `Max ${maxStudents} students` : 'No limit';
   };
 
+  const formatDateTime = () => {
+    const createdDate = new Date(classItem.created_at);
+    const dateStr = createdDate.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+    const timeStr = createdDate.toLocaleTimeString('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: true
+    });
+    return { dateStr, timeStr };
+  };
+
+  const { dateStr, timeStr } = formatDateTime();
+
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
       <div className="relative h-32 bg-gradient-to-br from-primary to-purple-600">
@@ -60,7 +77,12 @@ const ClassCard = ({ classItem, onEdit, onManage }: ClassCardProps) => {
         <div className="space-y-2 mb-4">
           <div className="flex items-center text-sm text-gray-500">
             <Calendar className="h-4 w-4 mr-2" />
-            <span>Created {new Date(classItem.created_at).toLocaleDateString()}</span>
+            <span>{dateStr}</span>
+          </div>
+          
+          <div className="flex items-center text-sm text-gray-500">
+            <Clock className="h-4 w-4 mr-2" />
+            <span>{timeStr}</span>
           </div>
           
           <div className="flex items-center text-sm text-gray-500">
