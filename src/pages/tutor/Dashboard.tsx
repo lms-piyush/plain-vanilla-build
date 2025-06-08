@@ -101,6 +101,14 @@ const Dashboard = () => {
 
   const paginationInfo = getFilteredPaginationInfo();
 
+  console.log('Dashboard Debug:', {
+    sessionFilter,
+    currentPage,
+    allFilteredClassesLength: allFilteredClasses.length,
+    paginatedFilteredClassesLength: paginatedFilteredClasses.length,
+    paginationInfo
+  });
+
   return (
     <div>
       <WelcomeSection onCreateClass={handleCreateClass} />

@@ -157,9 +157,9 @@ const SessionsSection = ({
         </div>
       </div>
 
-      {/* Pagination for both Today's Sessions and All Sessions */}
+      {/* Pagination - Now shows for both Today's Sessions and All Sessions when needed */}
       {paginationInfo.shouldShowPagination && (
-        <div className="mt-8">
+        <div className="mt-6">
           <ClassesPagination
             currentPage={currentPage}
             totalPages={paginationInfo.totalFilteredPages}
