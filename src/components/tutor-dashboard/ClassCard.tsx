@@ -1,15 +1,27 @@
-
-import React from 'react';
-import { Calendar, Users, Globe, MapPin, Eye, Edit, Clock } from 'lucide-react';
+import React, { useState } from 'react';
+import { Calendar, Users, Globe, MapPin, Eye, Edit, Clock, Trash2 } from 'lucide-react';
 import { TutorClass } from '@/hooks/use-tutor-classes';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface ClassCardProps {
   classItem: TutorClass;
   onEdit: (classItem: TutorClass) => void;
   onManage: (classItem: TutorClass) => void;
+  onDelete: (classItem: TutorClass) => void;
 }
 
-const ClassCard = ({ classItem, onEdit, onManage }: ClassCardProps) => {
+const ClassCard = ({ classItem, onEdit, onManage, onDelete }: ClassCardProps) => {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
   const getDeliveryIcon = (deliveryMode: string) => {
     return deliveryMode === 'online' ? (
       <Globe className="h-4 w-4 text-blue-600" />
@@ -97,69 +109,107 @@ const ClassCard = ({ classItem, onEdit, onManage }: ClassCardProps) => {
   const scheduleInfo = getScheduleInfo();
   const timeInfo = getClassTimeInfo();
 
+  const handleDeleteClick = () => {
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    onDelete(classItem);
+    setShowDeleteDialog(false);
+  };
+
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
-      <div className="relative h-32 bg-gradient-to-br from-primary to-purple-600">
-        <div className="absolute top-3 right-3">
-          {getStatusBadge(classItem.status)}
-        </div>
-        <div className="absolute bottom-3 left-3 text-white">
-          <div className="flex items-center text-sm">
-            {getDeliveryIcon(classItem.delivery_mode)}
-            <span className="ml-2 capitalize">{classItem.delivery_mode} • {classItem.class_size}</span>
+    <>
+      <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
+        <div className="relative h-32 bg-gradient-to-br from-primary to-purple-600">
+          <div className="absolute top-3 right-3">
+            {getStatusBadge(classItem.status)}
+          </div>
+          <div className="absolute bottom-3 left-3 text-white">
+            <div className="flex items-center text-sm">
+              {getDeliveryIcon(classItem.delivery_mode)}
+              <span className="ml-2 capitalize">{classItem.delivery_mode} • {classItem.class_size}</span>
+            </div>
           </div>
         </div>
-      </div>
-      
-      <div className="p-4">
-        <h3 className="font-semibold text-gray-800 mb-2 line-clamp-1">{classItem.title}</h3>
-        <p className="text-gray-600 text-sm mb-3 line-clamp-2">{classItem.description || "No description available"}</p>
         
-        <div className="space-y-2 mb-4">
-          {/* Schedule Date Section */}
-          <div className="bg-blue-50 p-3 rounded-md">
-            <div className="flex items-center text-sm text-blue-700 font-medium mb-1">
+        <div className="p-4">
+          <h3 className="font-semibold text-gray-800 mb-2 line-clamp-1">{classItem.title}</h3>
+          <p className="text-gray-600 text-sm mb-3 line-clamp-2">{classItem.description || "No description available"}</p>
+          
+          <div className="space-y-2 mb-4">
+            {/* Schedule Date Section */}
+            <div className="bg-blue-50 p-3 rounded-md">
+              <div className="flex items-center text-sm text-blue-700 font-medium mb-1">
+                <Calendar className="h-4 w-4 mr-2" />
+                <span>Schedule Date</span>
+              </div>
+              <div className="text-sm text-blue-600">
+                {scheduleInfo.startDate}
+              </div>
+            </div>
+            
+            <div className="flex items-center text-sm text-gray-500">
               <Calendar className="h-4 w-4 mr-2" />
-              <span>Schedule Date</span>
+              <span>{timeInfo.dayOfWeek}</span>
             </div>
-            <div className="text-sm text-blue-600">
-              {scheduleInfo.startDate}
+            
+            <div className="flex items-center text-sm text-gray-500">
+              <Clock className="h-4 w-4 mr-2" />
+              <span>{timeInfo.timeRange}</span>
+            </div>
+            
+            <div className="flex items-center text-sm text-gray-500">
+              <Users className="h-4 w-4 mr-2" />
+              <span>{getStudentLimit(classItem.class_size, classItem.max_students)}</span>
             </div>
           </div>
           
-          <div className="flex items-center text-sm text-gray-500">
-            <Calendar className="h-4 w-4 mr-2" />
-            <span>{timeInfo.dayOfWeek}</span>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => onManage(classItem)}
+              className="flex-1 bg-primary text-white px-3 py-2 rounded-md text-sm hover:bg-primary/90 transition-colors flex items-center justify-center"
+            >
+              <Eye className="h-4 w-4 mr-1" />
+              Manage
+            </button>
+            <button 
+              onClick={() => onEdit(classItem)}
+              className="px-3 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition-colors flex items-center justify-center"
+            >
+              <Edit className="h-4 w-4" />
+            </button>
+            <button 
+              onClick={handleDeleteClick}
+              className="px-3 py-2 border border-red-300 text-red-600 rounded-md text-sm hover:bg-red-50 transition-colors flex items-center justify-center"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
           </div>
-          
-          <div className="flex items-center text-sm text-gray-500">
-            <Clock className="h-4 w-4 mr-2" />
-            <span>{timeInfo.timeRange}</span>
-          </div>
-          
-          <div className="flex items-center text-sm text-gray-500">
-            <Users className="h-4 w-4 mr-2" />
-            <span>{getStudentLimit(classItem.class_size, classItem.max_students)}</span>
-          </div>
-        </div>
-        
-        <div className="flex gap-2">
-          <button 
-            onClick={() => onManage(classItem)}
-            className="flex-1 bg-primary text-white px-3 py-2 rounded-md text-sm hover:bg-primary/90 transition-colors flex items-center justify-center"
-          >
-            <Eye className="h-4 w-4 mr-1" />
-            Manage
-          </button>
-          <button 
-            onClick={() => onEdit(classItem)}
-            className="px-3 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition-colors flex items-center justify-center"
-          >
-            <Edit className="h-4 w-4" />
-          </button>
         </div>
       </div>
-    </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Class</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{classItem.title}"? This action cannot be undone and will permanently remove the class and all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 

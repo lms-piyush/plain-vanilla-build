@@ -7,6 +7,8 @@ import ClassesGrid from '@/components/tutor-dashboard/ClassesGrid';
 import ClassesPagination from '@/components/tutor-dashboard/ClassesPagination';
 import { useTutorClasses } from '@/hooks/use-tutor-classes';
 import { TutorClass } from '@/hooks/use-tutor-classes';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/sonner';
 
 const Classes = () => {
   const [createClassDialogOpen, setCreateClassDialogOpen] = useState(false);
@@ -14,6 +16,7 @@ const Classes = () => {
   const [manageDialogOpen, setManageDialogOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<TutorClass | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const classesPerPage = 6;
   const { classes, totalCount, isLoading, error, refetch } = useTutorClasses({
@@ -35,6 +38,32 @@ const Classes = () => {
   const handleManageClass = (classItem: TutorClass) => {
     setSelectedClass(classItem);
     setManageDialogOpen(true);
+  };
+
+  const handleDeleteClass = async (classItem: TutorClass) => {
+    if (isDeleting) return;
+    
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('classes')
+        .delete()
+        .eq('id', classItem.id);
+
+      if (error) {
+        console.error('Error deleting class:', error);
+        toast.error(`Failed to delete class: ${error.message}`);
+        return;
+      }
+
+      toast.success(`Class "${classItem.title}" has been deleted successfully`);
+      refetch();
+    } catch (err: any) {
+      console.error('Unexpected error deleting class:', err);
+      toast.error('An unexpected error occurred while deleting the class');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleClassCreated = () => {
@@ -109,6 +138,7 @@ const Classes = () => {
               onEditClass={handleEditClass}
               onManageClass={handleManageClass}
               onCreateClass={handleCreateClass}
+              onDeleteClass={handleDeleteClass}
             />
           </div>
 
