@@ -15,7 +15,7 @@ const Classes = () => {
   const [selectedClass, setSelectedClass] = useState<TutorClass | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   
-  const classesPerPage = 12;
+  const classesPerPage = 6;
   const { classes, totalCount, isLoading, error, refetch } = useTutorClasses({
     page: currentPage,
     pageSize: classesPerPage
@@ -61,7 +61,10 @@ const Classes = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
         <div>
           <h1 className="text-xl md:text-2xl font-semibold text-gray-800">My Classes</h1>
-          <p className="text-gray-600 mt-1">Manage all your classes here. You currently have {totalCount} classes.</p>
+          <p className="text-gray-600 mt-1">
+            Manage all your classes here. You currently have {totalCount} classes
+            {totalPages > 1 && ` across ${totalPages} pages`}.
+          </p>
         </div>
         <button 
           onClick={handleCreateClass}
@@ -109,11 +112,13 @@ const Classes = () => {
             />
           </div>
 
-          <ClassesPagination
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
+          {totalPages > 1 && (
+            <ClassesPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          )}
         </>
       )}
     </div>
