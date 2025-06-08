@@ -9,7 +9,7 @@ import { useTutorClasses } from '@/hooks/use-tutor-classes';
 const Dashboard = () => {
   const [createClassDialogOpen, setCreateClassDialogOpen] = useState(false);
   const [sessionFilter, setSessionFilter] = useState<'today' | 'all'>('today');
-  const { refetch } = useTutorClasses();
+  const { classes, refetch } = useTutorClasses();
 
   const handleCreateClass = () => {
     setCreateClassDialogOpen(true);
@@ -35,68 +35,51 @@ const Dashboard = () => {
     { month: 'May', teachingHours: 115, students: 190 },
   ];
   
-  // All sessions data
-  const allSessionsData = [
-    {
-      id: 1,
-      title: "Introduction to Integers",
-      description: "Learn about positive and negative numbers and how to work with them.",
-      date: "Today",
-      time: "10:00 AM - 11:00 AM",
-      students: 12,
-      isToday: true
-    },
-    {
-      id: 2,
-      title: "Imaginary Numbers",
-      description: "Explore the concept of imaginary numbers and their applications.",
-      date: "Today",
-      time: "2:00 PM - 3:00 PM",
-      students: 8,
-      isToday: true
-    },
-    {
-      id: 3,
-      title: "Advanced Calculus",
-      description: "Deep dive into calculus concepts and problem solving.",
-      date: "Tuesday, 22 May 2023",
-      time: "2:00 PM - 3:30 PM",
-      students: 8,
-      isToday: false
-    },
-    {
-      id: 4,
-      title: "Physics Workshop",
-      description: "Hands-on physics experiments and theory.",
-      date: "Wednesday, 23 May 2023",
-      time: "11:00 AM - 12:00 PM",
-      students: 15,
-      isToday: false
-    },
-    {
-      id: 5,
-      title: "Chemistry Basics",
-      description: "Introduction to basic chemistry concepts.",
-      date: "Thursday, 24 May 2023",
-      time: "9:00 AM - 10:00 AM",
-      students: 10,
-      isToday: false
-    },
-    {
-      id: 6,
-      title: "Biology Lab",
-      description: "Laboratory experiments in biology.",
-      date: "Friday, 25 May 2023",
-      time: "1:00 PM - 2:30 PM",
-      students: 12,
-      isToday: false
+  // Get today's date for filtering
+  const today = new Date();
+  const todayDateString = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+  
+  // Filter classes based on the session filter and check if any time slots match today
+  const getFilteredClasses = () => {
+    if (sessionFilter === 'today') {
+      return classes.filter(classItem => {
+        // Check if any time slot matches today's day of the week
+        const todayDayName = today.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+        return classItem.class_time_slots?.some(slot => 
+          slot.day_of_week.toLowerCase() === todayDayName
+        );
+      });
     }
-  ];
+    return classes;
+  };
 
-  // Filter sessions based on selected filter
-  const filteredSessions = sessionFilter === 'today' 
-    ? allSessionsData.filter(session => session.isToday)
-    : allSessionsData;
+  const filteredClasses = getFilteredClasses();
+
+  const formatClassTimeInfo = (classItem: any) => {
+    if (classItem.class_time_slots && classItem.class_time_slots.length > 0) {
+      const timeSlot = classItem.class_time_slots[0];
+      const startTime = timeSlot.start_time;
+      const endTime = timeSlot.end_time;
+      
+      // Format time from "HH:MM:SS" to "HH:MM AM/PM"
+      const formatTime = (timeStr: string) => {
+        const [hours, minutes] = timeStr.split(':');
+        const hour12 = parseInt(hours) % 12 || 12;
+        const ampm = parseInt(hours) >= 12 ? 'PM' : 'AM';
+        return `${hour12}:${minutes} ${ampm}`;
+      };
+
+      return {
+        date: sessionFilter === 'today' ? 'Today' : timeSlot.day_of_week,
+        time: `${formatTime(startTime)} - ${formatTime(endTime)}`
+      };
+    }
+    
+    return {
+      date: sessionFilter === 'today' ? 'Today' : 'Not scheduled',
+      time: 'Time not set'
+    };
+  };
 
   return (
     <div>
@@ -112,13 +95,6 @@ const Dashboard = () => {
           >
             <Plus size={18} className="mr-2" />
             Create New Class
-          </button>
-          <button 
-            onClick={handleCreateClass}
-            className="inline-flex items-center bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
-          >
-            <Plus size={18} className="mr-2" />
-            Create New Session
           </button>
         </div>
       </div>
@@ -137,10 +113,10 @@ const Dashboard = () => {
           <div className="flex items-start justify-between">
             <div>
               <h3 className="text-gray-500 text-sm font-medium">Classes</h3>
-              <p className="text-2xl font-semibold mt-1">23</p>
-              <p className="text-sm text-gray-500 mt-1">3 Offline, 20 Online</p>
+              <p className="text-2xl font-semibold mt-1">{classes.length}</p>
+              <p className="text-sm text-gray-500 mt-1">Total Classes</p>
               <p className="text-xs text-gray-500 mt-2">
-                <span className="text-red-500">0</span> added from last month
+                <span className="text-green-500">Active: {classes.filter(c => c.status === 'active').length}</span>
               </p>
             </div>
             <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
@@ -154,10 +130,15 @@ const Dashboard = () => {
           <div className="flex items-start justify-between">
             <div>
               <h3 className="text-gray-500 text-sm font-medium">Today's Sessions</h3>
-              <p className="text-2xl font-semibold mt-1">{allSessionsData.filter(s => s.isToday).length}</p>
-              <p className="text-sm text-gray-500 mt-1">Live Classes</p>
+              <p className="text-2xl font-semibold mt-1">{classes.filter(classItem => {
+                const todayDayName = today.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+                return classItem.class_time_slots?.some(slot => 
+                  slot.day_of_week.toLowerCase() === todayDayName
+                );
+              }).length}</p>
+              <p className="text-sm text-gray-500 mt-1">Scheduled for today</p>
               <p className="text-xs text-gray-500 mt-2">
-                <span className="text-green-500">+1</span> from yesterday
+                <span className="text-green-500">Live Classes</span>
               </p>
             </div>
             <div className="h-10 w-10 bg-green-100 rounded-full flex items-center justify-center text-green-600">
@@ -269,7 +250,12 @@ const Dashboard = () => {
                   : 'text-gray-500 hover:bg-gray-100'
               }`}
             >
-              Today's Sessions ({allSessionsData.filter(s => s.isToday).length})
+              Today's Sessions ({classes.filter(classItem => {
+                const todayDayName = today.toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase();
+                return classItem.class_time_slots?.some(slot => 
+                  slot.day_of_week.toLowerCase() === todayDayName
+                );
+              }).length})
             </button>
             <button 
               onClick={() => setSessionFilter('all')}
@@ -279,45 +265,58 @@ const Dashboard = () => {
                   : 'text-gray-500 hover:bg-gray-100'
               }`}
             >
-              All Sessions ({allSessionsData.length})
+              All Sessions ({classes.length})
             </button>
           </div>
         </div>
         
         <div className="flex justify-between flex-wrap">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-1">
-            {filteredSessions.map(session => (
-              <div key={session.id} className="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
-                <h3 className="font-medium text-gray-800">{session.title}</h3>
-                <p className="text-sm text-gray-500 mt-1 line-clamp-2">{session.description}</p>
-                
-                <div className="mt-4 space-y-2">
-                  <div className="flex items-center text-sm">
-                    <Calendar size={16} className="mr-2 text-gray-500" />
-                    <span>{session.date}</span>
+            {filteredClasses.length > 0 ? (
+              filteredClasses.map(classItem => {
+                const timeInfo = formatClassTimeInfo(classItem);
+                return (
+                  <div key={classItem.id} className="bg-white p-5 rounded-lg shadow-sm border border-gray-100">
+                    <h3 className="font-medium text-gray-800">{classItem.title}</h3>
+                    <p className="text-sm text-gray-500 mt-1 line-clamp-2">{classItem.description || "No description available"}</p>
+                    
+                    <div className="mt-4 space-y-2">
+                      <div className="flex items-center text-sm">
+                        <Calendar size={16} className="mr-2 text-gray-500" />
+                        <span>{timeInfo.date}</span>
+                      </div>
+                      
+                      <div className="flex items-center text-sm">
+                        <Calendar size={16} className="mr-2 text-gray-500" />
+                        <span>{timeInfo.time}</span>
+                      </div>
+                      
+                      <div className="flex items-center text-sm">
+                        <Users size={16} className="mr-2 text-gray-500" />
+                        <span>{classItem.class_size === 'one-on-one' ? '1 student' : (classItem.max_students ? `Max ${classItem.max_students} students` : 'No limit')}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="mt-5 flex items-center justify-between">
+                      <button className="bg-primary text-white px-4 py-2 rounded-md text-sm">
+                        Start Session
+                      </button>
+                      <button className="p-2 rounded-md hover:bg-gray-100">
+                        <ArrowRight size={18} className="text-gray-500" />
+                      </button>
+                    </div>
                   </div>
-                  
-                  <div className="flex items-center text-sm">
-                    <Calendar size={16} className="mr-2 text-gray-500" />
-                    <span>{session.time}</span>
-                  </div>
-                  
-                  <div className="flex items-center text-sm">
-                    <Users size={16} className="mr-2 text-gray-500" />
-                    <span>{session.students} Students</span>
-                  </div>
-                </div>
-                
-                <div className="mt-5 flex items-center justify-between">
-                  <button className="bg-primary text-white px-4 py-2 rounded-md text-sm">
-                    Start Session
-                  </button>
-                  <button className="p-2 rounded-md hover:bg-gray-100">
-                    <ArrowRight size={18} className="text-gray-500" />
-                  </button>
-                </div>
+                );
+              })
+            ) : (
+              <div className="col-span-2 text-center py-8">
+                <p className="text-gray-500">
+                  {sessionFilter === 'today' 
+                    ? 'No classes scheduled for today' 
+                    : 'No classes found'}
+                </p>
               </div>
-            ))}
+            )}
           </div>
           
           <div className="mt-6 w-full lg:mt-0 lg:w-auto lg:ml-6 flex justify-center">
@@ -326,7 +325,7 @@ const Dashboard = () => {
               className="inline-flex items-center justify-center bg-primary text-white px-4 py-2 rounded-md hover:bg-primary/90 transition-colors"
             >
               <Plus size={18} className="mr-2" />
-              Create new Session
+              Create new Class
             </button>
           </div>
         </div>

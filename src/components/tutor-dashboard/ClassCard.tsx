@@ -46,15 +46,43 @@ const ClassCard = ({ classItem, onEdit, onManage }: ClassCardProps) => {
       month: 'short',
       day: 'numeric'
     });
-    const timeStr = createdDate.toLocaleTimeString('en-US', {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: true
-    });
-    return { dateStr, timeStr };
+    return { dateStr };
   };
 
-  const { dateStr, timeStr } = formatDateTime();
+  const getClassTimeInfo = () => {
+    // Check if class has time slots data
+    if (classItem.class_time_slots && classItem.class_time_slots.length > 0) {
+      const timeSlot = classItem.class_time_slots[0]; // Get first time slot
+      const startTime = timeSlot.start_time;
+      const endTime = timeSlot.end_time;
+      const dayOfWeek = timeSlot.day_of_week;
+      
+      // Format time from "HH:MM:SS" to "HH:MM AM/PM"
+      const formatTime = (timeStr: string) => {
+        const [hours, minutes] = timeStr.split(':');
+        const hour12 = parseInt(hours) % 12 || 12;
+        const ampm = parseInt(hours) >= 12 ? 'PM' : 'AM';
+        return `${hour12}:${minutes} ${ampm}`;
+      };
+
+      return {
+        dayOfWeek,
+        startTime: formatTime(startTime),
+        endTime: formatTime(endTime),
+        timeRange: `${formatTime(startTime)} - ${formatTime(endTime)}`
+      };
+    }
+    
+    return {
+      dayOfWeek: 'Not scheduled',
+      startTime: 'N/A',
+      endTime: 'N/A',
+      timeRange: 'Time not set'
+    };
+  };
+
+  const { dateStr } = formatDateTime();
+  const timeInfo = getClassTimeInfo();
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
@@ -77,12 +105,17 @@ const ClassCard = ({ classItem, onEdit, onManage }: ClassCardProps) => {
         <div className="space-y-2 mb-4">
           <div className="flex items-center text-sm text-gray-500">
             <Calendar className="h-4 w-4 mr-2" />
-            <span>{dateStr}</span>
+            <span>Created: {dateStr}</span>
+          </div>
+          
+          <div className="flex items-center text-sm text-gray-500">
+            <Calendar className="h-4 w-4 mr-2" />
+            <span>{timeInfo.dayOfWeek}</span>
           </div>
           
           <div className="flex items-center text-sm text-gray-500">
             <Clock className="h-4 w-4 mr-2" />
-            <span>{timeStr}</span>
+            <span>{timeInfo.timeRange}</span>
           </div>
           
           <div className="flex items-center text-sm text-gray-500">

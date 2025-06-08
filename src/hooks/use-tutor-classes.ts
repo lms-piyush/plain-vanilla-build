@@ -28,6 +28,12 @@ export interface TutorClass {
     zip_code: string | null;
     country: string | null;
   }[];
+  class_time_slots?: {
+    id: string;
+    day_of_week: string;
+    start_time: string;
+    end_time: string;
+  }[];
 }
 
 export const useTutorClasses = () => {
@@ -55,6 +61,12 @@ export const useTutorClasses = () => {
             state,
             zip_code,
             country
+          ),
+          class_time_slots (
+            id,
+            day_of_week,
+            start_time,
+            end_time
           )
         `)
         .eq("tutor_id", user.id)
