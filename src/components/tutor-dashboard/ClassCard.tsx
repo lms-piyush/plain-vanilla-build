@@ -54,14 +54,12 @@ const ClassCard = ({ classItem, onEdit, onManage }: ClassCardProps) => {
 
       return {
         startDate: startDate ? formatDate(startDate) : 'Not set',
-        totalSessions: schedule.total_sessions || 'Not specified',
         hasSchedule: !!startDate
       };
     }
     
     return {
       startDate: 'Not scheduled',
-      totalSessions: 'Not specified',
       hasSchedule: false
     };
   };
@@ -119,16 +117,13 @@ const ClassCard = ({ classItem, onEdit, onManage }: ClassCardProps) => {
         
         <div className="space-y-2 mb-4">
           {/* Schedule Date Section */}
-          <div className="bg-blue-50 p-2 rounded-md">
+          <div className="bg-blue-50 p-3 rounded-md">
             <div className="flex items-center text-sm text-blue-700 font-medium mb-1">
               <Calendar className="h-4 w-4 mr-2" />
               <span>Schedule Date</span>
             </div>
-            <div className="text-xs text-blue-600 space-y-1">
-              <div>Start: {scheduleInfo.startDate}</div>
-              {scheduleInfo.totalSessions && scheduleInfo.totalSessions !== 'Not specified' && (
-                <div>Sessions: {scheduleInfo.totalSessions}</div>
-              )}
+            <div className="text-sm text-blue-600">
+              {scheduleInfo.startDate}
             </div>
           </div>
           
