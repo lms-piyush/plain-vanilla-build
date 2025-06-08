@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Plus, ArrowRight, BookOpen, Calendar, Users, DollarSign, MessageSquare, Star } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -46,14 +47,9 @@ const Dashboard = () => {
         if (classItem.class_schedules && classItem.class_schedules.length > 0) {
           return classItem.class_schedules.some(schedule => {
             const startDate = schedule.start_date ? new Date(schedule.start_date) : null;
-            const endDate = schedule.end_date ? new Date(schedule.end_date) : null;
             
-            if (startDate && endDate) {
-              // Check if today is within the schedule range
-              const todayDate = new Date(todayDateString);
-              return todayDate >= startDate && todayDate <= endDate;
-            } else if (startDate) {
-              // If only start date, check if today matches start date
+            if (startDate) {
+              // Check if today matches the start date
               return startDate.toISOString().split('T')[0] === todayDateString;
             }
             return false;
@@ -73,12 +69,8 @@ const Dashboard = () => {
       if (classItem.class_schedules && classItem.class_schedules.length > 0) {
         return classItem.class_schedules.some(schedule => {
           const startDate = schedule.start_date ? new Date(schedule.start_date) : null;
-          const endDate = schedule.end_date ? new Date(schedule.end_date) : null;
           
-          if (startDate && endDate) {
-            const todayDate = new Date(todayDateString);
-            return todayDate >= startDate && todayDate <= endDate;
-          } else if (startDate) {
+          if (startDate) {
             return startDate.toISOString().split('T')[0] === todayDateString;
           }
           return false;
