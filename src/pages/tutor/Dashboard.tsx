@@ -4,12 +4,21 @@ import { Plus, ArrowRight, BookOpen, Calendar, Users, DollarSign, MessageSquare,
 import { Link } from 'react-router-dom';
 import { Area, AreaChart, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Bar, BarChart } from 'recharts';
 import SimpleCreateClassDialog from '@/components/tutor-dashboard/SimpleCreateClassDialog';
+import ClassesPagination from '@/components/tutor-dashboard/ClassesPagination';
 import { useTutorClasses } from '@/hooks/use-tutor-classes';
 
 const Dashboard = () => {
   const [createClassDialogOpen, setCreateClassDialogOpen] = useState(false);
   const [sessionFilter, setSessionFilter] = useState<'today' | 'all'>('today');
-  const { classes, refetch } = useTutorClasses();
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  const classesPerPage = 6;
+  const { classes, totalCount, refetch } = useTutorClasses({
+    page: currentPage,
+    pageSize: classesPerPage
+  });
+  
+  const totalPages = Math.ceil(totalCount / classesPerPage);
 
   const handleCreateClass = () => {
     setCreateClassDialogOpen(true);
@@ -17,6 +26,10 @@ const Dashboard = () => {
 
   const handleClassCreated = () => {
     refetch();
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   // Mock data for the chart
@@ -150,7 +163,7 @@ const Dashboard = () => {
           <div className="flex items-start justify-between">
             <div>
               <h3 className="text-gray-500 text-sm font-medium">Classes</h3>
-              <p className="text-2xl font-semibold mt-1">{classes.length}</p>
+              <p className="text-2xl font-semibold mt-1">{totalCount}</p>
               <p className="text-sm text-gray-500 mt-1">Total Classes</p>
               <p className="text-xs text-gray-500 mt-2">
                 <span className="text-green-500">Active: {classes.filter(c => c.status === 'active').length}</span>
@@ -292,7 +305,7 @@ const Dashboard = () => {
                   : 'text-gray-500 hover:bg-gray-100'
               }`}
             >
-              All Sessions ({classes.length})
+              All Sessions ({totalCount})
             </button>
           </div>
         </div>
@@ -356,6 +369,17 @@ const Dashboard = () => {
             </button>
           </div>
         </div>
+
+        {/* Pagination for All Sessions */}
+        {sessionFilter === 'all' && totalPages > 1 && (
+          <div className="mt-8">
+            <ClassesPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          </div>
+        )}
       </div>
     </div>
   );
