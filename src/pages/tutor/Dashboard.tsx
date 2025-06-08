@@ -13,12 +13,12 @@ const Dashboard = () => {
   const [currentPage, setCurrentPage] = useState(1);
   
   const classesPerPage = 6;
-  const { classes, totalCount, refetch } = useTutorClasses({
-    page: currentPage,
-    pageSize: classesPerPage
-  });
   
-  const totalPages = Math.ceil(totalCount / classesPerPage);
+  // Fetch all classes to handle filtering client-side
+  const { classes: allClasses, totalCount: allTotalCount, refetch } = useTutorClasses({
+    page: 1,
+    pageSize: 1000 // Get all classes for proper filtering
+  });
 
   const handleCreateClass = () => {
     setCreateClassDialogOpen(true);
@@ -44,7 +44,7 @@ const Dashboard = () => {
   // Filter classes based on the session filter and check schedule dates
   const getFilteredClasses = () => {
     if (sessionFilter === 'today') {
-      return classes.filter(classItem => {
+      return allClasses.filter(classItem => {
         // Check if any schedule includes today's date
         if (classItem.class_schedules && classItem.class_schedules.length > 0) {
           return classItem.class_schedules.some(schedule => {
@@ -60,7 +60,7 @@ const Dashboard = () => {
         return false;
       });
     }
-    return classes;
+    return allClasses;
   };
 
   const allFilteredClasses = getFilteredClasses();
@@ -72,7 +72,7 @@ const Dashboard = () => {
 
   // Count today's sessions based on schedule dates
   const getTodaysSessionsCount = () => {
-    return classes.filter(classItem => {
+    return allClasses.filter(classItem => {
       if (classItem.class_schedules && classItem.class_schedules.length > 0) {
         return classItem.class_schedules.some(schedule => {
           const startDate = schedule.start_date ? new Date(schedule.start_date) : null;
@@ -104,6 +104,7 @@ const Dashboard = () => {
   console.log('Dashboard Debug:', {
     sessionFilter,
     currentPage,
+    allClassesLength: allClasses.length,
     allFilteredClassesLength: allFilteredClasses.length,
     paginatedFilteredClassesLength: paginatedFilteredClasses.length,
     paginationInfo
@@ -121,8 +122,8 @@ const Dashboard = () => {
       />
       
       <StatsGrid 
-        totalClasses={totalCount}
-        activeClasses={classes.filter(c => c.status === 'active').length}
+        totalClasses={allTotalCount}
+        activeClasses={allClasses.filter(c => c.status === 'active').length}
         todaysSessionsCount={getTodaysSessionsCount()}
       />
       
@@ -133,7 +134,7 @@ const Dashboard = () => {
         onFilterChange={handleFilterChange}
         filteredClasses={paginatedFilteredClasses}
         todaysSessionsCount={getTodaysSessionsCount()}
-        totalCount={totalCount}
+        totalCount={sessionFilter === 'today' ? getTodaysSessionsCount() : allTotalCount}
         currentPage={currentPage}
         onPageChange={handlePageChange}
         paginationInfo={paginationInfo}
