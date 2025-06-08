@@ -51,13 +51,6 @@ export type Database = {
             referencedRelation: "classes"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "fk_class_locations_class_id"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "classes"
-            referencedColumns: ["id"]
-          },
         ]
       }
       class_schedules: {
@@ -91,13 +84,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "class_schedules_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "classes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_class_schedules_class_id"
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
@@ -141,13 +127,6 @@ export type Database = {
             referencedRelation: "classes"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "fk_class_syllabus_class_id"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "classes"
-            referencedColumns: ["id"]
-          },
         ]
       }
       class_time_slots: {
@@ -178,13 +157,6 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "class_time_slots_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "classes"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "fk_class_time_slots_class_id"
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
