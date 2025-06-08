@@ -9,10 +9,9 @@ interface ClassesGridProps {
   onEditClass: (classItem: TutorClass) => void;
   onManageClass: (classItem: TutorClass) => void;
   onCreateClass: () => void;
-  onDeleteClass: (classItem: TutorClass) => void;
 }
 
-const ClassesGrid = ({ classes, onEditClass, onManageClass, onCreateClass, onDeleteClass }: ClassesGridProps) => {
+const ClassesGrid = ({ classes, onEditClass, onManageClass, onCreateClass }: ClassesGridProps) => {
   if (classes.length === 0) {
     return (
       <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100 text-center">
@@ -36,7 +35,6 @@ const ClassesGrid = ({ classes, onEditClass, onManageClass, onCreateClass, onDel
           classItem={classItem}
           onEdit={onEditClass}
           onManage={onManageClass}
-          onDelete={onDeleteClass}
         />
       ))}
     </div>
