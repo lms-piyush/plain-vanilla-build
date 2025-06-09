@@ -1,15 +1,12 @@
-
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { TutorClass } from '@/hooks/use-tutor-classes';
-import { format } from 'date-fns';
+import BasicInfoForm from './class-creation/BasicInfoForm';
+import ClassConfigForm from './class-creation/ClassConfigForm';
+import ScheduleForm from './class-creation/ScheduleForm';
 
 interface SimpleCreateClassDialogProps {
   open: boolean;
@@ -298,13 +295,6 @@ const SimpleCreateClassDialog = ({
     }
   };
 
-  // Get display day from selected date
-  const getDisplayDay = () => {
-    if (!startDate) return '';
-    const date = new Date(startDate);
-    return date.toLocaleDateString('en-US', { weekday: 'long' });
-  };
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -315,208 +305,43 @@ const SimpleCreateClassDialog = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="md:col-span-2">
-              <Label htmlFor="title">Class Title *</Label>
-              <Input
-                id="title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="Enter class title"
-                required
-              />
-            </div>
+          <BasicInfoForm
+            title={title}
+            setTitle={setTitle}
+            description={description}
+            setDescription={setDescription}
+            subject={subject}
+            setSubject={setSubject}
+            status={status}
+            setStatus={setStatus}
+            price={price}
+            setPrice={setPrice}
+            maxStudents={maxStudents}
+            setMaxStudents={setMaxStudents}
+            classSize={classSize}
+          />
 
-            <div className="md:col-span-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Enter class description"
-                rows={3}
-              />
-            </div>
+          <ClassConfigForm
+            deliveryMode={deliveryMode}
+            setDeliveryMode={setDeliveryMode}
+            meetingLink={meetingLink}
+            setMeetingLink={setMeetingLink}
+            classFormat={classFormat}
+            setClassFormat={setClassFormat}
+            classSize={classSize}
+            setClassSize={setClassSize}
+            durationType={durationType}
+            setDurationType={setDurationType}
+          />
 
-            <div>
-              <Label htmlFor="subject">Subject</Label>
-              <Input
-                id="subject"
-                value={subject}
-                onChange={(e) => setSubject(e.target.value)}
-                placeholder="e.g., Mathematics, Science"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="class-status">Class Status</Label>
-              <Select value={status} onValueChange={(value: 'draft' | 'active' | 'inactive' | 'completed') => setStatus(value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                  <SelectItem value="completed">Completed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="delivery-mode">Delivery Mode</Label>
-              <Select value={deliveryMode} onValueChange={(value: 'online' | 'offline') => setDeliveryMode(value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="online">Online</SelectItem>
-                  <SelectItem value="offline">Offline</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Meeting Link field - only show when delivery mode is online */}
-            {deliveryMode === 'online' && (
-              <div>
-                <Label htmlFor="meeting-link">Meeting Link</Label>
-                <Input
-                  id="meeting-link"
-                  value={meetingLink}
-                  onChange={(e) => setMeetingLink(e.target.value)}
-                  placeholder="https://zoom.us/j/..."
-                  type="url"
-                />
-              </div>
-            )}
-
-            <div>
-              <Label htmlFor="class-format">Class Format</Label>
-              <Select value={classFormat} onValueChange={(value: 'live' | 'recorded' | 'inbound' | 'outbound') => setClassFormat(value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="live">Live</SelectItem>
-                  <SelectItem value="recorded">Recorded</SelectItem>
-                  <SelectItem value="inbound">Inbound</SelectItem>
-                  <SelectItem value="outbound">Outbound</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="class-size">Class Size</Label>
-              <Select value={classSize} onValueChange={(value: 'group' | 'one-on-one') => setClassSize(value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="group">Group</SelectItem>
-                  <SelectItem value="one-on-one">One-on-One</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="duration-type">Duration Type</Label>
-              <Select value={durationType} onValueChange={(value: 'recurring' | 'fixed') => setDurationType(value)}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="recurring">Recurring</SelectItem>
-                  <SelectItem value="fixed">Fixed</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="price">Price (USD)</Label>
-              <Input
-                id="price"
-                type="number"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                placeholder="0.00"
-                min="0"
-                step="0.01"
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="max-students">Max Students</Label>
-              <Input
-                id="max-students"
-                type="number"
-                value={maxStudents}
-                onChange={(e) => setMaxStudents(e.target.value)}
-                placeholder="Enter maximum students"
-                min="1"
-                disabled={classSize === 'one-on-one'}
-                className={classSize === 'one-on-one' ? 'bg-gray-100 cursor-not-allowed' : ''}
-              />
-              {classSize === 'one-on-one' && (
-                <p className="text-sm text-gray-500 mt-1">
-                  Max students is automatically set to 1 for one-on-one classes
-                </p>
-              )}
-            </div>
-
-            {/* Schedule Section */}
-            <div className="md:col-span-2">
-              <h3 className="text-lg font-medium mb-4 border-t pt-4">Schedule Information</h3>
-            </div>
-
-            <div>
-              <Label htmlFor="start-date">Start Date *</Label>
-              <Input
-                id="start-date"
-                type="date"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                min={format(new Date(), 'yyyy-MM-dd')}
-                required
-              />
-            </div>
-
-            {/* Display the auto-populated day of week */}
-            {startDate && (
-              <div>
-                <Label>Day of Week (Auto-populated)</Label>
-                <Input
-                  value={getDisplayDay()}
-                  disabled
-                  className="bg-gray-100 cursor-not-allowed"
-                />
-                <p className="text-sm text-gray-500 mt-1">
-                  Day is automatically determined from the selected date
-                </p>
-              </div>
-            )}
-
-            <div>
-              <Label htmlFor="start-time">Start Time *</Label>
-              <Input
-                id="start-time"
-                type="time"
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-                required
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="end-time">End Time *</Label>
-              <Input
-                id="end-time"
-                type="time"
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-                required
-              />
-            </div>
-          </div>
+          <ScheduleForm
+            startDate={startDate}
+            setStartDate={setStartDate}
+            startTime={startTime}
+            setStartTime={setStartTime}
+            endTime={endTime}
+            setEndTime={setEndTime}
+          />
 
           <div className="flex justify-end space-x-2 pt-4">
             <Button 
