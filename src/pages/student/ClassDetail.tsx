@@ -50,7 +50,30 @@ const ClassDetail = () => {
   const navigate = useNavigate();
   const [classData, setClassData] = useState<ClassData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isEnrolling, setIsEnrolling] = useState(false);
+  const [isEnrolled, setIsEnrolled] = useState(false);
   const today = new Date();
+
+  // Check if user is already enrolled
+  const checkEnrollmentStatus = async () => {
+    if (!id) return;
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: enrollment } = await supabase
+        .from('student_enrollments')
+        .select('id')
+        .eq('student_id', user.id)
+        .eq('class_id', id)
+        .maybeSingle();
+
+      setIsEnrolled(!!enrollment);
+    } catch (error) {
+      console.error('Error checking enrollment status:', error);
+    }
+  };
 
   // Fetch class data from database
   useEffect(() => {
@@ -174,6 +197,9 @@ const ClassDetail = () => {
         };
 
         setClassData(formattedClassData);
+        
+        // Check enrollment status after fetching class data
+        await checkEnrollmentStatus();
       } catch (error) {
         console.error('Error fetching class data:', error);
         toast({
@@ -189,8 +215,65 @@ const ClassDetail = () => {
     fetchClassData();
   }, [id]);
 
-  const handlePurchase = () => {
-    navigate(`/checkout/${id}`);
+  const handlePurchase = async () => {
+    if (isEnrolled) {
+      toast({
+        title: "Already enrolled",
+        description: "You are already enrolled in this class.",
+      });
+      return;
+    }
+
+    setIsEnrolling(true);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Please log in",
+          description: "You need to be logged in to enroll in a class.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      console.log('Attempting to enroll user:', user.id, 'in class:', id);
+
+      // Create enrollment
+      const { data, error } = await supabase
+        .from('student_enrollments')
+        .insert({
+          student_id: user.id,
+          class_id: id,
+          status: 'active',
+          payment_status: 'paid'
+        })
+        .select();
+
+      if (error) {
+        console.error('Enrollment error:', error);
+        throw error;
+      }
+
+      console.log('Enrollment successful:', data);
+
+      setIsEnrolled(true);
+      
+      toast({
+        title: "Successfully enrolled!",
+        description: "You have been enrolled in this class. Check your enrolled classes to get started.",
+      });
+
+    } catch (error: any) {
+      console.error('Error enrolling in class:', error);
+      toast({
+        title: "Enrollment failed",
+        description: error.message || "There was an error enrolling in this class. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsEnrolling(false);
+    }
   };
   
   const handleJoinClass = (lessonIndex: number) => {
@@ -627,9 +710,10 @@ const ClassDetail = () => {
             </div>
             <Button
               onClick={handlePurchase}
+              disabled={isEnrolling || isEnrolled}
               className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
             >
-              Purchase Course
+              {isEnrolling ? "Enrolling..." : isEnrolled ? "Already Enrolled" : "Purchase Course"}
             </Button>
           </div>
         </div>

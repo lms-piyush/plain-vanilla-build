@@ -40,13 +40,15 @@ const ClassDetails = () => {
         return;
       }
 
+      console.log('Attempting to enroll user:', user.id, 'in class:', classId);
+
       // Check if already enrolled
       const { data: existingEnrollment } = await supabase
         .from('student_enrollments')
         .select('id')
         .eq('student_id', user.id)
         .eq('class_id', classId)
-        .single();
+        .maybeSingle();
 
       if (existingEnrollment) {
         toast({
@@ -58,16 +60,22 @@ const ClassDetails = () => {
       }
 
       // Create enrollment
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('student_enrollments')
         .insert({
           student_id: user.id,
           class_id: classId,
           status: 'active',
           payment_status: 'paid'
-        });
+        })
+        .select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Enrollment error:', error);
+        throw error;
+      }
+
+      console.log('Enrollment successful:', data);
 
       toast({
         title: "Successfully enrolled!",
