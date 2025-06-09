@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { TutorClass } from '@/hooks/use-tutor-classes';
+import { format } from 'date-fns';
 
 interface SimpleCreateClassDialogProps {
   open: boolean;
@@ -34,6 +35,13 @@ const SimpleCreateClassDialog = ({
   const [price, setPrice] = useState('');
   const [maxStudents, setMaxStudents] = useState('');
   const [meetingLink, setMeetingLink] = useState('');
+  
+  // Schedule fields
+  const [startDate, setStartDate] = useState('');
+  const [startTime, setStartTime] = useState('');
+  const [endTime, setEndTime] = useState('');
+  const [dayOfWeek, setDayOfWeek] = useState('monday');
+  
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Reset form when dialog opens/closes or when editing class changes
@@ -50,6 +58,12 @@ const SimpleCreateClassDialog = ({
       setPrice(editingClass.price?.toString() || '');
       setMaxStudents(editingClass.max_students?.toString() || '');
       setMeetingLink(''); // We'll need to fetch this from class_locations table
+      
+      // Set default schedule values - these would need to be fetched from related tables
+      setStartDate('');
+      setStartTime('09:00');
+      setEndTime('10:00');
+      setDayOfWeek('monday');
     } else {
       // Reset form for new class
       setTitle('');
@@ -63,6 +77,10 @@ const SimpleCreateClassDialog = ({
       setPrice('');
       setMaxStudents('');
       setMeetingLink('');
+      setStartDate('');
+      setStartTime('09:00');
+      setEndTime('10:00');
+      setDayOfWeek('monday');
     }
   }, [editingClass, open]);
 
@@ -78,6 +96,16 @@ const SimpleCreateClassDialog = ({
     
     if (!title.trim()) {
       toast.error('Please enter a class title');
+      return;
+    }
+
+    if (!startDate) {
+      toast.error('Please select a start date');
+      return;
+    }
+
+    if (!startTime || !endTime) {
+      toast.error('Please set start and end times');
       return;
     }
 
@@ -98,6 +126,8 @@ const SimpleCreateClassDialog = ({
         currency: 'USD'
       };
 
+      let classId: string;
+
       if (editingClass) {
         // Update existing class
         const { error } = await supabase
@@ -109,6 +139,7 @@ const SimpleCreateClassDialog = ({
           .eq('id', editingClass.id);
 
         if (error) throw error;
+        classId = editingClass.id;
         toast.success('Class updated successfully!');
       } else {
         // Create new class
@@ -118,15 +149,50 @@ const SimpleCreateClassDialog = ({
           return;
         }
 
-        const { error } = await supabase
+        const { data: newClass, error } = await supabase
           .from('classes')
           .insert({
             ...classData,
             tutor_id: user.id
-          });
+          })
+          .select('id')
+          .single();
 
         if (error) throw error;
+        classId = newClass.id;
         toast.success('Class created successfully!');
+      }
+
+      // Handle schedule data
+      if (startDate && startTime && endTime) {
+        // Insert/update class schedule
+        await supabase
+          .from('class_schedules')
+          .upsert({
+            class_id: classId,
+            start_date: startDate,
+            frequency: 'weekly' // Default frequency
+          });
+
+        // Insert/update time slot
+        await supabase
+          .from('class_time_slots')
+          .upsert({
+            class_id: classId,
+            day_of_week: dayOfWeek,
+            start_time: startTime,
+            end_time: endTime
+          });
+      }
+
+      // Handle meeting link for online classes
+      if (deliveryMode === 'online' && meetingLink.trim()) {
+        await supabase
+          .from('class_locations')
+          .upsert({
+            class_id: classId,
+            meeting_link: meetingLink.trim()
+          });
       }
 
       onClassCreated();
@@ -141,7 +207,7 @@ const SimpleCreateClassDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
             {editingClass ? 'Edit Class' : 'Create New Class'}
@@ -295,6 +361,63 @@ const SimpleCreateClassDialog = ({
                   Max students is automatically set to 1 for one-on-one classes
                 </p>
               )}
+            </div>
+
+            {/* Schedule Section */}
+            <div className="md:col-span-2">
+              <h3 className="text-lg font-medium mb-4 border-t pt-4">Schedule Information</h3>
+            </div>
+
+            <div>
+              <Label htmlFor="start-date">Start Date *</Label>
+              <Input
+                id="start-date"
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
+                min={format(new Date(), 'yyyy-MM-dd')}
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="day-of-week">Day of Week</Label>
+              <Select value={dayOfWeek} onValueChange={setDayOfWeek}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="monday">Monday</SelectItem>
+                  <SelectItem value="tuesday">Tuesday</SelectItem>
+                  <SelectItem value="wednesday">Wednesday</SelectItem>
+                  <SelectItem value="thursday">Thursday</SelectItem>
+                  <SelectItem value="friday">Friday</SelectItem>
+                  <SelectItem value="saturday">Saturday</SelectItem>
+                  <SelectItem value="sunday">Sunday</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="start-time">Start Time *</Label>
+              <Input
+                id="start-time"
+                type="time"
+                value={startTime}
+                onChange={(e) => setStartTime(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="end-time">End Time *</Label>
+              <Input
+                id="end-time"
+                type="time"
+                value={endTime}
+                onChange={(e) => setEndTime(e.target.value)}
+                required
+              />
             </div>
           </div>
 

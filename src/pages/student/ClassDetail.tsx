@@ -88,21 +88,23 @@ const ClassDetail = () => {
 
         if (classError) throw classError;
 
-        // Fetch tutor information
+        // Fetch tutor information from profiles table
         const { data: tutorInfo, error: tutorError } = await supabase
           .from('profiles')
           .select('full_name')
           .eq('id', classInfo.tutor_id)
           .maybeSingle();
 
-        if (tutorError) console.error('Error fetching tutor:', tutorError);
+        if (tutorError) {
+          console.error('Error fetching tutor:', tutorError);
+        }
 
         // Build class data object with real data and dummy fallbacks
         const formattedClassData: ClassData = {
           id: classInfo.id,
           title: classInfo.title,
           tutor: {
-            name: tutorInfo?.full_name || "Dr. Smith",
+            name: tutorInfo?.full_name || "Unknown Tutor",
             tutorId: classInfo.tutor_id,
             qualifications: "Ph.D in Computer Science", // Dummy data
             totalCourses: 8, // Dummy data
