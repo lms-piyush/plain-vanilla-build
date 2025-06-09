@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Tabs } from "@/components/ui/tabs";
@@ -53,11 +54,15 @@ const ExploreClasses = () => {
         setTutorNamesLoading(true);
         const tutorIds = [...new Set(allClasses.map(cls => cls.tutor_id))];
         
+        console.log("Fetching tutor names for IDs:", tutorIds);
+        
         try {
           const { data: profiles, error } = await supabase
             .from('profiles')
             .select('id, full_name')
             .in('id', tutorIds);
+
+          console.log("Profiles response:", profiles, "Error:", error);
 
           if (profiles && !error) {
             const nameMap = profiles.reduce((acc, profile) => {
@@ -65,6 +70,7 @@ const ExploreClasses = () => {
               return acc;
             }, {} as {[key: string]: string});
             
+            console.log("Created name map:", nameMap);
             setTutorNames(nameMap);
           } else {
             console.error('Error fetching tutor profiles:', error);
@@ -173,12 +179,16 @@ const ExploreClasses = () => {
       return tutorClass.class_size === 'group' ? 'Group' : '1-on-1';
     };
 
-    // Get tutor name - show loading state only while fetching, not "Unknown Tutor"
+    // Get tutor name - ensure we have the tutor name from profiles
     const getTutorName = () => {
       if (tutorNamesLoading) {
-        return "Loading...";
+        return "Loading tutor...";
       }
-      return tutorNames[tutorClass.tutor_id] || "Unknown Tutor";
+      
+      const tutorName = tutorNames[tutorClass.tutor_id];
+      console.log(`Getting tutor name for ${tutorClass.tutor_id}:`, tutorName);
+      
+      return tutorName || "Unknown Tutor";
     };
 
     return {

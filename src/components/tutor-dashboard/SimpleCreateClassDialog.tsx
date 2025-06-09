@@ -40,7 +40,6 @@ const SimpleCreateClassDialog = ({
   const [startDate, setStartDate] = useState('');
   const [startTime, setStartTime] = useState('');
   const [endTime, setEndTime] = useState('');
-  const [dayOfWeek, setDayOfWeek] = useState('monday');
   
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -63,7 +62,6 @@ const SimpleCreateClassDialog = ({
       setStartDate('');
       setStartTime('09:00');
       setEndTime('10:00');
-      setDayOfWeek('monday');
     } else {
       // Reset form for new class
       setTitle('');
@@ -80,7 +78,6 @@ const SimpleCreateClassDialog = ({
       setStartDate('');
       setStartTime('09:00');
       setEndTime('10:00');
-      setDayOfWeek('monday');
     }
   }, [editingClass, open]);
 
@@ -90,6 +87,14 @@ const SimpleCreateClassDialog = ({
       setMaxStudents('1');
     }
   }, [classSize]);
+
+  // Function to get day of week from date
+  const getDayOfWeekFromDate = (dateString: string) => {
+    if (!dateString) return 'monday';
+    const date = new Date(dateString);
+    const days = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+    return days[date.getDay()];
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -174,6 +179,9 @@ const SimpleCreateClassDialog = ({
             frequency: 'weekly' // Default frequency
           });
 
+        // Auto-populate day of week from the selected date
+        const dayOfWeek = getDayOfWeekFromDate(startDate);
+
         // Insert/update time slot
         await supabase
           .from('class_time_slots')
@@ -203,6 +211,13 @@ const SimpleCreateClassDialog = ({
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Get display day from selected date
+  const getDisplayDay = () => {
+    if (!startDate) return '';
+    const date = new Date(startDate);
+    return date.toLocaleDateString('en-US', { weekday: 'long' });
   };
 
   return (
@@ -380,23 +395,20 @@ const SimpleCreateClassDialog = ({
               />
             </div>
 
-            <div>
-              <Label htmlFor="day-of-week">Day of Week</Label>
-              <Select value={dayOfWeek} onValueChange={setDayOfWeek}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="monday">Monday</SelectItem>
-                  <SelectItem value="tuesday">Tuesday</SelectItem>
-                  <SelectItem value="wednesday">Wednesday</SelectItem>
-                  <SelectItem value="thursday">Thursday</SelectItem>
-                  <SelectItem value="friday">Friday</SelectItem>
-                  <SelectItem value="saturday">Saturday</SelectItem>
-                  <SelectItem value="sunday">Sunday</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Display the auto-populated day of week */}
+            {startDate && (
+              <div>
+                <Label>Day of Week (Auto-populated)</Label>
+                <Input
+                  value={getDisplayDay()}
+                  disabled
+                  className="bg-gray-100 cursor-not-allowed"
+                />
+                <p className="text-sm text-gray-500 mt-1">
+                  Day is automatically determined from the selected date
+                </p>
+              </div>
+            )}
 
             <div>
               <Label htmlFor="start-time">Start Time *</Label>
