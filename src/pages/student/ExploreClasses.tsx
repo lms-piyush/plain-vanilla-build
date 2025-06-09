@@ -8,7 +8,6 @@ import ClassesList from "@/components/explore/ClassesList";
 import ClassesPagination from "@/components/explore/ClassesPagination";
 import { useAllClasses, TutorClass } from "@/hooks/use-all-classes";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
 
 const ExploreClasses = () => {
   const navigate = useNavigate();
@@ -35,8 +34,7 @@ const ExploreClasses = () => {
 
   // Fetch classes with tutors using proper joins
   const { 
-    classes: allClasses, 
-    totalCount, 
+    data: queryResult, 
     isLoading,
     error,
     refetch 
@@ -44,6 +42,10 @@ const ExploreClasses = () => {
     page: activeTab === "all" ? currentPage : 1,
     pageSize: activeTab === "all" ? classesPerPage : 1000
   });
+
+  // Extract classes and totalCount from the query result
+  const allClasses = queryResult?.classes || [];
+  const totalCount = queryResult?.totalCount || 0;
 
   // Debug logging
   useEffect(() => {
@@ -144,6 +146,11 @@ const ExploreClasses = () => {
 
   // Filter and sort classes for All Classes tab
   const getFilteredClasses = () => {
+    if (!allClasses || !Array.isArray(allClasses)) {
+      console.log("allClasses is not an array:", allClasses);
+      return [];
+    }
+    
     let filtered = [...allClasses];
     
     console.log("Filtering classes:", filtered.length, "total classes");
@@ -197,6 +204,9 @@ const ExploreClasses = () => {
 
   // Get saved classes (classes in wishlist)
   const getSavedClasses = () => {
+    if (!allClasses || !Array.isArray(allClasses)) {
+      return [];
+    }
     return allClasses.filter(course => wishlistedCourses.includes(course.id));
   };
 
@@ -215,7 +225,7 @@ const ExploreClasses = () => {
       <div className="text-center py-12">
         <h1 className="text-2xl font-bold mb-6">Explore Classes</h1>
         <div className="text-red-500 mb-4">
-          Error loading classes: {error}
+          Error loading classes: {error.message}
         </div>
         <button 
           onClick={() => refetch()}

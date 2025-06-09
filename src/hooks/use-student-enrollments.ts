@@ -70,6 +70,8 @@ export const useStudentEnrollments = () => {
       // Transform the data to match our interface
       const transformedEnrollments: StudentEnrollment[] = enrollments?.map(enrollment => ({
         ...enrollment,
+        status: enrollment.status as 'active' | 'completed' | 'cancelled',
+        payment_status: enrollment.payment_status as 'pending' | 'paid' | 'failed' | 'refunded',
         class: {
           ...enrollment.classes,
           tutor_name: enrollment.classes?.profiles?.full_name || "Unknown Tutor"
