@@ -44,7 +44,7 @@ const ExploreClasses = () => {
     setPaymentModel
   });
 
-  // Fetch classes with tutors using proper joins
+  // Fetch classes with tutors using proper joins - with improved caching
   const { 
     data: queryResult, 
     isLoading,
@@ -75,6 +75,11 @@ const ExploreClasses = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [activeTab]);
+
+  // Force refetch when component mounts or when returning to this page
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   const displayedClasses = activeTab === "saved" 
     ? getSavedClasses(allClasses, wishlistedCourses) 

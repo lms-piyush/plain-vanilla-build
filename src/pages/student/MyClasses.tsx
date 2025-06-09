@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import {
@@ -26,8 +26,8 @@ const MyClasses = () => {
   const [classDuration, setClassDuration] = useState<"finite" | "infinite">("finite");
   const [paymentModel, setPaymentModel] = useState<"one-time" | "subscription">("one-time");
   
-  // Fetch enrolled classes from database
-  const { data: enrollments = [], isLoading, error } = useStudentEnrollments();
+  // Fetch enrolled classes from database with improved caching
+  const { data: enrollments = [], isLoading, error, refetch } = useStudentEnrollments();
 
   // Filter effects
   useFilterEffects({
@@ -38,6 +38,11 @@ const MyClasses = () => {
     setClassSize,
     setPaymentModel
   });
+
+  // Force refetch when component mounts or when returning to this page
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
   
   // Convert enrollments to class cards
   const classes = enrollments.map(convertEnrollmentToClassCard);
@@ -89,7 +94,13 @@ const MyClasses = () => {
     return (
       <div className="text-center py-12">
         <h1 className="text-2xl font-bold mb-6">My Classes</h1>
-        <p className="text-red-500">Error loading classes. Please try again.</p>
+        <p className="text-red-500 mb-4">Error loading classes: {error.message}</p>
+        <Button 
+          onClick={() => refetch()}
+          className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
+        >
+          Try Again
+        </Button>
       </div>
     );
   }
@@ -130,8 +141,8 @@ const MyClasses = () => {
                   <ClassCard
                     key={cls.id}
                     {...cls}
-                    onClick={() => navigate(`/classes/${cls.id}`)}
-                    onTutorClick={() => navigate(`/tutor/${cls.tutorId}`)}
+                    onClick={() => navigate(`/student/classes/${cls.id}`)}
+                    onTutorClick={() => navigate(`/student/tutor/${cls.tutorId}`)}
                     onMessageTutor={() => navigate(`/messages?tutor=${cls.tutorId}`)}
                   />
                 ))
@@ -145,7 +156,7 @@ const MyClasses = () => {
                   </p>
                   {enrollments.length === 0 && (
                     <Button 
-                      onClick={() => navigate('/explore')}
+                      onClick={() => navigate('/student/explore')}
                       className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
                     >
                       Explore Classes

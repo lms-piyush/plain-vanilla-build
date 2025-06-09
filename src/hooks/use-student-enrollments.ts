@@ -37,11 +37,12 @@ export const useStudentEnrollments = () => {
         throw new Error("User not authenticated");
       }
 
+      // Improved query with proper inner join to ensure we get tutor names
       const { data: enrollments, error } = await supabase
         .from("student_enrollments")
         .select(`
           *,
-          classes!student_enrollments_class_id_fkey (
+          classes!inner (
             id,
             title,
             description,
@@ -54,7 +55,7 @@ export const useStudentEnrollments = () => {
             class_size,
             duration_type,
             tutor_id,
-            profiles!classes_tutor_id_fkey (
+            profiles!inner (
               full_name
             )
           )
@@ -78,8 +79,11 @@ export const useStudentEnrollments = () => {
         }
       })) || [];
 
+      console.log("Fetched enrollments with tutor names:", transformedEnrollments);
+
       return transformedEnrollments;
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 30 * 1000, // Reduced from 5 minutes to 30 seconds
+    refetchInterval: 60 * 1000, // Auto-refetch every minute
   });
 };

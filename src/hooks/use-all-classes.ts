@@ -37,12 +37,12 @@ export const useAllClasses = ({ page = 1, pageSize = 9 }: UseAllClassesOptions =
       const startIndex = (page - 1) * pageSize;
       const endIndex = startIndex + pageSize - 1;
 
-      // Join with profiles table to get tutor names
+      // Improved query to properly join with profiles table
       const { data: classes, error, count } = await supabase
         .from("classes")
         .select(`
           *,
-          profiles!classes_tutor_id_fkey (
+          profiles!inner (
             full_name
           )
         `, { count: 'exact' })
@@ -71,6 +71,7 @@ export const useAllClasses = ({ page = 1, pageSize = 9 }: UseAllClassesOptions =
         totalCount: count || 0
       };
     },
-    staleTime: 5 * 60 * 1000, // 5 minutes
+    staleTime: 30 * 1000, // Reduced from 5 minutes to 30 seconds for faster updates
+    refetchInterval: 60 * 1000, // Auto-refetch every minute
   });
 };
