@@ -174,6 +174,15 @@ const MyClasses = () => {
                       Explore Classes
                     </Button>
                   )}
+                  {enrollments.length > 0 && filteredClasses.length === 0 && (
+                    <Button 
+                      onClick={() => setFilterOpen(false)}
+                      variant="outline"
+                      className="mr-2"
+                    >
+                      Clear Filters
+                    </Button>
+                  )}
                 </div>
               )}
             </div>

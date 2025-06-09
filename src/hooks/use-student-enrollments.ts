@@ -34,15 +34,18 @@ export const useStudentEnrollments = () => {
     queryFn: async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        throw new Error("User not authenticated");
+        console.log("No authenticated user found");
+        return [];
       }
 
-      // Improved query with proper inner join to ensure we get tutor names
+      console.log("Fetching enrollments for user:", user.id);
+
+      // Query with proper joins to get tutor names
       const { data: enrollments, error } = await supabase
         .from("student_enrollments")
         .select(`
           *,
-          classes!inner (
+          classes (
             id,
             title,
             description,
@@ -55,7 +58,7 @@ export const useStudentEnrollments = () => {
             class_size,
             duration_type,
             tutor_id,
-            profiles!inner (
+            profiles (
               full_name
             )
           )
@@ -68,6 +71,8 @@ export const useStudentEnrollments = () => {
         throw error;
       }
 
+      console.log("Raw enrollments data:", enrollments);
+
       // Transform the data to match our interface
       const transformedEnrollments: StudentEnrollment[] = enrollments?.map(enrollment => ({
         ...enrollment,
@@ -79,11 +84,13 @@ export const useStudentEnrollments = () => {
         }
       })) || [];
 
-      console.log("Fetched enrollments with tutor names:", transformedEnrollments);
+      console.log("Transformed enrollments:", transformedEnrollments);
 
       return transformedEnrollments;
     },
-    staleTime: 30 * 1000, // Reduced from 5 minutes to 30 seconds
-    refetchInterval: 60 * 1000, // Auto-refetch every minute
+    staleTime: 10 * 1000, // Reduced to 10 seconds
+    gcTime: 30 * 1000,
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 };

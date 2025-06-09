@@ -30,7 +30,6 @@ const ExploreClasses = () => {
   const [classFormat, setClassFormat] = useState<"live" | "recorded" | "inbound" | "outbound">("live");
   const [classSize, setClassSize] = useState<"group" | "1-on-1">("group");
   const [classDuration, setClassDuration] = useState<"finite" | "infinite">("finite");
-  const [paymentModel, setPaymentModel] = useState<"one-time" | "subscription">("one-time");
   
   const classesPerPage = 9;
 
@@ -41,7 +40,7 @@ const ExploreClasses = () => {
     classDuration,
     setClassFormat,
     setClassSize,
-    setPaymentModel
+    setPaymentModel: () => {} // Not used in explore classes
   });
 
   // Fetch all classes for both tabs
@@ -62,12 +61,12 @@ const ExploreClasses = () => {
   useEffect(() => {
     console.log("ExploreClasses - Component state:", {
       activeTab,
-      allClasses,
+      allClasses: allClasses.length,
       isLoading,
       error,
-      classesLength: allClasses.length
+      filterOpen
     });
-  }, [activeTab, allClasses, isLoading, error]);
+  }, [activeTab, allClasses, isLoading, error, filterOpen]);
 
   // Reset to first page when changing tabs
   useEffect(() => {
@@ -165,12 +164,14 @@ const ExploreClasses = () => {
               setActiveTab={setActiveTab}
             />
             
-            <ClassesPagination
-              activeTab={activeTab}
-              totalPages={totalPages}
-              currentPage={currentPage}
-              handlePageChange={handlePageChange}
-            />
+            {totalPages > 1 && (
+              <ClassesPagination
+                activeTab={activeTab}
+                totalPages={totalPages}
+                currentPage={currentPage}
+                handlePageChange={handlePageChange}
+              />
+            )}
           </Tabs>
         </div>
       </div>

@@ -18,7 +18,7 @@ export interface TutorClass {
   duration_type: 'recurring' | 'fixed';
   auto_renewal: boolean | null;
   tutor_id: string;
-  tutor_name: string; // Added tutor name from profiles join
+  tutor_name: string;
   created_at: string;
   updated_at: string;
 }
@@ -42,7 +42,7 @@ export const useAllClasses = ({ page = 1, pageSize = 9 }: UseAllClassesOptions =
         .from("classes")
         .select(`
           *,
-          profiles!inner (
+          profiles (
             full_name
           )
         `, { count: 'exact' })
@@ -75,8 +75,8 @@ export const useAllClasses = ({ page = 1, pageSize = 9 }: UseAllClassesOptions =
         totalCount: count || 0
       };
     },
-    staleTime: 10 * 1000, // Cache for 10 seconds
-    gcTime: 30 * 1000, // Garbage collect after 30 seconds
+    staleTime: 5 * 1000, // Reduced to 5 seconds for better refresh
+    gcTime: 15 * 1000, // Reduced garbage collection time
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });

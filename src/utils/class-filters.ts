@@ -69,6 +69,8 @@ export const getFilteredClasses = (
     });
     
     console.log("Classes after filtering:", filtered.length);
+  } else {
+    console.log("Filter not opened, showing all classes");
   }
   
   // Sort the classes
