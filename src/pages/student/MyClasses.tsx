@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
@@ -32,6 +33,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Textarea } from "@/components/ui/textarea";
+import { useStudentEnrollments, StudentEnrollment } from "@/hooks/use-student-enrollments";
 
 interface ClassCardProps {
   id: string;
@@ -225,54 +227,28 @@ const MyClasses = () => {
   const [classDuration, setClassDuration] = useState<"finite" | "infinite">("finite");
   const [paymentModel, setPaymentModel] = useState<"one-time" | "subscription">("one-time");
   
-  // Sample class data
-  const classes = [
-    {
-      id: "class1",
-      title: "Introduction to Calculus",
-      tutor: "Dr. Smith",
-      tutorId: "tutor1",
-      type: "Online",
-      format: "Live",
-      payment: "Fixed",
-      status: "Active",
-      students: 15,
-      image: "https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=300",
-      rating: 4.8,
-      description: "Learn the foundations of calculus, including limits, derivatives, and integrals. This course provides a comprehensive introduction to mathematical concepts.",
-      classSize: "Group",
-    },
-    {
-      id: "class2",
-      title: "Advanced Algorithms",
-      tutor: "Prof. Johnson",
-      tutorId: "tutor2",
-      type: "Online",
-      format: "Recorded",
-      payment: "Subscription",
-      status: "Enrolled",
-      students: 42,
-      image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=300",
-      rating: 4.6,
-      description: "Study complex algorithms and data structures. Learn about efficient problem-solving techniques for computational challenges.",
-      classSize: "1-on-1",
-    },
-    {
-      id: "class3",
-      title: "Chemistry Lab",
-      tutor: "Sarah Lee",
-      tutorId: "tutor3",
-      type: "Offline",
-      format: "Inbound",
-      payment: "Fixed",
-      status: "Completed",
-      students: 8,
-      image: "https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&w=300",
-      rating: 4.9,
-      description: "Hands-on laboratory experience covering various chemical reactions, lab safety, and experimental procedures.",
-      classSize: "Group",
-    },
-  ];
+  // Fetch enrolled classes from database
+  const { data: enrollments = [], isLoading, error } = useStudentEnrollments();
+
+  // Convert enrollment to class card format
+  const convertEnrollmentToClassCard = (enrollment: StudentEnrollment) => {
+    const cls = enrollment.class;
+    return {
+      id: cls.id,
+      title: cls.title,
+      tutor: cls.tutor_name,
+      tutorId: cls.tutor_id,
+      type: cls.delivery_mode === 'online' ? 'Online' : 'Offline',
+      format: cls.class_format.charAt(0).toUpperCase() + cls.class_format.slice(1),
+      payment: cls.duration_type === 'recurring' ? 'Subscription' : 'Fixed',
+      status: enrollment.status === 'active' ? 'Active' : enrollment.status === 'completed' ? 'Completed' : 'Enrolled',
+      students: cls.class_size === 'group' ? 15 : 1, // Default values
+      image: cls.thumbnail_url || "https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=300",
+      rating: 4.8, // Default rating
+      description: cls.description || "No description available.",
+      classSize: cls.class_size === 'group' ? "Group" : "1-on-1",
+    };
+  };
     
   // Effect to handle format options based on class mode
   useEffect(() => {
@@ -296,6 +272,9 @@ const MyClasses = () => {
       setPaymentModel("subscription");
     }
   }, [classDuration]);
+  
+  // Convert enrollments to class cards
+  const classes = enrollments.map(convertEnrollmentToClassCard);
   
   const filteredClasses = classes.filter(cls => {
     // Filter by tab
@@ -330,6 +309,24 @@ const MyClasses = () => {
     
     return true;
   });
+
+  if (isLoading) {
+    return (
+      <div className="text-center py-12">
+        <h1 className="text-2xl font-bold mb-6">My Classes</h1>
+        <p>Loading your enrolled classes...</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-12">
+        <h1 className="text-2xl font-bold mb-6">My Classes</h1>
+        <p className="text-red-500">Error loading classes. Please try again.</p>
+      </div>
+    );
+  }
   
   return (
     <>
@@ -504,7 +501,22 @@ const MyClasses = () => {
                   />
                 ))
               ) : (
-                <p className="text-center py-8 text-gray-500">No classes found</p>
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">
+                    {enrollments.length === 0 
+                      ? "You haven't enrolled in any classes yet." 
+                      : "No classes found matching your filters."
+                    }
+                  </p>
+                  {enrollments.length === 0 && (
+                    <Button 
+                      onClick={() => navigate('/explore')}
+                      className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
+                    >
+                      Explore Classes
+                    </Button>
+                  )}
+                </div>
               )}
             </div>
           </TabsContent>

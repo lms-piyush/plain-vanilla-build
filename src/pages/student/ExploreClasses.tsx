@@ -20,8 +20,6 @@ const ExploreClasses = () => {
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState("popular");
   const [currentPage, setCurrentPage] = useState(1);
-  const [tutorNames, setTutorNames] = useState<{[key: string]: string}>({});
-  const [tutorNamesLoading, setTutorNamesLoading] = useState(false);
   
   // Wishlist state - in a real app, this would come from the database
   const [wishlistedCourses, setWishlistedCourses] = useState<string[]>([]);
@@ -35,7 +33,7 @@ const ExploreClasses = () => {
   
   const classesPerPage = 9;
 
-  // Fetch classes with pagination for All Classes tab
+  // Fetch classes with tutors using proper joins
   const { 
     classes: allClasses, 
     totalCount, 
@@ -47,57 +45,6 @@ const ExploreClasses = () => {
     pageSize: activeTab === "all" ? classesPerPage : 1000
   });
 
-  // Fetch tutor names when classes are loaded
-  useEffect(() => {
-    const fetchTutorNames = async () => {
-      if (allClasses.length > 0) {
-        setTutorNamesLoading(true);
-        const tutorIds = [...new Set(allClasses.map(cls => cls.tutor_id))];
-        
-        console.log("Fetching tutor names for IDs:", tutorIds);
-        
-        try {
-          const { data: profiles, error } = await supabase
-            .from('profiles')
-            .select('id, full_name')
-            .in('id', tutorIds);
-
-          console.log("Profiles response:", profiles, "Error:", error);
-
-          if (profiles && !error) {
-            const nameMap = profiles.reduce((acc, profile) => {
-              acc[profile.id] = profile.full_name || 'Unknown Tutor';
-              return acc;
-            }, {} as {[key: string]: string});
-            
-            console.log("Created name map:", nameMap);
-            setTutorNames(nameMap);
-          } else {
-            console.error('Error fetching tutor profiles:', error);
-            // Set fallback names for all tutors
-            const fallbackNames = tutorIds.reduce((acc, id) => {
-              acc[id] = 'Unknown Tutor';
-              return acc;
-            }, {} as {[key: string]: string});
-            setTutorNames(fallbackNames);
-          }
-        } catch (err) {
-          console.error('Error fetching tutor names:', err);
-          // Set fallback names for all tutors
-          const fallbackNames = tutorIds.reduce((acc, id) => {
-            acc[id] = 'Unknown Tutor';
-            return acc;
-          }, {} as {[key: string]: string});
-          setTutorNames(fallbackNames);
-        } finally {
-          setTutorNamesLoading(false);
-        }
-      }
-    };
-
-    fetchTutorNames();
-  }, [allClasses]);
-
   // Debug logging
   useEffect(() => {
     console.log("ExploreClasses - Component state:", {
@@ -106,11 +53,9 @@ const ExploreClasses = () => {
       totalCount,
       isLoading,
       error,
-      classesLength: allClasses.length,
-      tutorNames,
-      tutorNamesLoading
+      classesLength: allClasses.length
     });
-  }, [activeTab, allClasses, totalCount, isLoading, error, tutorNames, tutorNamesLoading]);
+  }, [activeTab, allClasses, totalCount, isLoading, error]);
 
   // Effect to handle format options based on class mode
   useEffect(() => {
@@ -179,22 +124,10 @@ const ExploreClasses = () => {
       return tutorClass.class_size === 'group' ? 'Group' : '1-on-1';
     };
 
-    // Get tutor name - ensure we have the tutor name from profiles
-    const getTutorName = () => {
-      if (tutorNamesLoading) {
-        return "Loading tutor...";
-      }
-      
-      const tutorName = tutorNames[tutorClass.tutor_id];
-      console.log(`Getting tutor name for ${tutorClass.tutor_id}:`, tutorName);
-      
-      return tutorName || "Unknown Tutor";
-    };
-
     return {
       id: tutorClass.id,
       title: tutorClass.title,
-      tutor: getTutorName(),
+      tutor: tutorClass.tutor_name || "Unknown Tutor",
       tutorId: tutorClass.tutor_id,
       rating: 4.5, // This would come from reviews in real app
       image: tutorClass.thumbnail_url || "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=300",

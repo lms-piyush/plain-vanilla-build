@@ -256,6 +256,47 @@ export type Database = {
         }
         Relationships: []
       }
+      student_enrollments: {
+        Row: {
+          class_id: string
+          created_at: string
+          enrollment_date: string
+          id: string
+          payment_status: string
+          status: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          enrollment_date?: string
+          id?: string
+          payment_status?: string
+          status?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          enrollment_date?: string
+          id?: string
+          payment_status?: string
+          status?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_enrollments_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

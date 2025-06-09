@@ -25,6 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import { LectureType, getLectureTypeInfo } from "@/types/lecture-types";
 import LectureTypeBadge from "@/components/LectureTypeBadge";
 import LectureTypeIcon from "@/components/LectureTypeIcon";
+import { supabase } from "@/integrations/supabase/client";
 
 const classData = {
   id: "python-101",
@@ -163,6 +164,7 @@ const ClassDetails = () => {
   const { classId } = useParams();
   const { toast } = useToast();
   const [isSaved, setIsSaved] = useState(false);
+  const [isEnrolling, setIsEnrolling] = useState(false);
   
   const lectureTypeInfo = getLectureTypeInfo(classData.lectureType);
   const isOffline = classData.lectureType.startsWith("offline");
@@ -186,6 +188,66 @@ const ClassDetails = () => {
       title: "Link copied to clipboard",
       description: "You can now share this class with others.",
     });
+  };
+
+  const handleEnrollClass = async () => {
+    setIsEnrolling(true);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Please log in",
+          description: "You need to be logged in to enroll in a class.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Check if already enrolled
+      const { data: existingEnrollment } = await supabase
+        .from('student_enrollments')
+        .select('id')
+        .eq('student_id', user.id)
+        .eq('class_id', classId)
+        .single();
+
+      if (existingEnrollment) {
+        toast({
+          title: "Already enrolled",
+          description: "You are already enrolled in this class.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      // Create enrollment
+      const { error } = await supabase
+        .from('student_enrollments')
+        .insert({
+          student_id: user.id,
+          class_id: classId,
+          status: 'active',
+          payment_status: 'paid'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Successfully enrolled!",
+        description: "You have been enrolled in this class. Check your enrolled classes to get started.",
+      });
+
+    } catch (error: any) {
+      console.error('Error enrolling in class:', error);
+      toast({
+        title: "Enrollment failed",
+        description: error.message || "There was an error enrolling in this class. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsEnrolling(false);
+    }
   };
 
   return (
@@ -410,8 +472,12 @@ const ClassDetails = () => {
                 </div>
                 
                 <div className="pt-2">
-                  <Button asChild className="w-full mb-2">
-                    <Link to={`/classes/${classId}/book`}>Book This Class</Link>
+                  <Button 
+                    onClick={handleEnrollClass}
+                    disabled={isEnrolling}
+                    className="w-full mb-2"
+                  >
+                    {isEnrolling ? "Enrolling..." : "Enroll in Class"}
                   </Button>
                   <Button variant="outline" className="w-full">
                     <MessageCircle className="h-4 w-4 mr-2" />

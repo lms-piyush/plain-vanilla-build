@@ -42,6 +42,57 @@ const SimpleCreateClassDialog = ({
   const [endTime, setEndTime] = useState('');
   
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [existingSchedule, setExistingSchedule] = useState<any>(null);
+
+  // Fetch existing schedule when editing
+  useEffect(() => {
+    const fetchExistingSchedule = async () => {
+      if (editingClass && open) {
+        try {
+          // Fetch existing schedule
+          const { data: scheduleData } = await supabase
+            .from('class_schedules')
+            .select('*')
+            .eq('class_id', editingClass.id)
+            .single();
+
+          if (scheduleData) {
+            setExistingSchedule(scheduleData);
+            setStartDate(scheduleData.start_date || '');
+          }
+
+          // Fetch existing time slot
+          const { data: timeSlotData } = await supabase
+            .from('class_time_slots')
+            .select('*')
+            .eq('class_id', editingClass.id)
+            .single();
+
+          if (timeSlotData) {
+            setStartTime(timeSlotData.start_time || '09:00');
+            setEndTime(timeSlotData.end_time || '10:00');
+          }
+
+          // Fetch existing meeting link
+          if (editingClass.delivery_mode === 'online') {
+            const { data: locationData } = await supabase
+              .from('class_locations')
+              .select('meeting_link')
+              .eq('class_id', editingClass.id)
+              .single();
+
+            if (locationData) {
+              setMeetingLink(locationData.meeting_link || '');
+            }
+          }
+        } catch (error) {
+          console.error('Error fetching existing schedule:', error);
+        }
+      }
+    };
+
+    fetchExistingSchedule();
+  }, [editingClass, open]);
 
   // Reset form when dialog opens/closes or when editing class changes
   useEffect(() => {
@@ -56,12 +107,6 @@ const SimpleCreateClassDialog = ({
       setStatus(editingClass.status);
       setPrice(editingClass.price?.toString() || '');
       setMaxStudents(editingClass.max_students?.toString() || '');
-      setMeetingLink(''); // We'll need to fetch this from class_locations table
-      
-      // Set default schedule values - these would need to be fetched from related tables
-      setStartDate('');
-      setStartTime('09:00');
-      setEndTime('10:00');
     } else {
       // Reset form for new class
       setTitle('');
@@ -78,6 +123,7 @@ const SimpleCreateClassDialog = ({
       setStartDate('');
       setStartTime('09:00');
       setEndTime('10:00');
+      setExistingSchedule(null);
     }
   }, [editingClass, open]);
 
@@ -168,39 +214,78 @@ const SimpleCreateClassDialog = ({
         toast.success('Class created successfully!');
       }
 
-      // Handle schedule data
+      // Handle schedule data - always update/insert single schedule
       if (startDate && startTime && endTime) {
-        // Insert/update class schedule
-        await supabase
-          .from('class_schedules')
-          .upsert({
-            class_id: classId,
-            start_date: startDate,
-            frequency: 'weekly' // Default frequency
-          });
+        // Update or insert class schedule
+        const scheduleData = {
+          class_id: classId,
+          start_date: startDate,
+          frequency: 'weekly' // Default frequency
+        };
+
+        if (existingSchedule) {
+          await supabase
+            .from('class_schedules')
+            .update(scheduleData)
+            .eq('class_id', classId);
+        } else {
+          await supabase
+            .from('class_schedules')
+            .insert(scheduleData);
+        }
 
         // Auto-populate day of week from the selected date
         const dayOfWeek = getDayOfWeekFromDate(startDate);
 
-        // Insert/update time slot
-        await supabase
+        // Update or insert time slot
+        const timeSlotData = {
+          class_id: classId,
+          day_of_week: dayOfWeek,
+          start_time: startTime,
+          end_time: endTime
+        };
+
+        const { data: existingTimeSlot } = await supabase
           .from('class_time_slots')
-          .upsert({
-            class_id: classId,
-            day_of_week: dayOfWeek,
-            start_time: startTime,
-            end_time: endTime
-          });
+          .select('id')
+          .eq('class_id', classId)
+          .single();
+
+        if (existingTimeSlot) {
+          await supabase
+            .from('class_time_slots')
+            .update(timeSlotData)
+            .eq('class_id', classId);
+        } else {
+          await supabase
+            .from('class_time_slots')
+            .insert(timeSlotData);
+        }
       }
 
       // Handle meeting link for online classes
       if (deliveryMode === 'online' && meetingLink.trim()) {
-        await supabase
+        const locationData = {
+          class_id: classId,
+          meeting_link: meetingLink.trim()
+        };
+
+        const { data: existingLocation } = await supabase
           .from('class_locations')
-          .upsert({
-            class_id: classId,
-            meeting_link: meetingLink.trim()
-          });
+          .select('id')
+          .eq('class_id', classId)
+          .single();
+
+        if (existingLocation) {
+          await supabase
+            .from('class_locations')
+            .update(locationData)
+            .eq('class_id', classId);
+        } else {
+          await supabase
+            .from('class_locations')
+            .insert(locationData);
+        }
       }
 
       onClassCreated();
