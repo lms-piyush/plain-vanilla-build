@@ -6,22 +6,24 @@ import ExploreClassesHeader from "@/components/explore/ExploreClassesHeader";
 import FilterSheet from "@/components/explore/FilterSheet";
 import ClassesList from "@/components/explore/ClassesList";
 import ClassesPagination from "@/components/explore/ClassesPagination";
-import { useAllClasses, TutorClass } from "@/hooks/use-all-classes";
-import { useToast } from "@/hooks/use-toast";
+import { useAllClasses } from "@/hooks/use-all-classes";
+import { useWishlist } from "@/hooks/use-wishlist";
+import { useFilterEffects } from "@/hooks/use-filter-effects";
+import { convertToClassCard } from "@/utils/class-converter";
+import { getFilteredClasses, getSavedClasses } from "@/utils/class-filters";
 
 const ExploreClasses = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const filterParam = searchParams.get("filter");
-  const { toast } = useToast();
   
   const [activeTab, setActiveTab] = useState(filterParam === "saved" ? "saved" : "all");
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState("popular");
   const [currentPage, setCurrentPage] = useState(1);
   
-  // Wishlist state - in a real app, this would come from the database
-  const [wishlistedCourses, setWishlistedCourses] = useState<string[]>([]);
+  // Wishlist management
+  const { wishlistedCourses, toggleWishlist } = useWishlist();
   
   // Filter states
   const [classMode, setClassMode] = useState<"online" | "offline">("online");
@@ -31,6 +33,16 @@ const ExploreClasses = () => {
   const [paymentModel, setPaymentModel] = useState<"one-time" | "subscription">("one-time");
   
   const classesPerPage = 9;
+
+  // Filter effects
+  useFilterEffects({
+    classMode,
+    classFormat,
+    classDuration,
+    setClassFormat,
+    setClassSize,
+    setPaymentModel
+  });
 
   // Fetch classes with tutors using proper joins
   const { 
@@ -59,158 +71,22 @@ const ExploreClasses = () => {
     });
   }, [activeTab, allClasses, totalCount, isLoading, error]);
 
-  // Effect to handle format options based on class mode
-  useEffect(() => {
-    if (classMode === "online") {
-      setClassFormat("live");
-    } else {
-      setClassFormat("inbound");
-    }
-  }, [classMode]);
-
-  // Effect to handle class size options based on format
-  useEffect(() => {
-    if (classFormat === "outbound") {
-      setClassSize("1-on-1");
-    }
-  }, [classFormat]);
-
-  // Effect to handle payment model based on duration
-  useEffect(() => {
-    if (classDuration === "infinite") {
-      setPaymentModel("subscription");
-    }
-  }, [classDuration]);
-
   // Reset to first page when changing tabs
   useEffect(() => {
     setCurrentPage(1);
   }, [activeTab]);
 
-  // Handle wishlist toggle
-  const toggleWishlist = (courseId: string) => {
-    setWishlistedCourses((prev) => {
-      const isCurrentlyWishlisted = prev.includes(courseId);
-      const newWishlist = isCurrentlyWishlisted 
-        ? prev.filter(id => id !== courseId) 
-        : [...prev, courseId];
-      
-      toast({
-        title: isCurrentlyWishlisted ? "Removed from saved classes" : "Added to saved classes",
-        description: isCurrentlyWishlisted 
-          ? "The class has been removed from your saved list." 
-          : "The class has been added to your saved list.",
+  const displayedClasses = activeTab === "saved" 
+    ? getSavedClasses(allClasses, wishlistedCourses) 
+    : getFilteredClasses(allClasses, {
+        classMode,
+        classFormat,
+        classSize,
+        classDuration,
+        sortBy,
+        filterOpen
       });
-      
-      return newWishlist;
-    });
-  };
 
-  // Convert TutorClass to CourseCard props
-  const convertToClassCard = (tutorClass: TutorClass) => {
-    const getClassMode = () => {
-      return tutorClass.delivery_mode === 'online' ? 'Online' : 'Offline';
-    };
-
-    const getClassFormat = () => {
-      switch (tutorClass.class_format) {
-        case 'live': return 'Live';
-        case 'recorded': return 'Recorded';
-        case 'inbound': return 'Inbound';
-        case 'outbound': return 'Outbound';
-        default: return 'Live';
-      }
-    };
-
-    const getClassSize = () => {
-      return tutorClass.class_size === 'group' ? 'Group' : '1-on-1';
-    };
-
-    return {
-      id: tutorClass.id,
-      title: tutorClass.title,
-      tutor: tutorClass.tutor_name || "Unknown Tutor",
-      tutorId: tutorClass.tutor_id,
-      rating: 4.5, // This would come from reviews in real app
-      image: tutorClass.thumbnail_url || "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=300",
-      description: tutorClass.description || "",
-      mode: getClassMode(),
-      format: getClassFormat(),
-      classSize: getClassSize(),
-      students: tutorClass.max_students || 0,
-      price: tutorClass.price ? `Rs. ${tutorClass.price}` : "Free",
-      isSubscription: tutorClass.duration_type === 'recurring',
-      wishListed: wishlistedCourses.includes(tutorClass.id)
-    };
-  };
-
-  // Filter and sort classes for All Classes tab
-  const getFilteredClasses = () => {
-    if (!allClasses || !Array.isArray(allClasses)) {
-      console.log("allClasses is not an array:", allClasses);
-      return [];
-    }
-    
-    let filtered = [...allClasses];
-    
-    console.log("Filtering classes:", filtered.length, "total classes");
-    
-    // Apply filters if they've been set
-    if (filterOpen) {
-      // Apply mode filter
-      filtered = filtered.filter(course => {
-        if (classMode === "online") {
-          return course.delivery_mode === "online";
-        } else {
-          return course.delivery_mode === "offline";
-        }
-      });
-      
-      // Apply format filter
-      filtered = filtered.filter(course => {
-        return course.class_format === classFormat;
-      });
-      
-      // Apply class size filter
-      filtered = filtered.filter(course => {
-        if (classSize === "group") {
-          return course.class_size === "group";
-        } else {
-          return course.class_size === "one-on-one";
-        }
-      });
-      
-      // Apply duration filter
-      filtered = filtered.filter(course => {
-        if (classDuration === "finite") {
-          return course.duration_type === "fixed";
-        } else {
-          return course.duration_type === "recurring";
-        }
-      });
-    }
-    
-    // Sort the classes
-    switch (sortBy) {
-      case "rating":
-        return [...filtered].sort((a, b) => 4.5 - 4.5); // Would use real ratings
-      case "newest":
-        return [...filtered].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      case "popular":
-      default:
-        return filtered;
-    }
-  };
-
-  // Get saved classes (classes in wishlist)
-  const getSavedClasses = () => {
-    if (!allClasses || !Array.isArray(allClasses)) {
-      return [];
-    }
-    return allClasses.filter(course => wishlistedCourses.includes(course.id));
-  };
-
-  const displayedClasses = activeTab === "saved" ? getSavedClasses() : getFilteredClasses();
   const totalPages = Math.ceil(totalCount / classesPerPage);
 
   console.log("Final displayed classes:", displayedClasses.length);
@@ -270,7 +146,7 @@ const ExploreClasses = () => {
               activeTab={activeTab}
               isLoading={isLoading}
               displayedClasses={displayedClasses}
-              convertToClassCard={convertToClassCard}
+              convertToClassCard={(tutorClass) => convertToClassCard(tutorClass, wishlistedCourses)}
               navigate={navigate}
               toggleWishlist={toggleWishlist}
               setActiveTab={setActiveTab}
