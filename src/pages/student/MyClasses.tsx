@@ -26,7 +26,7 @@ const MyClasses = () => {
   const [classDuration, setClassDuration] = useState<"finite" | "infinite">("finite");
   const [paymentModel, setPaymentModel] = useState<"one-time" | "subscription">("one-time");
   
-  // Fetch enrolled classes from database with improved caching
+  // Fetch enrolled classes from database
   const { data: enrollments = [], isLoading, error, refetch } = useStudentEnrollments();
 
   // Filter effects
@@ -39,7 +39,7 @@ const MyClasses = () => {
     setPaymentModel
   });
 
-  // Force refetch when component mounts or when returning to this page
+  // Force refetch when component mounts
   useEffect(() => {
     refetch();
   }, [refetch]);
@@ -47,16 +47,18 @@ const MyClasses = () => {
   // Convert enrollments to class cards
   const classes = enrollments.map(convertEnrollmentToClassCard);
   
+  console.log("My Classes - Total enrollments:", enrollments.length);
+  console.log("My Classes - Converted classes:", classes.length);
+  
   const filteredClasses = classes.filter(cls => {
-    // Filter by tab
+    // Filter by tab first
     if (activeTab === "active") {
       return cls.status === "Active" || cls.status === "Enrolled";
     } else if (activeTab === "completed") {
       return cls.status === "Completed";
-    } else {
-      // For "all" tab
-      return true;
     }
+    // For "all" tab, include all classes
+    return true;
   }).filter(cls => {
     // Apply additional filters only if filter drawer has been opened
     if (!filterOpen) return true;
@@ -78,8 +80,14 @@ const MyClasses = () => {
     if (classSize === "group" && cls.classSize !== "Group") return false;
     if (classSize === "1-on-1" && cls.classSize !== "1-on-1") return false;
     
+    // Apply duration filter
+    if (classDuration === "finite" && cls.payment === "Subscription") return false;
+    if (classDuration === "infinite" && cls.payment !== "Subscription") return false;
+    
     return true;
   });
+
+  console.log("My Classes - Filtered classes:", filteredClasses.length);
 
   if (isLoading) {
     return (
@@ -113,9 +121,13 @@ const MyClasses = () => {
         <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
           <div className="flex justify-between items-center">
             <TabsList>
-              <TabsTrigger value="all">All</TabsTrigger>
-              <TabsTrigger value="active">Active Courses</TabsTrigger>
-              <TabsTrigger value="completed">Completed</TabsTrigger>
+              <TabsTrigger value="all">All ({classes.length})</TabsTrigger>
+              <TabsTrigger value="active">
+                Active Courses ({classes.filter(c => c.status === "Active" || c.status === "Enrolled").length})
+              </TabsTrigger>
+              <TabsTrigger value="completed">
+                Completed ({classes.filter(c => c.status === "Completed").length})
+              </TabsTrigger>
             </TabsList>
             
             <FilterSheet

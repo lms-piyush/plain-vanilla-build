@@ -37,8 +37,8 @@ export const useAllClasses = ({ page = 1, pageSize = 9 }: UseAllClassesOptions =
       const startIndex = (page - 1) * pageSize;
       const endIndex = startIndex + pageSize - 1;
 
-      // Improved query to properly join with profiles table
-      const { data: classes, error, count } = await supabase
+      // Query to get all active classes with tutor names
+      const query = supabase
         .from("classes")
         .select(`
           *,
@@ -47,8 +47,12 @@ export const useAllClasses = ({ page = 1, pageSize = 9 }: UseAllClassesOptions =
           )
         `, { count: 'exact' })
         .eq("status", "active")
-        .range(startIndex, endIndex)
         .order("created_at", { ascending: false });
+
+      // Apply pagination only if pageSize is reasonable (not fetching all)
+      const { data: classes, error, count } = pageSize < 1000 
+        ? await query.range(startIndex, endIndex)
+        : await query;
 
       if (error) {
         console.error("Error fetching classes:", error);
@@ -71,7 +75,9 @@ export const useAllClasses = ({ page = 1, pageSize = 9 }: UseAllClassesOptions =
         totalCount: count || 0
       };
     },
-    staleTime: 30 * 1000, // Reduced from 5 minutes to 30 seconds for faster updates
-    refetchInterval: 60 * 1000, // Auto-refetch every minute
+    staleTime: 10 * 1000, // Cache for 10 seconds
+    gcTime: 30 * 1000, // Garbage collect after 30 seconds
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
 };

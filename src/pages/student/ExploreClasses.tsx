@@ -44,57 +44,65 @@ const ExploreClasses = () => {
     setPaymentModel
   });
 
-  // Fetch classes with tutors using proper joins - with improved caching
+  // Fetch all classes for both tabs
   const { 
     data: queryResult, 
     isLoading,
     error,
     refetch 
   } = useAllClasses({
-    page: activeTab === "all" ? currentPage : 1,
-    pageSize: activeTab === "all" ? classesPerPage : 1000
+    page: 1,
+    pageSize: 1000 // Get all classes for proper filtering
   });
 
   // Extract classes and totalCount from the query result
   const allClasses = queryResult?.classes || [];
-  const totalCount = queryResult?.totalCount || 0;
 
   // Debug logging
   useEffect(() => {
     console.log("ExploreClasses - Component state:", {
       activeTab,
       allClasses,
-      totalCount,
       isLoading,
       error,
       classesLength: allClasses.length
     });
-  }, [activeTab, allClasses, totalCount, isLoading, error]);
+  }, [activeTab, allClasses, isLoading, error]);
 
   // Reset to first page when changing tabs
   useEffect(() => {
     setCurrentPage(1);
   }, [activeTab]);
 
-  // Force refetch when component mounts or when returning to this page
+  // Force refetch when component mounts
   useEffect(() => {
     refetch();
   }, [refetch]);
 
-  const displayedClasses = activeTab === "saved" 
-    ? getSavedClasses(allClasses, wishlistedCourses) 
-    : getFilteredClasses(allClasses, {
-        classMode,
-        classFormat,
-        classSize,
-        classDuration,
-        sortBy,
-        filterOpen
-      });
+  // Apply filtering based on active tab
+  let filteredClasses = [];
+  
+  if (activeTab === "saved") {
+    filteredClasses = getSavedClasses(allClasses, wishlistedCourses);
+  } else {
+    filteredClasses = getFilteredClasses(allClasses, {
+      classMode,
+      classFormat,
+      classSize,
+      classDuration,
+      sortBy,
+      filterOpen
+    });
+  }
 
-  const totalPages = Math.ceil(totalCount / classesPerPage);
+  // Apply pagination to filtered results
+  const startIndex = (currentPage - 1) * classesPerPage;
+  const endIndex = startIndex + classesPerPage;
+  const displayedClasses = filteredClasses.slice(startIndex, endIndex);
+  const totalPages = Math.ceil(filteredClasses.length / classesPerPage);
 
-  console.log("Final displayed classes:", displayedClasses.length);
+  console.log("Filtered classes:", filteredClasses.length);
+  console.log("Displayed classes:", displayedClasses.length);
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);

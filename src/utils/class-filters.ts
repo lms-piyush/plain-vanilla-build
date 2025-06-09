@@ -22,40 +22,53 @@ export const getFilteredClasses = (
   let filtered = [...allClasses];
   
   console.log("Filtering classes:", filtered.length, "total classes");
+  console.log("Filters applied:", filters);
   
-  // Apply filters if they've been set
+  // Apply filters if filter sheet has been opened
   if (filters.filterOpen) {
+    console.log("Applying filters...");
+    
     // Apply mode filter
     filtered = filtered.filter(course => {
-      if (filters.classMode === "online") {
-        return course.delivery_mode === "online";
-      } else {
-        return course.delivery_mode === "offline";
+      const modeMatch = course.delivery_mode === filters.classMode;
+      if (!modeMatch) {
+        console.log(`Course ${course.title} filtered out by mode: ${course.delivery_mode} !== ${filters.classMode}`);
       }
+      return modeMatch;
     });
     
     // Apply format filter
     filtered = filtered.filter(course => {
-      return course.class_format === filters.classFormat;
+      const formatMatch = course.class_format === filters.classFormat;
+      if (!formatMatch) {
+        console.log(`Course ${course.title} filtered out by format: ${course.class_format} !== ${filters.classFormat}`);
+      }
+      return formatMatch;
     });
     
     // Apply class size filter
     filtered = filtered.filter(course => {
-      if (filters.classSize === "group") {
-        return course.class_size === "group";
-      } else {
-        return course.class_size === "one-on-one";
+      const sizeMatch = filters.classSize === "group" 
+        ? course.class_size === "group" 
+        : course.class_size === "one-on-one";
+      if (!sizeMatch) {
+        console.log(`Course ${course.title} filtered out by size: ${course.class_size} !== ${filters.classSize}`);
       }
+      return sizeMatch;
     });
     
     // Apply duration filter
     filtered = filtered.filter(course => {
-      if (filters.classDuration === "finite") {
-        return course.duration_type === "fixed";
-      } else {
-        return course.duration_type === "recurring";
+      const durationMatch = filters.classDuration === "finite" 
+        ? course.duration_type === "fixed" 
+        : course.duration_type === "recurring";
+      if (!durationMatch) {
+        console.log(`Course ${course.title} filtered out by duration: ${course.duration_type} !== ${filters.classDuration}`);
       }
+      return durationMatch;
     });
+    
+    console.log("Classes after filtering:", filtered.length);
   }
   
   // Sort the classes
@@ -74,5 +87,7 @@ export const getSavedClasses = (allClasses: TutorClass[], wishlistedCourses: str
   if (!allClasses || !Array.isArray(allClasses)) {
     return [];
   }
-  return allClasses.filter(course => wishlistedCourses.includes(course.id));
+  const saved = allClasses.filter(course => wishlistedCourses.includes(course.id));
+  console.log("Saved classes found:", saved.length);
+  return saved;
 };
