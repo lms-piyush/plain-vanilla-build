@@ -1,9 +1,9 @@
-
 import { useState, useEffect } from "react";
 import { 
   useClassCreationStore, 
   TimeSlot, 
-  DayOfWeek 
+  DayOfWeek,
+  Frequency 
 } from "@/hooks/use-class-creation-store";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,13 @@ const daysOfWeek: { value: DayOfWeek; label: string }[] = [
   { value: "sunday", label: "Sunday" }
 ];
 
+const frequencies: { value: Frequency; label: string }[] = [
+  { value: "daily", label: "Daily" },
+  { value: "weekly", label: "Weekly" },
+  { value: "biweekly", label: "Bi-weekly" },
+  { value: "monthly", label: "Monthly" }
+];
+
 const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   const { 
     formState, 
@@ -42,6 +49,7 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
     updateTimeSlot 
   } = useClassCreationStore();
   
+  const [frequency, setFrequency] = useState<Frequency | null>(formState.frequency || null);
   const [startDate, setStartDate] = useState(formState.startDate || "");
   const [totalSessions, setTotalSessions] = useState(formState.totalSessions?.toString() || "");
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(
@@ -51,6 +59,7 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   );
   
   const [errors, setErrors] = useState({
+    frequency: "",
     startDate: "",
     totalSessions: "",
     timeSlots: ""
@@ -58,6 +67,7 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   
   const validateForm = () => {
     const newErrors = {
+      frequency: formState.durationType === "recurring" && !frequency ? "Frequency is required for recurring classes" : "",
       startDate: !startDate ? "Start date is required" : "",
       totalSessions: formState.durationType === "fixed" && !totalSessions ? "Total sessions is required" : "",
       timeSlots: timeSlots.length === 0 ? "At least one time slot is required" : ""
@@ -75,7 +85,7 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   const handleNext = () => {
     if (validateForm()) {
       setSchedule({
-        frequency: null,
+        frequency: formState.durationType === "recurring" ? frequency : null,
         startDate,
         endDate: null,
         totalSessions: formState.durationType === "fixed" ? parseInt(totalSessions) : null
@@ -117,6 +127,32 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
     <div className="space-y-6">
       <div className="grid md:grid-cols-2 gap-6">
         <div className="space-y-6">
+          {formState.durationType === "recurring" && (
+            <div className="space-y-2">
+              <Label htmlFor="frequency" className="text-base">
+                Class Frequency <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={frequency || ""}
+                onValueChange={(value) => setFrequency(value as Frequency)}
+              >
+                <SelectTrigger className={errors.frequency ? "border-red-500" : ""}>
+                  <SelectValue placeholder="Select frequency" />
+                </SelectTrigger>
+                <SelectContent>
+                  {frequencies.map((freq) => (
+                    <SelectItem key={freq.value} value={freq.value}>
+                      {freq.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.frequency && (
+                <p className="text-red-500 text-sm">{errors.frequency}</p>
+              )}
+            </div>
+          )}
+          
           <div className="space-y-2">
             <Label htmlFor="startDate" className="text-base">
               Start Date <span className="text-red-500">*</span>
@@ -231,7 +267,12 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
               <li>Choose consistent days and times for better student retention</li>
               <li>Consider time zones if teaching students internationally</li>
               <li>Allow buffers between sessions for preparation</li>
-              <li>For fixed duration classes, ensure the number of sessions aligns with your curriculum</li>
+              {formState.durationType === "recurring" && (
+                <li>Recurring classes will automatically generate sessions based on frequency</li>
+              )}
+              {formState.durationType === "fixed" && (
+                <li>For fixed duration classes, ensure the number of sessions aligns with your curriculum</li>
+              )}
             </ul>
           </div>
         </div>

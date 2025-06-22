@@ -26,7 +26,16 @@ const PreviewStep = ({ onBack, onSaveAsDraft, onPublish }: PreviewStepProps) => 
     if (!formState.startDate) return 'No schedule set';
     
     const startDate = new Date(formState.startDate).toLocaleDateString();
-    const frequency = formState.durationType === 'recurring' ? 'Weekly classes' : `${formState.totalSessions || 0} sessions`;
+    let frequency = '';
+    
+    if (formState.durationType === 'recurring' && formState.frequency) {
+      frequency = `${formState.frequency.charAt(0).toUpperCase() + formState.frequency.slice(1)} classes`;
+    } else if (formState.durationType === 'fixed') {
+      frequency = `${formState.totalSessions || 0} sessions`;
+    } else {
+      frequency = 'Weekly classes';
+    }
+    
     return `${frequency} starting ${startDate}`;
   };
 
@@ -39,7 +48,7 @@ const PreviewStep = ({ onBack, onSaveAsDraft, onPublish }: PreviewStepProps) => 
   };
 
   const formatPrice = () => {
-    if (!formState.price) return 'Free';
+    if (!formState.price || formState.price === 0) return 'Free';
     const currencySymbol = formState.currency === 'USD' ? '$' : formState.currency;
     const interval = formState.durationType === 'recurring' ? '/month' : '';
     return `${currencySymbol}${formState.price}${interval}`;
@@ -158,6 +167,11 @@ const PreviewStep = ({ onBack, onSaveAsDraft, onPublish }: PreviewStepProps) => 
             </CardHeader>
             <CardContent>
               <p className="text-sm font-medium">{formatSchedule()}</p>
+              {formState.frequency && (
+                <p className="text-xs text-gray-600 mt-1">
+                  Frequency: {formState.frequency.charAt(0).toUpperCase() + formState.frequency.slice(1)}
+                </p>
+              )}
             </CardContent>
           </Card>
 
@@ -200,7 +214,7 @@ const PreviewStep = ({ onBack, onSaveAsDraft, onPublish }: PreviewStepProps) => 
             </CardHeader>
             <CardContent>
               <p className="text-lg font-bold text-green-600">{formatPrice()}</p>
-              {formState.durationType === 'recurring' && (
+              {formState.durationType === 'recurring' && formState.price && formState.price > 0 && (
                 <p className="text-xs text-gray-600">
                   Monthly fee • {formState.autoRenewal ? 'Auto-renewal' : 'Manual renewal'}
                 </p>
@@ -242,7 +256,33 @@ const PreviewStep = ({ onBack, onSaveAsDraft, onPublish }: PreviewStepProps) => 
         </div>
       </div>
 
-      {/* Next Steps */}
+      {/* Action Buttons */}
+      <div className="flex justify-between items-center pt-6 border-t">
+        <Button 
+          variant="outline" 
+          onClick={onBack}
+        >
+          Back
+        </Button>
+        
+        <div className="flex gap-3">
+          <Button 
+            variant="outline" 
+            onClick={onSaveAsDraft}
+            className="bg-white hover:bg-gray-50"
+          >
+            Save as Draft
+          </Button>
+          <Button 
+            onClick={onPublish}
+            className="bg-[#1F4E79] hover:bg-[#1a4369]"
+          >
+            Publish Now
+          </Button>
+        </div>
+      </div>
+
+      {/* Next Steps Information */}
       <Card className="bg-blue-50">
         <CardHeader>
           <CardTitle className="text-base text-[#1F4E79]">Next Steps</CardTitle>

@@ -18,13 +18,13 @@ export const saveClass = async (formState: ClassCreationState, status: 'draft' |
       class_size: formState.classSize,
       duration_type: formState.durationType,
       status: status,
-      price: formState.price,
+      price: formState.price || 0, // Allow 0 for free classes
       currency: formState.currency,
       max_students: formState.maxStudents,
       auto_renewal: formState.autoRenewal,
       thumbnail_url: formState.thumbnailUrl,
       tutor_id: user.id,
-      frequency: formState.frequency,
+      frequency: formState.frequency, // Include frequency
       total_sessions: formState.totalSessions
     })
     .select('id')
@@ -72,6 +72,18 @@ export const saveClass = async (formState: ClassCreationState, status: 'draft' |
     await supabase.from('class_locations').insert(locationData);
   }
 
-  // For now, we'll skip saving syllabus and materials until the database schema is updated
-  console.log('Syllabus and materials will be saved once database schema is updated');
+  // Save syllabus if available
+  if (formState.syllabus.length > 0) {
+    await supabase.from('class_syllabus').insert(
+      formState.syllabus.map((item, index) => ({
+        class_id: classId,
+        title: item.title,
+        description: item.description,
+        order_index: index
+      }))
+    );
+  }
+
+  console.log('Class created successfully with ID:', classId);
+  return classId;
 };
