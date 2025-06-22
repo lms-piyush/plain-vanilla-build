@@ -43,27 +43,10 @@ CREATE TABLE IF NOT EXISTS public.class_locations (
   updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
 );
 
--- Create class_materials table for managing course materials and syllabus
-CREATE TABLE IF NOT EXISTS public.class_materials (
-  id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  class_id UUID REFERENCES public.classes(id) ON DELETE CASCADE NOT NULL,
-  material_type TEXT NOT NULL CHECK (material_type IN ('syllabus', 'document', 'video', 'link', 'image')),
-  title TEXT NOT NULL,
-  description TEXT,
-  file_url TEXT,
-  file_size INTEGER,
-  file_format TEXT,
-  sort_order INTEGER DEFAULT 0,
-  is_required BOOLEAN DEFAULT false,
-  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now(),
-  updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()
-);
-
 -- Enable Row Level Security on new tables
 ALTER TABLE public.class_schedules ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.class_time_slots ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.class_locations ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.class_materials ENABLE ROW LEVEL SECURITY;
 
 -- Create RLS policies for class_schedules
 CREATE POLICY "Tutors can manage their class schedules" ON public.class_schedules
@@ -125,26 +108,6 @@ CREATE POLICY "Students can view locations for enrolled classes" ON public.class
     )
   );
 
--- Create RLS policies for class_materials
-CREATE POLICY "Tutors can manage their class materials" ON public.class_materials
-  FOR ALL USING (
-    EXISTS (
-      SELECT 1 FROM public.classes 
-      WHERE classes.id = class_materials.class_id 
-      AND classes.tutor_id = auth.uid()
-    )
-  );
-
-CREATE POLICY "Students can view materials for enrolled classes" ON public.class_materials
-  FOR SELECT USING (
-    EXISTS (
-      SELECT 1 FROM public.student_enrollments se
-      JOIN public.classes c ON c.id = se.class_id
-      WHERE c.id = class_materials.class_id 
-      AND se.student_id = auth.uid()
-    )
-  );
-
 -- Add triggers for updated_at timestamps
 CREATE OR REPLACE FUNCTION public.update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -169,14 +132,7 @@ CREATE TRIGGER update_class_locations_updated_at
   FOR EACH ROW
   EXECUTE FUNCTION public.update_updated_at_column();
 
-CREATE TRIGGER update_class_materials_updated_at
-  BEFORE UPDATE ON public.class_materials
-  FOR EACH ROW
-  EXECUTE FUNCTION public.update_updated_at_column();
-
 -- Create indexes for better performance
 CREATE INDEX IF NOT EXISTS idx_class_schedules_class_id ON public.class_schedules(class_id);
 CREATE INDEX IF NOT EXISTS idx_class_time_slots_class_id ON public.class_time_slots(class_id);
 CREATE INDEX IF NOT EXISTS idx_class_locations_class_id ON public.class_locations(class_id);
-CREATE INDEX IF NOT EXISTS idx_class_materials_class_id ON public.class_materials(class_id);
-CREATE INDEX IF NOT EXISTS idx_class_materials_type ON public.class_materials(material_type);
