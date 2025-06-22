@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { 
   useClassCreationStore, 
@@ -51,7 +52,7 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   
   const [frequency, setFrequency] = useState<Frequency | null>(formState.frequency || null);
   const [startDate, setStartDate] = useState(formState.startDate || "");
-  const [totalSessions, setTotalSessions] = useState(formState.totalSessions?.toString() || "");
+  const [endDate, setEndDate] = useState(formState.endDate || "");
   const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(
     formState.timeSlots.length > 0 
       ? formState.timeSlots 
@@ -61,7 +62,7 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   const [errors, setErrors] = useState({
     frequency: "",
     startDate: "",
-    totalSessions: "",
+    endDate: "",
     timeSlots: ""
   });
   
@@ -69,13 +70,23 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
     const newErrors = {
       frequency: formState.durationType === "recurring" && !frequency ? "Frequency is required for recurring classes" : "",
       startDate: !startDate ? "Start date is required" : "",
-      totalSessions: formState.durationType === "fixed" && !totalSessions ? "Total sessions is required" : "",
+      endDate: !endDate ? "End date is required" : "",
       timeSlots: timeSlots.length === 0 ? "At least one time slot is required" : ""
     };
+    
+    // Validate date range
+    if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
+      newErrors.endDate = "End date must be after start date";
+    }
     
     // Validate each time slot
     if (timeSlots.some(slot => !slot.day || !slot.startTime || !slot.endTime)) {
       newErrors.timeSlots = "All time slot fields are required";
+    }
+    
+    // Validate time slot order
+    if (timeSlots.some(slot => slot.startTime >= slot.endTime)) {
+      newErrors.timeSlots = "Start time must be before end time";
     }
     
     setErrors(newErrors);
@@ -87,8 +98,8 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
       setSchedule({
         frequency: formState.durationType === "recurring" ? frequency : null,
         startDate,
-        endDate: null,
-        totalSessions: formState.durationType === "fixed" ? parseInt(totalSessions) : null
+        endDate,
+        totalSessions: null // Remove total_sessions as it will be managed by schedules and time slots
       });
       
       // Update time slots in store
@@ -170,24 +181,22 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
             )}
           </div>
           
-          {formState.durationType === "fixed" && (
-            <div className="space-y-2">
-              <Label htmlFor="totalSessions" className="text-base">
-                Total Sessions <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="totalSessions"
-                type="number"
-                min="1"
-                value={totalSessions}
-                onChange={(e) => setTotalSessions(e.target.value)}
-                className={errors.totalSessions ? "border-red-500" : ""}
-              />
-              {errors.totalSessions && (
-                <p className="text-red-500 text-sm">{errors.totalSessions}</p>
-              )}
-            </div>
-          )}
+          <div className="space-y-2">
+            <Label htmlFor="endDate" className="text-base">
+              End Date <span className="text-red-500">*</span>
+            </Label>
+            <Input
+              id="endDate"
+              type="date"
+              value={endDate}
+              min={startDate || format(new Date(), 'yyyy-MM-dd')}
+              onChange={(e) => setEndDate(e.target.value)}
+              className={errors.endDate ? "border-red-500" : ""}
+            />
+            {errors.endDate && (
+              <p className="text-red-500 text-sm">{errors.endDate}</p>
+            )}
+          </div>
         </div>
         
         <div className="space-y-4">
@@ -267,11 +276,9 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
               <li>Choose consistent days and times for better student retention</li>
               <li>Consider time zones if teaching students internationally</li>
               <li>Allow buffers between sessions for preparation</li>
+              <li>Sessions will be automatically calculated based on your schedule dates and time slots</li>
               {formState.durationType === "recurring" && (
                 <li>Recurring classes will automatically generate sessions based on frequency</li>
-              )}
-              {formState.durationType === "fixed" && (
-                <li>For fixed duration classes, ensure the number of sessions aligns with your curriculum</li>
               )}
             </ul>
           </div>
