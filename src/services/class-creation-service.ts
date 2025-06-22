@@ -72,14 +72,14 @@ export const saveClass = async (formState: ClassCreationState, status: 'draft' |
     await supabase.from('class_locations').insert(locationData);
   }
 
-  // Save syllabus if available
+  // Save syllabus if available - map order_index to week_number
   if (formState.syllabus.length > 0) {
     await supabase.from('class_syllabus').insert(
       formState.syllabus.map((item, index) => ({
         class_id: classId,
         title: item.title,
         description: item.description,
-        order_index: index
+        week_number: index + 1 // Map order_index to week_number (1-based)
       }))
     );
   }
