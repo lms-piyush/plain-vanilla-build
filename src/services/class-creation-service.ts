@@ -1,4 +1,3 @@
-
 import { supabase } from "@/integrations/supabase/client";
 import { ClassCreationState } from "@/hooks/use-class-creation-store";
 
@@ -6,7 +5,7 @@ export const saveClass = async (formState: ClassCreationState, status: 'draft' |
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('You must be logged in to create a class');
 
-  // Create the main class record
+  // Create the main class record (removed frequency from here)
   const { data: classData, error: classError } = await supabase
     .from('classes')
     .insert({
@@ -24,7 +23,6 @@ export const saveClass = async (formState: ClassCreationState, status: 'draft' |
       auto_renewal: formState.autoRenewal,
       thumbnail_url: formState.thumbnailUrl,
       tutor_id: user.id,
-      frequency: formState.frequency, // Include frequency
       total_sessions: formState.totalSessions
     })
     .select('id')
@@ -33,13 +31,13 @@ export const saveClass = async (formState: ClassCreationState, status: 'draft' |
   if (classError) throw classError;
   const classId = classData.id;
 
-  // Save schedule if available
+  // Save schedule if available (frequency is saved here in class_schedules table)
   if (formState.startDate) {
     await supabase.from('class_schedules').insert({
       class_id: classId,
       start_date: formState.startDate,
       end_date: formState.endDate,
-      frequency: formState.frequency,
+      frequency: formState.frequency, // Frequency stored in class_schedules table
       total_sessions: formState.totalSessions
     });
   }
