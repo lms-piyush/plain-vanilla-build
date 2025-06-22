@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
-import SimpleCreateClassDialog from '@/components/tutor-dashboard/SimpleCreateClassDialog';
+import CreateClassDialog from '@/components/tutor-dashboard/class-creation/CreateClassDialog';
 import ClassDetailsDialog from '@/components/tutor-dashboard/ClassDetailsDialog';
 import ClassesGrid from '@/components/tutor-dashboard/ClassesGrid';
 import ClassesPagination from '@/components/tutor-dashboard/ClassesPagination';
@@ -12,7 +12,6 @@ import { toast } from '@/components/ui/sonner';
 
 const Classes = () => {
   const [createClassDialogOpen, setCreateClassDialogOpen] = useState(false);
-  const [editClassDialogOpen, setEditClassDialogOpen] = useState(false);
   const [manageDialogOpen, setManageDialogOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<TutorClass | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
@@ -32,7 +31,7 @@ const Classes = () => {
 
   const handleEditClass = (classItem: TutorClass) => {
     setSelectedClass(classItem);
-    setEditClassDialogOpen(true);
+    setCreateClassDialogOpen(true);
   };
 
   const handleManageClass = (classItem: TutorClass) => {
@@ -68,6 +67,7 @@ const Classes = () => {
 
   const handleClassCreated = () => {
     refetch();
+    setSelectedClass(null);
   };
 
   const handlePageChange = (page: number) => {
@@ -104,19 +104,11 @@ const Classes = () => {
         </button>
       </div>
 
-      {/* Create Class Dialog */}
-      <SimpleCreateClassDialog
+      {/* Enhanced Create Class Dialog */}
+      <CreateClassDialog
         open={createClassDialogOpen}
         onOpenChange={setCreateClassDialogOpen}
         onClassCreated={handleClassCreated}
-      />
-
-      {/* Edit Class Dialog */}
-      <SimpleCreateClassDialog
-        open={editClassDialogOpen}
-        onOpenChange={setEditClassDialogOpen}
-        onClassCreated={handleClassCreated}
-        editingClass={selectedClass}
       />
 
       {/* Manage Class Dialog */}

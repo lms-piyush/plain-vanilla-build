@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { X, Play } from "lucide-react";
@@ -25,10 +24,11 @@ import { useClassCreationStore } from "@/hooks/use-class-creation-store";
 import { autoFillClassCreation } from "@/testing/autoFill";
 import ClassTypeSelector from "./ClassTypeSelector";
 import { LectureType } from "@/types/lecture-types";
+import { supabase } from "@/integrations/supabase/client";
 
 const steps = [
   "Delivery & Type",
-  "Details",
+  "Details", 
   "Schedule",
   "Pricing & Capacity",
   "Location/Links",
@@ -39,15 +39,16 @@ const steps = [
 interface CreateClassDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onClassCreated?: () => void;
 }
 
-const CreateClassDialog = ({ open, onOpenChange }: CreateClassDialogProps) => {
+const CreateClassDialog = ({ open, onOpenChange, onClassCreated }: CreateClassDialogProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [typeSelectorOpen, setTypeSelectorOpen] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { reset, formState, setDeliveryMode, setClassFormat, setClassSize, setDurationType, 
-    setBasicDetails, setSchedule, setPricing, setLocation, setSyllabus } = useClassCreationStore();
+  const { reset, formState } = useClassCreationStore();
 
   const updateFormState = (newState: any) => {
     // Helper function to update form state based on the current step
@@ -121,14 +122,155 @@ const CreateClassDialog = ({ open, onOpenChange }: CreateClassDialogProps) => {
     setCurrentStep(step);
   };
 
-  const handleSaveAsDraft = () => {
+  const handleSaveAsDraft = async () => {
+    setIsPublishing(true);
+    try {
+      await saveClass('draft');
+      toast({
+        title: "Saved as draft",
+        description: "Your class has been saved as a draft.",
+      });
+      handleClose();
+      onClassCreated?.();
+    } catch (error: any) {
+      toast({
+        title: "Error saving draft",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const handlePublish = async () => {
+    setIsPublishing(true);
+    try {
+      await saveClass('active');
+      toast({
+        title: "Class published!",
+        description: "Your class is now live and students can enroll.",
+      });
+      handleClose();
+      onClassCreated?.();
+    } catch (error: any) {
+      toast({
+        title: "Error publishing class",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsPublishing(false);
+    }
+  };
+
+  const saveClass = async (status: 'draft' | 'active') => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('You must be logged in to create a class');
+
+    // Create the main class record
+    const { data: classData, error: classError } = await supabase
+      .from('classes')
+      .insert({
+        title: formState.title,
+        description: formState.description,
+        subject: formState.subject,
+        delivery_mode: formState.deliveryMode,
+        class_format: formState.classFormat,
+        class_size: formState.classSize,
+        duration_type: formState.durationType,
+        status: status,
+        price: formState.price,
+        currency: formState.currency,
+        max_students: formState.maxStudents,
+        auto_renewal: formState.autoRenewal,
+        thumbnail_url: formState.thumbnailUrl,
+        tutor_id: user.id,
+        frequency: formState.frequency,
+        total_sessions: formState.totalSessions
+      })
+      .select('id')
+      .single();
+
+    if (classError) throw classError;
+    const classId = classData.id;
+
+    // Save schedule if available
+    if (formState.startDate) {
+      await supabase.from('class_schedules').insert({
+        class_id: classId,
+        start_date: formState.startDate,
+        end_date: formState.endDate,
+        frequency: formState.frequency,
+        total_sessions: formState.totalSessions
+      });
+    }
+
+    // Save time slots
+    if (formState.timeSlots.length > 0) {
+      await supabase.from('class_time_slots').insert(
+        formState.timeSlots.map(slot => ({
+          class_id: classId,
+          day_of_week: slot.day,
+          start_time: slot.startTime,
+          end_time: slot.endTime
+        }))
+      );
+    }
+
+    // Save location information
+    const locationData: any = { class_id: classId };
+    if (formState.deliveryMode === 'online' && formState.meetingLink) {
+      locationData.meeting_link = formState.meetingLink;
+    } else if (formState.deliveryMode === 'offline') {
+      locationData.street_address = formState.address.street;
+      locationData.city = formState.address.city;
+      locationData.state = formState.address.state;
+      locationData.zip_code = formState.address.zipCode;
+      locationData.country = formState.address.country;
+    }
+    
+    if (Object.keys(locationData).length > 1) {
+      await supabase.from('class_locations').insert(locationData);
+    }
+
+    // Save syllabus items as materials
+    if (formState.syllabus.length > 0) {
+      await supabase.from('class_materials').insert(
+        formState.syllabus.map((item, index) => ({
+          class_id: classId,
+          material_type: 'syllabus',
+          title: item.title,
+          description: item.description,
+          sort_order: index
+        }))
+      );
+    }
+
+    // Save other materials
+    if (formState.materials.length > 0) {
+      await supabase.from('class_materials').insert(
+        formState.materials.map((material, index) => ({
+          class_id: classId,
+          material_type: material.type as any,
+          title: material.name,
+          file_url: material.url,
+          sort_order: formState.syllabus.length + index
+        }))
+      );
+    }
+  };
+
+  const handleAutoFill = () => {
+    setTypeSelectorOpen(true);
+  };
+
+  const handleSelectClassType = async (selectedType: LectureType) => {
     toast({
-      title: "Saved as draft",
-      description: "Your class has been saved as a draft.",
+      title: "Test Mode Activated",
+      description: `Auto-filling ${selectedType} class creation form...`,
     });
-    handleClose();
-    // Refresh the page to show the new draft
-    navigate("/tutor-dashboard/classes");
+    await autoFillClassCreation(selectedType, setCurrentStep, () => {});
   };
 
   const getClassCategoryLabel = () => {
@@ -148,30 +290,6 @@ const CreateClassDialog = ({ open, onOpenChange }: CreateClassDialogProps) => {
     const size = classSize === "group" ? "Group" : "One-on-One";
     
     return `${category} ${format} ${size} Classes`;
-  };
-
-  const handlePublish = () => {
-    const categoryLabel = getClassCategoryLabel();
-    
-    toast({
-      title: "Class published!",
-      description: `Added to ${categoryLabel}.`,
-    });
-    handleClose();
-    // Refresh the page to show the new class
-    navigate("/tutor-dashboard/classes");
-  };
-
-  const handleAutoFill = () => {
-    setTypeSelectorOpen(true);
-  };
-
-  const handleSelectClassType = async (selectedType: LectureType) => {
-    toast({
-      title: "Test Mode Activated",
-      description: `Auto-filling ${selectedType} class creation form...`,
-    });
-    await autoFillClassCreation(selectedType, setCurrentStep, updateFormState);
   };
 
   const renderStep = () => {
@@ -207,7 +325,7 @@ const CreateClassDialog = ({ open, onOpenChange }: CreateClassDialogProps) => {
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Button 
-                        onClick={handleAutoFill}
+                        onClick={() => setTypeSelectorOpen(true)}
                         variant="outline" 
                         size="sm"
                         className="gap-1 border-[#1F4E79]/20 bg-amber-50 text-amber-700 hover:bg-amber-100"
@@ -245,15 +363,17 @@ const CreateClassDialog = ({ open, onOpenChange }: CreateClassDialogProps) => {
               <Button 
                 variant="outline" 
                 onClick={handleSaveAsDraft}
+                disabled={isPublishing}
                 className="bg-white hover:bg-gray-50"
               >
                 Save as Draft
               </Button>
               <Button 
                 onClick={handlePublish}
+                disabled={isPublishing}
                 className="bg-[#1F4E79] hover:bg-[#1a4369]"
               >
-                Publish Now
+                {isPublishing ? "Publishing..." : "Publish Now"}
               </Button>
             </DialogFooter>
           )}
@@ -263,7 +383,13 @@ const CreateClassDialog = ({ open, onOpenChange }: CreateClassDialogProps) => {
       <ClassTypeSelector 
         open={typeSelectorOpen}
         onClose={() => setTypeSelectorOpen(false)}
-        onSelectType={handleSelectClassType}
+        onSelectType={async (selectedType: LectureType) => {
+          toast({
+            title: "Test Mode Activated",
+            description: `Auto-filling ${selectedType} class creation form...`,
+          });
+          await autoFillClassCreation(selectedType, setCurrentStep, () => {});
+        }}
       />
     </>
   );
