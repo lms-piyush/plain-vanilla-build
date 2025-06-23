@@ -13,7 +13,7 @@ import PricingStep from "./steps/PricingStep";
 import LocationStep from "./steps/LocationStep";
 import CurriculumStep from "./steps/CurriculumStep";
 import PreviewStep from "./steps/PreviewStep";
-import { useClassCreationStore, FormState } from "@/hooks/use-class-creation-store";
+import { useClassCreationStore, FormState, DayOfWeek } from "@/hooks/use-class-creation-store";
 import { autoFillClassCreation } from "@/testing/autoFill";
 import ClassTypeSelector from "./ClassTypeSelector";
 import { LectureType } from "@/types/lecture-types";
@@ -102,7 +102,7 @@ const CreateClassDialog = ({ open, onOpenChange, onClassCreated, editingClass }:
 
           if (timeSlotsData && timeSlotsData.length > 0) {
             const timeSlots = timeSlotsData.map(slot => ({
-              dayOfWeek: slot.day_of_week,
+              dayOfWeek: slot.day_of_week as DayOfWeek,
               startTime: slot.start_time,
               endTime: slot.end_time
             }));

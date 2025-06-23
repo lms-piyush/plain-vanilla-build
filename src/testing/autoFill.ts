@@ -1,5 +1,3 @@
-
-
 import { ClassCreationState } from "@/hooks/use-class-creation-store";
 import { LectureType } from "@/types/lecture-types";
 
@@ -205,7 +203,7 @@ export const autoFillClassCreation = async (
   
   // Add time slots quickly
   const timeSlot1 = {
-    day: "monday" as DayOfWeek,
+    dayOfWeek: "monday" as DayOfWeek,
     startTime: "18:00",
     endTime: "19:30"
   };
@@ -213,7 +211,7 @@ export const autoFillClassCreation = async (
   await delay(100);
   
   const timeSlot2 = {
-    day: "wednesday" as DayOfWeek,
+    dayOfWeek: "wednesday" as DayOfWeek,
     startTime: "18:00",
     endTime: "19:30"
   };

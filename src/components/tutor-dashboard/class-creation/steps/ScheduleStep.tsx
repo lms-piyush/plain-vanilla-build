@@ -110,7 +110,7 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
       
       // Create time slot based on frequency
       const timeSlot: TimeSlot = {
-        day: frequency === "daily" ? "monday" : selectedDay, // For daily, we'll handle this differently in backend
+        dayOfWeek: frequency === "daily" ? "monday" : selectedDay, // For daily, we'll handle this differently in backend
         startTime,
         endTime
       };

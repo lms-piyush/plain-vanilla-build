@@ -43,7 +43,7 @@ const PreviewStep = ({ onBack, onSaveAsDraft, onPublish }: PreviewStepProps) => 
     if (formState.timeSlots.length === 0) return 'No time slots set';
     
     return formState.timeSlots.map(slot => 
-      `${slot.day.charAt(0).toUpperCase() + slot.day.slice(1)}s, ${slot.startTime} - ${slot.endTime}`
+      `${slot.dayOfWeek.charAt(0).toUpperCase() + slot.dayOfWeek.slice(1)}s, ${slot.startTime} - ${slot.endTime}`
     ).join(', ');
   };
 
