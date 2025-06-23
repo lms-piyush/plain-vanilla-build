@@ -1,12 +1,13 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { ClassCreationState } from "@/hooks/use-class-creation-store";
+import { saveLessonMaterials } from "./lesson-materials-service";
 
 export const saveClass = async (formState: ClassCreationState, status: 'draft' | 'active') => {
   const { data: { user } } = await supabase.auth.getUser();
   if (!user) throw new Error('You must be logged in to create a class');
 
-  // Create the main class record (removed frequency and total_sessions from here)
+  // Create the main class record
   const { data: classData, error: classError } = await supabase
     .from('classes')
     .insert({
@@ -18,7 +19,7 @@ export const saveClass = async (formState: ClassCreationState, status: 'draft' |
       class_size: formState.classSize,
       duration_type: formState.durationType,
       status: status,
-      price: formState.price || 0, // Allow 0 for free classes
+      price: formState.price || 0,
       currency: formState.currency,
       max_students: formState.maxStudents,
       auto_renewal: formState.autoRenewal,
@@ -31,14 +32,13 @@ export const saveClass = async (formState: ClassCreationState, status: 'draft' |
   if (classError) throw classError;
   const classId = classData.id;
 
-  // Save schedule if available (frequency and dates are saved here in class_schedules table)
+  // Save schedule if available
   if (formState.startDate) {
     await supabase.from('class_schedules').insert({
       class_id: classId,
       start_date: formState.startDate,
-      end_date: formState.endDate, // Include end date
-      frequency: formState.frequency // Frequency stored in class_schedules table
-      // total_sessions removed as it will be managed by schedules and time slots
+      end_date: formState.endDate,
+      frequency: formState.frequency
     });
   }
 
@@ -70,16 +70,40 @@ export const saveClass = async (formState: ClassCreationState, status: 'draft' |
     await supabase.from('class_locations').insert(locationData);
   }
 
-  // Save syllabus if available - map order_index to week_number
+  // Save syllabus and materials
   if (formState.syllabus.length > 0) {
-    await supabase.from('class_syllabus').insert(
-      formState.syllabus.map((item, index) => ({
-        class_id: classId,
-        title: item.title,
-        description: item.description,
-        week_number: index + 1 // Map order_index to week_number (1-based)
-      }))
-    );
+    const syllabusPromises = formState.syllabus.map(async (item, index) => {
+      const { data: lessonData, error: lessonError } = await supabase
+        .from('class_syllabus')
+        .insert({
+          class_id: classId,
+          title: item.title,
+          description: item.description,
+          week_number: index + 1
+        })
+        .select('id')
+        .single();
+
+      if (lessonError) throw lessonError;
+
+      // Save materials for this lesson if any exist
+      const lessonMaterials = formState.materials.filter(material => 
+        material.lessonIndex === index
+      );
+      
+      if (lessonMaterials.length > 0) {
+        const materialsData = lessonMaterials.map((material, materialIndex) => ({
+          material_name: material.name,
+          material_type: material.type,
+          material_url: material.url,
+          display_order: materialIndex
+        }));
+        
+        await saveLessonMaterials(lessonData.id, materialsData);
+      }
+    });
+
+    await Promise.all(syllabusPromises);
   }
 
   console.log('Class created successfully with ID:', classId);

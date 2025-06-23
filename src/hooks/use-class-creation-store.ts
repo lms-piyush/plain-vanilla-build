@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 
 // Define the types for our form state
@@ -52,7 +51,7 @@ export type ClassCreationState = {
   
   // Step 6: Curriculum
   syllabus: { title: string; description: string }[];
-  materials: { name: string; type: string; url: string }[];
+  materials: { name: string; type: string; url: string; lessonIndex: number }[];
 };
 
 type ClassCreationStore = {
@@ -72,7 +71,7 @@ type ClassCreationStore = {
   addSyllabusItem: (item: { title: string; description: string }) => void;
   removeSyllabusItem: (index: number) => void;
   updateSyllabusItem: (index: number, item: { title: string; description: string }) => void;
-  addMaterial: (material: { name: string; type: string; url: string }) => void;
+  addMaterial: (material: { name: string; type: string; url: string; lessonIndex: number }) => void;
   removeMaterial: (index: number) => void;
   reset: () => void;
 };

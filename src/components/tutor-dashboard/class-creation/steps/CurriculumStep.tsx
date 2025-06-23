@@ -32,7 +32,7 @@ interface CurriculumStepProps {
 }
 
 const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
-  const { formState, setSyllabus } = useClassCreationStore();
+  const { formState, setSyllabus, addMaterial } = useClassCreationStore();
   
   const [lessons, setLessons] = useState<LessonWithMaterials[]>(
     formState.syllabus.length > 0 
@@ -64,6 +64,17 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
         title: lesson.title,
         description: lesson.description
       })));
+      
+      // Add all materials to the store with their lesson associations
+      lessons.forEach((lesson, lessonIndex) => {
+        lesson.materials.forEach(material => {
+          addMaterial({
+            ...material,
+            lessonIndex
+          });
+        });
+      });
+      
       onNext();
     }
   };
@@ -180,15 +191,18 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
           
           <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
             {lessons.map((lesson, lessonIndex) => (
-              <div key={lessonIndex} className="border rounded-lg overflow-hidden bg-white">
+              <div key={lessonIndex} className="border rounded-lg overflow-hidden bg-white shadow-sm">
                 <Collapsible defaultOpen={lessonIndex === 0}>
                   <CollapsibleTrigger className="flex items-center justify-between w-full p-4 bg-gray-50 text-left hover:bg-gray-100 border-b">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
-                      <span className="font-medium">{lesson.title || `Lesson ${lessonIndex + 1}`}</span>
+                      <div className="flex flex-col items-start">
+                        <span className="font-medium text-sm text-gray-600">Lesson {lessonIndex + 1}</span>
+                        <span className="font-semibold">{lesson.title || `Lesson ${lessonIndex + 1}`}</span>
+                      </div>
                       {lesson.materials.length > 0 && (
                         <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                          {lesson.materials.length} materials
+                          {lesson.materials.length} material{lesson.materials.length !== 1 ? 's' : ''}
                         </span>
                       )}
                     </div>
@@ -196,7 +210,7 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
                       type="button" 
                       variant="ghost" 
                       size="sm" 
-                      className="h-8 w-8 p-0 text-red-500"
+                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRemoveLesson(lessonIndex);
@@ -206,12 +220,12 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
                     </Button>
                   </CollapsibleTrigger>
                   
-                  <CollapsibleContent className="p-4">
-                    <div className="space-y-4">
+                  <CollapsibleContent className="p-6 bg-white">
+                    <div className="space-y-6">
                       {/* Lesson Details */}
                       <div className="grid md:grid-cols-2 gap-4">
                         <div className="space-y-2">
-                          <Label htmlFor={`lesson-title-${lessonIndex}`} className="text-sm">
+                          <Label htmlFor={`lesson-title-${lessonIndex}`} className="text-sm font-medium">
                             Lesson Title <span className="text-red-500">*</span>
                           </Label>
                           <Input
@@ -219,11 +233,12 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
                             value={lesson.title}
                             onChange={(e) => handleLessonChange(lessonIndex, "title", e.target.value)}
                             placeholder="Enter lesson title"
+                            className="w-full"
                           />
                         </div>
                         
                         <div className="space-y-2">
-                          <Label htmlFor={`lesson-description-${lessonIndex}`} className="text-sm">
+                          <Label htmlFor={`lesson-description-${lessonIndex}`} className="text-sm font-medium">
                             Description
                           </Label>
                           <Textarea
@@ -231,14 +246,14 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
                             value={lesson.description}
                             onChange={(e) => handleLessonChange(lessonIndex, "description", e.target.value)}
                             placeholder="What will students learn in this lesson?"
-                            className="min-h-[80px]"
+                            className="min-h-[80px] resize-none"
                           />
                         </div>
                       </div>
                       
                       {/* Materials Section */}
                       <div className="border-t pt-4">
-                        <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center justify-between mb-4">
                           <h4 className="font-medium text-sm">Lesson Materials</h4>
                           <div className="flex gap-2">
                             <div className="relative">
@@ -247,13 +262,14 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
                                 type="file"
                                 className="hidden"
                                 onChange={(e) => handleFileUpload(e, lessonIndex)}
+                                accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg,.mp4,.mp3"
                               />
                               <Label 
                                 htmlFor={`file-upload-${lessonIndex}`} 
-                                className="flex items-center gap-1 px-3 py-1 bg-blue-500 text-white rounded text-xs cursor-pointer hover:bg-blue-600"
+                                className="flex items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded text-xs cursor-pointer hover:bg-blue-600 transition-colors"
                               >
                                 <FileUp className="h-3 w-3" />
-                                Upload
+                                Upload File
                               </Label>
                             </div>
                             
@@ -261,11 +277,11 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
                               type="button" 
                               variant="outline" 
                               size="sm"
-                              className="text-xs px-3 py-1 h-auto"
+                              className="text-xs px-3 py-2 h-auto"
                               onClick={() => handleAddUrl(lessonIndex)}
                             >
                               <Link2 className="h-3 w-3 mr-1" />
-                              Add URL
+                              Add Link
                             </Button>
                           </div>
                         </div>
@@ -274,21 +290,23 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
                         {lesson.materials.length > 0 ? (
                           <div className="space-y-2">
                             {lesson.materials.map((material, materialIndex) => (
-                              <div key={materialIndex} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                                <div className="flex items-center gap-2">
+                              <div key={materialIndex} className="flex items-center justify-between p-3 bg-gray-50 rounded-md border">
+                                <div className="flex items-center gap-3">
                                   <span className="text-lg">{getMaterialIcon(material.type)}</span>
-                                  <span className="text-sm font-medium truncate max-w-[200px]">
-                                    {material.name}
-                                  </span>
-                                  <span className="text-xs text-gray-500 capitalize">
-                                    {material.type}
-                                  </span>
+                                  <div className="flex flex-col">
+                                    <span className="text-sm font-medium truncate max-w-[200px]">
+                                      {material.name}
+                                    </span>
+                                    <span className="text-xs text-gray-500 capitalize">
+                                      {material.type}
+                                    </span>
+                                  </div>
                                 </div>
                                 <Button 
                                   type="button" 
                                   variant="ghost" 
                                   size="sm" 
-                                  className="h-6 w-6 p-0 text-red-500"
+                                  className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
                                   onClick={() => handleRemoveMaterial(lessonIndex, materialIndex)}
                                 >
                                   <Trash2 className="h-3 w-3" />
@@ -297,9 +315,14 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
                             ))}
                           </div>
                         ) : (
-                          <p className="text-muted-foreground text-xs text-center py-3 bg-gray-50 rounded">
-                            No materials added yet
-                          </p>
+                          <div className="text-center py-8 bg-gray-50 rounded-md border-2 border-dashed border-gray-200">
+                            <p className="text-muted-foreground text-sm">
+                              No materials added yet for this lesson
+                            </p>
+                            <p className="text-xs text-gray-400 mt-1">
+                              Upload files or add links to enhance the learning experience
+                            </p>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -310,14 +333,14 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
           </div>
         </div>
         
-        <div className="bg-blue-50 p-4 rounded-md">
+        <div className="bg-blue-50 p-4 rounded-md border border-blue-200">
           <h4 className="font-medium text-[#1F4E79] mb-2">Curriculum Tips</h4>
           <ul className="text-sm space-y-2 list-disc list-inside text-gray-700">
             <li>Break down your content into clear, manageable lessons</li>
             <li>Include learning objectives for each lesson</li>
             <li>Add materials directly to each lesson for better organization</li>
             <li>Support files: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, PNG, JPG, MP4</li>
-            <li>Consider including pre-class preparation materials</li>
+            <li>Each lesson can have multiple materials - keep them relevant and focused</li>
           </ul>
         </div>
       </div>
