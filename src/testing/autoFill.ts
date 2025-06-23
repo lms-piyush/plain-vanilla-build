@@ -1,3 +1,4 @@
+
 import { ClassCreationState } from "@/hooks/use-class-creation-store";
 import { LectureType } from "@/types/lecture-types";
 
@@ -286,17 +287,19 @@ export const autoFillClassCreation = async (
   await delay(100);
   updateFormState({ syllabus: syllabus });
   
-  // Add materials quickly
+  // Add materials quickly with lessonIndex
   const materials = [
     {
       name: "Course Handbook",
       type: "pdf",
-      url: "https://example.com/handbook.pdf"
+      url: "https://example.com/handbook.pdf",
+      lessonIndex: 0
     },
     {
       name: "Starter Code",
-      type: "code",
-      url: "https://github.com/example/starter-code"
+      type: "link",
+      url: "https://github.com/example/starter-code",
+      lessonIndex: 1
     }
   ];
   
