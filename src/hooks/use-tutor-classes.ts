@@ -38,6 +38,8 @@ export interface TutorClass {
   class_schedules?: {
     id: string;
     start_date: string | null;
+    end_date: string | null;
+    frequency: string | null;
     total_sessions: number | null;
   }[];
 }
@@ -97,6 +99,8 @@ export const useTutorClasses = (options: UseTutorClassesOptions = {}) => {
           class_schedules!class_schedules_class_id_fkey (
             id,
             start_date,
+            end_date,
+            frequency,
             total_sessions
           )
         `)
