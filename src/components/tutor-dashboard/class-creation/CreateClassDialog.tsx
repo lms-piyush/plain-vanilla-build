@@ -13,7 +13,7 @@ import PricingStep from "./steps/PricingStep";
 import LocationStep from "./steps/LocationStep";
 import CurriculumStep from "./steps/CurriculumStep";
 import PreviewStep from "./steps/PreviewStep";
-import { useClassCreationStore } from "@/hooks/use-class-creation-store";
+import { useClassCreationStore, FormState } from "@/hooks/use-class-creation-store";
 import { autoFillClassCreation } from "@/testing/autoFill";
 import ClassTypeSelector from "./ClassTypeSelector";
 import { LectureType } from "@/types/lecture-types";
@@ -202,10 +202,46 @@ const CreateClassDialog = ({ open, onOpenChange, onClassCreated, editingClass }:
     setCurrentStep(step);
   };
 
+  // Transform formState to match FormState structure
+  const transformFormState = (): FormState => {
+    return {
+      deliveryMode: formState.deliveryMode,
+      classFormat: formState.classFormat,
+      classSize: formState.classSize,
+      durationType: formState.durationType,
+      basicDetails: {
+        title: formState.title,
+        subject: formState.subject,
+        description: formState.description,
+        thumbnailUrl: formState.thumbnailUrl,
+      },
+      schedule: {
+        frequency: formState.frequency,
+        startDate: formState.startDate,
+        endDate: formState.endDate,
+        totalSessions: formState.totalSessions,
+      },
+      timeSlots: formState.timeSlots,
+      pricing: {
+        price: formState.price,
+        currency: formState.currency,
+        maxStudents: formState.maxStudents,
+        autoRenewal: formState.autoRenewal,
+      },
+      location: {
+        meetingLink: formState.meetingLink,
+        address: formState.address,
+      },
+      syllabus: formState.syllabus,
+      materials: formState.materials,
+    };
+  };
+
   const handleSaveAsDraft = async () => {
     setIsPublishing(true);
     try {
-      await saveClass(formState, 'draft', editingClass?.id);
+      const transformedFormState = transformFormState();
+      await saveClass(transformedFormState, 'draft', editingClass?.id);
       toast({
         title: editingClass ? "Class updated" : "Saved as draft",
         description: editingClass ? "Your class has been updated successfully." : "Your class has been saved as a draft.",
@@ -226,7 +262,8 @@ const CreateClassDialog = ({ open, onOpenChange, onClassCreated, editingClass }:
   const handlePublish = async () => {
     setIsPublishing(true);
     try {
-      await saveClass(formState, 'active', editingClass?.id);
+      const transformedFormState = transformFormState();
+      await saveClass(transformedFormState, 'active', editingClass?.id);
       toast({
         title: editingClass ? "Class updated and published!" : "Class published!",
         description: editingClass ? "Your class changes have been saved and published." : "Your class is now live and students can enroll.",

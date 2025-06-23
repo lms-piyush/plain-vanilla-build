@@ -3,8 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { FormState } from '@/hooks/use-class-creation-store';
 
 export const saveClass = async (formState: FormState, status: 'draft' | 'active', editingClassId?: string) => {
-  const { user } = await supabase.auth.getUser();
-  if (!user.user) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
     throw new Error('User not authenticated');
   }
 
@@ -55,7 +55,7 @@ export const saveClass = async (formState: FormState, status: 'draft' | 'active'
           max_students: formState.pricing.maxStudents,
           auto_renewal: formState.pricing.autoRenewal,
           thumbnail_url: formState.basicDetails.thumbnailUrl,
-          tutor_id: user.user.id
+          tutor_id: user.id
         })
         .select()
         .single();

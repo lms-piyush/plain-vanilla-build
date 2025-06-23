@@ -8,9 +8,58 @@ export type DurationType = 'recurring' | 'fixed';
 export type Frequency = 'daily' | 'weekly' | 'biweekly' | 'monthly';
 export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
 export type TimeSlot = {
-  day: DayOfWeek;
+  dayOfWeek: DayOfWeek;
   startTime: string;
   endTime: string;
+};
+
+export type FormState = {
+  // Step 1: Delivery & Type
+  deliveryMode: DeliveryMode | null;
+  classFormat: ClassFormat | null;
+  classSize: ClassSize | null;
+  durationType: DurationType | null;
+  
+  // Step 2: Details
+  basicDetails: {
+    title: string;
+    subject: string;
+    description: string;
+    thumbnailUrl: string;
+  };
+  
+  // Step 3: Schedule
+  schedule: {
+    frequency: Frequency | null;
+    startDate: string | null;
+    endDate: string | null;
+    totalSessions: number | null;
+  };
+  timeSlots: TimeSlot[];
+  
+  // Step 4: Pricing & Capacity
+  pricing: {
+    price: number | null;
+    currency: string;
+    maxStudents: number | null;
+    autoRenewal: boolean;
+  };
+  
+  // Step 5: Location/Links
+  location: {
+    meetingLink: string;
+    address: {
+      street: string;
+      city: string;
+      state: string;
+      zipCode: string;
+      country: string;
+    };
+  };
+  
+  // Step 6: Curriculum
+  syllabus: { title: string; description: string }[];
+  materials: { name: string; type: string; url: string; lessonIndex: number }[];
 };
 
 export type ClassCreationState = {
@@ -65,6 +114,7 @@ type ClassCreationStore = {
   addTimeSlot: (timeSlot: TimeSlot) => void;
   removeTimeSlot: (index: number) => void;
   updateTimeSlot: (index: number, timeSlot: TimeSlot) => void;
+  setTimeSlots: (timeSlots: TimeSlot[]) => void;
   setPricing: (pricing: Pick<ClassCreationState, 'price' | 'currency' | 'maxStudents' | 'autoRenewal'>) => void;
   setLocation: (location: Pick<ClassCreationState, 'meetingLink' | 'address'>) => void;
   setSyllabus: (syllabus: { title: string; description: string }[]) => void;
@@ -181,6 +231,13 @@ export const useClassCreationStore = create<ClassCreationStore>((set) => ({
     } 
   })),
   
+  setTimeSlots: (timeSlots) => set((state) => ({ 
+    formState: { 
+      ...state.formState, 
+      timeSlots 
+    } 
+  })),
+  
   setPricing: (pricing) => set((state) => ({ 
     formState: { ...state.formState, ...pricing } 
   })),
@@ -229,4 +286,4 @@ export const useClassCreationStore = create<ClassCreationStore>((set) => ({
   })),
   
   reset: () => set({ formState: initialState }),
-}));
+});
