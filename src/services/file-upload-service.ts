@@ -7,15 +7,16 @@ export const uploadClassThumbnail = async (file: File, classId?: string): Promis
   const filePath = `class-thumbnails/${fileName}`;
 
   const { data, error } = await supabase.storage
-    .from('class-media')
+    .from('uploads') // Changed from 'class-media' to 'uploads' - more standard bucket name
     .upload(filePath, file);
 
   if (error) {
+    console.error('Upload error:', error);
     throw new Error(`Failed to upload thumbnail: ${error.message}`);
   }
 
   const { data: { publicUrl } } = supabase.storage
-    .from('class-media')
+    .from('uploads')
     .getPublicUrl(filePath);
 
   return publicUrl;
@@ -28,7 +29,7 @@ export const deleteClassThumbnail = async (thumbnailUrl: string): Promise<void> 
   if (!filePath) return;
 
   const { error } = await supabase.storage
-    .from('class-media')
+    .from('uploads')
     .remove([`class-thumbnails/${filePath}`]);
 
   if (error) {
@@ -42,15 +43,16 @@ export const uploadCourseMaterial = async (file: File, lessonId?: string): Promi
   const filePath = `course-materials/${fileName}`;
 
   const { data, error } = await supabase.storage
-    .from('class-media')
+    .from('uploads')
     .upload(filePath, file);
 
   if (error) {
+    console.error('Upload error:', error);
     throw new Error(`Failed to upload material: ${error.message}`);
   }
 
   const { data: { publicUrl } } = supabase.storage
-    .from('class-media')
+    .from('uploads')
     .getPublicUrl(filePath);
 
   return {

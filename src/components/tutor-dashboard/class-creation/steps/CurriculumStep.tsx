@@ -11,12 +11,20 @@ import {
   CollapsibleContent, 
   CollapsibleTrigger 
 } from "@/components/ui/collapsible";
-import { 
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { uploadCourseMaterial } from "@/services/file-upload-service";
+import { toast } from "@/components/ui/sonner";
+
+interface Material {
+  name: string;
+  type: string;
+  url: string;
+}
+
+interface LessonWithMaterials {
+  title: string;
+  description: string;
+  materials: Material[];
+}
 
 interface CurriculumStepProps {
   onNext: () => void;
@@ -24,12 +32,12 @@ interface CurriculumStepProps {
 }
 
 const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
-  const { formState, setSyllabus, addMaterial, removeMaterial } = useClassCreationStore();
+  const { formState, setSyllabus } = useClassCreationStore();
   
-  const [syllabus, setSyllabusState] = useState(
+  const [lessons, setLessons] = useState<LessonWithMaterials[]>(
     formState.syllabus.length > 0 
-      ? formState.syllabus 
-      : [{ title: "Introduction", description: "" }]
+      ? formState.syllabus.map(lesson => ({ ...lesson, materials: [] }))
+      : [{ title: "Introduction", description: "", materials: [] }]
   );
   
   const [errors, setErrors] = useState({
@@ -41,8 +49,7 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
       syllabus: ""
     };
     
-    // Check if any syllabus item has an empty title
-    if (syllabus.some(item => !item.title.trim())) {
+    if (lessons.some(lesson => !lesson.title.trim())) {
       newErrors.syllabus = "All lesson titles are required";
     }
     
@@ -52,56 +59,81 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
   
   const handleNext = () => {
     if (validateForm()) {
-      setSyllabus(syllabus);
+      // Convert lessons back to syllabus format for store
+      setSyllabus(lessons.map(lesson => ({
+        title: lesson.title,
+        description: lesson.description
+      })));
       onNext();
     }
   };
   
   const handleAddLesson = () => {
-    setSyllabusState([
-      ...syllabus,
-      { title: `Lesson ${syllabus.length + 1}`, description: "" }
+    setLessons([
+      ...lessons,
+      { title: `Lesson ${lessons.length + 1}`, description: "", materials: [] }
     ]);
   };
   
   const handleRemoveLesson = (index: number) => {
-    setSyllabusState(syllabus.filter((_, i) => i !== index));
+    setLessons(lessons.filter((_, i) => i !== index));
   };
   
-  const handleLessonChange = (index: number, field: keyof typeof syllabus[0], value: string) => {
-    setSyllabusState(
-      syllabus.map((lesson, i) => 
+  const handleLessonChange = (index: number, field: 'title' | 'description', value: string) => {
+    setLessons(
+      lessons.map((lesson, i) => 
         i === index ? { ...lesson, [field]: value } : lesson
       )
     );
   };
   
-  // Mock file upload function
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, lessonIndex: number) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // In a real app, you would upload this file to storage
-      // Here we'll just simulate adding a reference
-      addMaterial({
-        name: file.name,
-        type: file.type.startsWith("image/") ? "image" : "document",
-        url: URL.createObjectURL(file) // This would typically be a server URL
-      });
+    if (!file) return;
+
+    try {
+      const uploadedMaterial = await uploadCourseMaterial(file);
+      
+      setLessons(lessons.map((lesson, i) => 
+        i === lessonIndex 
+          ? { ...lesson, materials: [...lesson.materials, uploadedMaterial] }
+          : lesson
+      ));
+      
+      toast.success('Material uploaded successfully');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to upload material');
     }
+    
+    // Reset file input
+    e.target.value = '';
   };
   
-  // Mock URL add function
-  const handleAddUrl = () => {
+  const handleAddUrl = (lessonIndex: number) => {
     const url = prompt("Enter URL:");
     if (url && isValidUrl(url)) {
-      addMaterial({
+      const newMaterial: Material = {
         name: url.split("/").pop() || "External Resource",
         type: "link",
         url: url
-      });
+      };
+      
+      setLessons(lessons.map((lesson, i) => 
+        i === lessonIndex 
+          ? { ...lesson, materials: [...lesson.materials, newMaterial] }
+          : lesson
+      ));
     } else if (url) {
-      alert("Please enter a valid URL");
+      toast.error("Please enter a valid URL");
     }
+  };
+  
+  const handleRemoveMaterial = (lessonIndex: number, materialIndex: number) => {
+    setLessons(lessons.map((lesson, i) => 
+      i === lessonIndex 
+        ? { ...lesson, materials: lesson.materials.filter((_, mi) => mi !== materialIndex) }
+        : lesson
+    ));
   };
   
   const isValidUrl = (string: string) => {
@@ -113,198 +145,180 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
     }
   };
   
+  const getMaterialIcon = (type: string) => {
+    switch (type) {
+      case 'image': return '🖼️';
+      case 'video': return '🎥';
+      case 'audio': return '🎵';
+      case 'pdf': return '📄';
+      case 'link': return '🔗';
+      default: return '📎';
+    }
+  };
+  
   return (
     <div className="space-y-6">
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="space-y-6">
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold">Course Syllabus</h3>
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm" 
-                onClick={handleAddLesson}
-                className="flex items-center gap-1"
-              >
-                <Plus className="h-4 w-4" />
-                Add Lesson
-              </Button>
-            </div>
-            
-            {errors.syllabus && (
-              <p className="text-red-500 text-sm mb-4">{errors.syllabus}</p>
-            )}
-            
-            <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2">
-              {syllabus.map((lesson, index) => (
-                <Collapsible key={index} defaultOpen={index === 0}>
-                  <div className="border rounded-md overflow-hidden">
-                    <CollapsibleTrigger className="flex items-center justify-between w-full p-3 bg-gray-50 text-left hover:bg-gray-100">
-                      <div className="flex items-center gap-2">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              <p>Drag to reorder</p>
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        <span className="font-medium">{lesson.title || `Lesson ${index + 1}`}</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 w-8 p-0 text-red-500"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleRemoveLesson(index);
-                          }}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Delete lesson</span>
-                        </Button>
-                      </div>
-                    </CollapsibleTrigger>
-                    
-                    <CollapsibleContent className="p-3 border-t">
-                      <div className="space-y-3">
-                        <div className="space-y-1">
-                          <Label htmlFor={`lesson-title-${index}`} className="text-sm">
+      <div className="space-y-6">
+        <div>
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-lg font-semibold">Course Syllabus</h3>
+            <Button 
+              type="button" 
+              variant="outline" 
+              size="sm" 
+              onClick={handleAddLesson}
+              className="flex items-center gap-1"
+            >
+              <Plus className="h-4 w-4" />
+              Add Lesson
+            </Button>
+          </div>
+          
+          {errors.syllabus && (
+            <p className="text-red-500 text-sm mb-4">{errors.syllabus}</p>
+          )}
+          
+          <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+            {lessons.map((lesson, lessonIndex) => (
+              <div key={lessonIndex} className="border rounded-lg overflow-hidden bg-white">
+                <Collapsible defaultOpen={lessonIndex === 0}>
+                  <CollapsibleTrigger className="flex items-center justify-between w-full p-4 bg-gray-50 text-left hover:bg-gray-100 border-b">
+                    <div className="flex items-center gap-2">
+                      <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
+                      <span className="font-medium">{lesson.title || `Lesson ${lessonIndex + 1}`}</span>
+                      {lesson.materials.length > 0 && (
+                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                          {lesson.materials.length} materials
+                        </span>
+                      )}
+                    </div>
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="sm" 
+                      className="h-8 w-8 p-0 text-red-500"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRemoveLesson(lessonIndex);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </CollapsibleTrigger>
+                  
+                  <CollapsibleContent className="p-4">
+                    <div className="space-y-4">
+                      {/* Lesson Details */}
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor={`lesson-title-${lessonIndex}`} className="text-sm">
                             Lesson Title <span className="text-red-500">*</span>
                           </Label>
                           <Input
-                            id={`lesson-title-${index}`}
+                            id={`lesson-title-${lessonIndex}`}
                             value={lesson.title}
-                            onChange={(e) => handleLessonChange(index, "title", e.target.value)}
+                            onChange={(e) => handleLessonChange(lessonIndex, "title", e.target.value)}
                             placeholder="Enter lesson title"
                           />
                         </div>
                         
-                        <div className="space-y-1">
-                          <Label htmlFor={`lesson-description-${index}`} className="text-sm">
+                        <div className="space-y-2">
+                          <Label htmlFor={`lesson-description-${lessonIndex}`} className="text-sm">
                             Description
                           </Label>
                           <Textarea
-                            id={`lesson-description-${index}`}
+                            id={`lesson-description-${lessonIndex}`}
                             value={lesson.description}
-                            onChange={(e) => handleLessonChange(index, "description", e.target.value)}
+                            onChange={(e) => handleLessonChange(lessonIndex, "description", e.target.value)}
                             placeholder="What will students learn in this lesson?"
-                            className="min-h-[100px]"
+                            className="min-h-[80px]"
                           />
                         </div>
                       </div>
-                    </CollapsibleContent>
-                  </div>
+                      
+                      {/* Materials Section */}
+                      <div className="border-t pt-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-medium text-sm">Lesson Materials</h4>
+                          <div className="flex gap-2">
+                            <div className="relative">
+                              <Input
+                                id={`file-upload-${lessonIndex}`}
+                                type="file"
+                                className="hidden"
+                                onChange={(e) => handleFileUpload(e, lessonIndex)}
+                              />
+                              <Label 
+                                htmlFor={`file-upload-${lessonIndex}`} 
+                                className="flex items-center gap-1 px-3 py-1 bg-blue-500 text-white rounded text-xs cursor-pointer hover:bg-blue-600"
+                              >
+                                <FileUp className="h-3 w-3" />
+                                Upload
+                              </Label>
+                            </div>
+                            
+                            <Button 
+                              type="button" 
+                              variant="outline" 
+                              size="sm"
+                              className="text-xs px-3 py-1 h-auto"
+                              onClick={() => handleAddUrl(lessonIndex)}
+                            >
+                              <Link2 className="h-3 w-3 mr-1" />
+                              Add URL
+                            </Button>
+                          </div>
+                        </div>
+                        
+                        {/* Materials List */}
+                        {lesson.materials.length > 0 ? (
+                          <div className="space-y-2">
+                            {lesson.materials.map((material, materialIndex) => (
+                              <div key={materialIndex} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                                <div className="flex items-center gap-2">
+                                  <span className="text-lg">{getMaterialIcon(material.type)}</span>
+                                  <span className="text-sm font-medium truncate max-w-[200px]">
+                                    {material.name}
+                                  </span>
+                                  <span className="text-xs text-gray-500 capitalize">
+                                    {material.type}
+                                  </span>
+                                </div>
+                                <Button 
+                                  type="button" 
+                                  variant="ghost" 
+                                  size="sm" 
+                                  className="h-6 w-6 p-0 text-red-500"
+                                  onClick={() => handleRemoveMaterial(lessonIndex, materialIndex)}
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-muted-foreground text-xs text-center py-3 bg-gray-50 rounded">
+                            No materials added yet
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </CollapsibleContent>
                 </Collapsible>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
         </div>
         
-        <div className="space-y-6">
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Course Materials</h3>
-            <p className="text-sm text-muted-foreground">
-              Upload or link to any materials students will need for your class.
-            </p>
-            
-            <div className="flex flex-col gap-3 mb-4">
-              <div className="flex gap-2">
-                <div className="relative flex-1">
-                  <Input
-                    id="file-upload"
-                    type="file"
-                    className="hidden"
-                    onChange={handleFileUpload}
-                  />
-                  <Label 
-                    htmlFor="file-upload" 
-                    className="flex items-center justify-center gap-2 w-full p-2 border-2 border-dashed rounded-md cursor-pointer hover:bg-gray-50"
-                  >
-                    <FileUp className="h-4 w-4" />
-                    <span>Upload Files</span>
-                  </Label>
-                </div>
-                
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  className="flex items-center gap-2"
-                  onClick={handleAddUrl}
-                >
-                  <Link2 className="h-4 w-4" />
-                  <span>Add URL</span>
-                </Button>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Max file size: 50MB. Supported formats: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, PNG, JPG, MP4
-              </p>
-            </div>
-            
-            <div className="border rounded-md overflow-hidden">
-              <div className="bg-gray-50 p-3 border-b">
-                <h4 className="font-medium">Uploaded Materials</h4>
-              </div>
-              <div className="p-3">
-                {formState.materials.length > 0 ? (
-                  <ul className="space-y-2">
-                    {formState.materials.map((material, index) => (
-                      <li key={index} className="flex items-center justify-between p-2 border rounded-md">
-                        <div className="flex items-center gap-2">
-                          {material.type === "image" ? (
-                            <div className="h-8 w-8 bg-blue-100 text-blue-600 flex items-center justify-center rounded">
-                              <span className="text-xs">IMG</span>
-                            </div>
-                          ) : material.type === "link" ? (
-                            <div className="h-8 w-8 bg-green-100 text-green-600 flex items-center justify-center rounded">
-                              <span className="text-xs">URL</span>
-                            </div>
-                          ) : (
-                            <div className="h-8 w-8 bg-orange-100 text-orange-600 flex items-center justify-center rounded">
-                              <span className="text-xs">DOC</span>
-                            </div>
-                          )}
-                          <span className="text-sm font-medium truncate max-w-[200px]">
-                            {material.name}
-                          </span>
-                        </div>
-                        <Button 
-                          type="button" 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-8 w-8 p-0 text-red-500"
-                          onClick={() => removeMaterial(index)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                          <span className="sr-only">Delete material</span>
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                ) : (
-                  <p className="text-muted-foreground text-sm text-center py-4">
-                    No materials uploaded yet
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-blue-50 p-4 rounded-md">
-            <h4 className="font-medium text-[#1F4E79] mb-2">Curriculum Tips</h4>
-            <ul className="text-sm space-y-2 list-disc list-inside text-gray-700">
-              <li>Break down your content into clear, manageable lessons</li>
-              <li>Include learning objectives for each lesson</li>
-              <li>Provide a mix of materials (videos, documents, links)</li>
-              <li>Consider including pre-class preparation materials</li>
-              <li>For recorded classes, outline when each lesson will be available</li>
-            </ul>
-          </div>
+        <div className="bg-blue-50 p-4 rounded-md">
+          <h4 className="font-medium text-[#1F4E79] mb-2">Curriculum Tips</h4>
+          <ul className="text-sm space-y-2 list-disc list-inside text-gray-700">
+            <li>Break down your content into clear, manageable lessons</li>
+            <li>Include learning objectives for each lesson</li>
+            <li>Add materials directly to each lesson for better organization</li>
+            <li>Support files: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, PNG, JPG, MP4</li>
+            <li>Consider including pre-class preparation materials</li>
+          </ul>
         </div>
       </div>
       
