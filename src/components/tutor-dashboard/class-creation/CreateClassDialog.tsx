@@ -47,7 +47,7 @@ const CreateClassDialog = ({ open, onOpenChange, onClassCreated, editingClass }:
   const [isPublishing, setIsPublishing] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { reset, formState, setDeliveryMode, setClassFormat, setClassSize, setDurationType, setBasicDetails, setSchedule, setPricing, setLocation, setSyllabus, addMaterial } = useClassCreationStore();
+  const { reset, formState, setDeliveryMode, setClassFormat, setClassSize, setDurationType, setBasicDetails, setSchedule, setPricing, setLocation, setSyllabus, addMaterial, setTimeSlots } = useClassCreationStore();
   const { updateFormState } = useFormStateManager();
 
   // Load existing class data when editing
@@ -91,6 +91,22 @@ const CreateClassDialog = ({ open, onOpenChange, onClassCreated, editingClass }:
               endDate: scheduleData.end_date,
               totalSessions: scheduleData.total_sessions
             });
+          }
+
+          // Load time slots data
+          const { data: timeSlotsData } = await supabase
+            .from('class_time_slots')
+            .select('*')
+            .eq('class_id', editingClass.id)
+            .order('day_of_week');
+
+          if (timeSlotsData && timeSlotsData.length > 0) {
+            const timeSlots = timeSlotsData.map(slot => ({
+              dayOfWeek: slot.day_of_week,
+              startTime: slot.start_time,
+              endTime: slot.end_time
+            }));
+            setTimeSlots(timeSlots);
           }
 
           // Load location data
@@ -189,10 +205,10 @@ const CreateClassDialog = ({ open, onOpenChange, onClassCreated, editingClass }:
   const handleSaveAsDraft = async () => {
     setIsPublishing(true);
     try {
-      await saveClass(formState, 'draft');
+      await saveClass(formState, 'draft', editingClass?.id);
       toast({
-        title: "Saved as draft",
-        description: "Your class has been saved as a draft.",
+        title: editingClass ? "Class updated" : "Saved as draft",
+        description: editingClass ? "Your class has been updated successfully." : "Your class has been saved as a draft.",
       });
       handleClose();
       onClassCreated?.();
@@ -210,10 +226,10 @@ const CreateClassDialog = ({ open, onOpenChange, onClassCreated, editingClass }:
   const handlePublish = async () => {
     setIsPublishing(true);
     try {
-      await saveClass(formState, 'active');
+      await saveClass(formState, 'active', editingClass?.id);
       toast({
-        title: "Class published!",
-        description: "Your class is now live and students can enroll.",
+        title: editingClass ? "Class updated and published!" : "Class published!",
+        description: editingClass ? "Your class changes have been saved and published." : "Your class is now live and students can enroll.",
       });
       handleClose();
       onClassCreated?.();

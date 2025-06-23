@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Calendar, Clock, Users } from 'lucide-react';
+import { Calendar, Clock, Users, Repeat } from 'lucide-react';
 import { TutorClass } from '@/hooks/use-tutor-classes';
 
 interface ClassCardScheduleInfoProps {
@@ -30,12 +30,14 @@ const ClassCardScheduleInfo = ({ classItem }: ClassCardScheduleInfoProps) => {
 
       return {
         startDate: startDate ? formatDate(startDate) : 'Not set',
+        frequency: schedule.frequency || 'Not set',
         hasSchedule: !!startDate
       };
     }
     
     return {
       startDate: 'Not scheduled',
+      frequency: 'Not set',
       hasSchedule: false
     };
   };
@@ -45,7 +47,6 @@ const ClassCardScheduleInfo = ({ classItem }: ClassCardScheduleInfoProps) => {
       const timeSlot = classItem.class_time_slots[0];
       const startTime = timeSlot.start_time;
       const endTime = timeSlot.end_time;
-      const dayOfWeek = timeSlot.day_of_week;
       
       const formatTime = (timeStr: string) => {
         const [hours, minutes] = timeStr.split(':');
@@ -55,23 +56,32 @@ const ClassCardScheduleInfo = ({ classItem }: ClassCardScheduleInfoProps) => {
       };
 
       return {
-        dayOfWeek,
-        startTime: formatTime(startTime),
-        endTime: formatTime(endTime),
         timeRange: `${formatTime(startTime)} - ${formatTime(endTime)}`
       };
     }
     
     return {
-      dayOfWeek: 'Not scheduled',
-      startTime: 'N/A',
-      endTime: 'N/A',
       timeRange: 'Time not set'
     };
   };
 
   const scheduleInfo = getScheduleInfo();
   const timeInfo = getClassTimeInfo();
+
+  const getFrequencyDisplay = (frequency: string) => {
+    switch (frequency) {
+      case 'daily':
+        return 'Daily';
+      case 'weekly':
+        return 'Weekly';
+      case 'biweekly':
+        return 'Bi-weekly';
+      case 'monthly':
+        return 'Monthly';
+      default:
+        return frequency || 'Not set';
+    }
+  };
 
   return (
     <div className="space-y-2 mb-4">
@@ -87,8 +97,8 @@ const ClassCardScheduleInfo = ({ classItem }: ClassCardScheduleInfoProps) => {
       </div>
       
       <div className="flex items-center text-sm text-gray-500">
-        <Calendar className="h-4 w-4 mr-2" />
-        <span>{timeInfo.dayOfWeek}</span>
+        <Repeat className="h-4 w-4 mr-2" />
+        <span>{getFrequencyDisplay(scheduleInfo.frequency)}</span>
       </div>
       
       <div className="flex items-center text-sm text-gray-500">

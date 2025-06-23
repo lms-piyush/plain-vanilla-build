@@ -41,6 +41,7 @@ const ClassCard = ({ classItem, onEdit, onManage, onDelete }: ClassCardProps) =>
           status={classItem.status}
           deliveryMode={classItem.delivery_mode}
           classSize={classItem.class_size}
+          thumbnailUrl={classItem.thumbnail_url}
         />
         
         <ClassCardContent classItem={classItem} />
@@ -55,7 +56,6 @@ const ClassCard = ({ classItem, onEdit, onManage, onDelete }: ClassCardProps) =>
         </div>
       </div>
 
-      {/* Delete Confirmation Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
