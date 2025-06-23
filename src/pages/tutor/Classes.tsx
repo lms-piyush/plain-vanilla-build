@@ -14,6 +14,7 @@ const Classes = () => {
   const [createClassDialogOpen, setCreateClassDialogOpen] = useState(false);
   const [manageDialogOpen, setManageDialogOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<TutorClass | null>(null);
+  const [editingClass, setEditingClass] = useState<TutorClass | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [isDeleting, setIsDeleting] = useState(false);
   
@@ -26,11 +27,12 @@ const Classes = () => {
   const totalPages = Math.ceil(totalCount / classesPerPage);
 
   const handleCreateClass = () => {
+    setEditingClass(null);
     setCreateClassDialogOpen(true);
   };
 
   const handleEditClass = (classItem: TutorClass) => {
-    setSelectedClass(classItem);
+    setEditingClass(classItem);
     setCreateClassDialogOpen(true);
   };
 
@@ -67,7 +69,7 @@ const Classes = () => {
 
   const handleClassCreated = () => {
     refetch();
-    setSelectedClass(null);
+    setEditingClass(null);
   };
 
   const handlePageChange = (page: number) => {
@@ -109,6 +111,7 @@ const Classes = () => {
         open={createClassDialogOpen}
         onOpenChange={setCreateClassDialogOpen}
         onClassCreated={handleClassCreated}
+        editingClass={editingClass}
       />
 
       {/* Manage Class Dialog */}

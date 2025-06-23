@@ -1,4 +1,5 @@
 
+
 import { ClassCreationState } from "@/hooks/use-class-creation-store";
 import { LectureType } from "@/types/lecture-types";
 
@@ -12,32 +13,37 @@ const classTypeConfigs: Record<LectureType, Partial<ClassCreationState>> = {
     classFormat: "live",
     classSize: "one-on-one",
     durationType: "recurring",
-    meetingLink: "https://zoom.us/j/1234567890?pwd=abcdefghijklmnopqrstuvwxyz"
+    meetingLink: "https://zoom.us/j/1234567890?pwd=abcdefghijklmnopqrstuvwxyz",
+    maxStudents: 1
   },
   "online-live-group": {
     deliveryMode: "online",
     classFormat: "live",
     classSize: "group",
     durationType: "recurring",
-    meetingLink: "https://zoom.us/j/1234567890?pwd=abcdefghijklmnopqrstuvwxyz"
+    meetingLink: "https://zoom.us/j/1234567890?pwd=abcdefghijklmnopqrstuvwxyz",
+    maxStudents: 15
   },
   "online-recorded-one-on-one": {
     deliveryMode: "online",
     classFormat: "recorded",
     classSize: "one-on-one",
-    durationType: "recurring"
+    durationType: "recurring",
+    maxStudents: 1
   },
   "online-recorded-group": {
     deliveryMode: "online",
     classFormat: "recorded",
     classSize: "group",
-    durationType: "recurring"
+    durationType: "recurring",
+    maxStudents: 25
   },
   "offline-inbound-one-on-one": {
     deliveryMode: "offline",
     classFormat: "inbound",
     classSize: "one-on-one",
     durationType: "recurring",
+    maxStudents: 1,
     address: {
       street: "123 Student St",
       city: "San Francisco",
@@ -51,6 +57,7 @@ const classTypeConfigs: Record<LectureType, Partial<ClassCreationState>> = {
     classFormat: "outbound",
     classSize: "one-on-one",
     durationType: "recurring",
+    maxStudents: 1,
     address: {
       street: "456 Tutor St",
       city: "San Francisco",
@@ -64,6 +71,7 @@ const classTypeConfigs: Record<LectureType, Partial<ClassCreationState>> = {
     classFormat: "outbound",
     classSize: "group",
     durationType: "recurring",
+    maxStudents: 12,
     address: {
       street: "456 Tutor St",
       city: "San Francisco",
@@ -72,32 +80,36 @@ const classTypeConfigs: Record<LectureType, Partial<ClassCreationState>> = {
       country: "United States"
     }
   },
-  // Legacy type mappings
+  // Legacy type mappings for backward compatibility
   "live-one-on-one": {
     deliveryMode: "online",
     classFormat: "live",
     classSize: "one-on-one",
     durationType: "recurring",
-    meetingLink: "https://zoom.us/j/1234567890?pwd=abcdefghijklmnopqrstuvwxyz"
+    meetingLink: "https://zoom.us/j/1234567890?pwd=abcdefghijklmnopqrstuvwxyz",
+    maxStudents: 1
   },
   "live-group": {
     deliveryMode: "online",
     classFormat: "live",
     classSize: "group",
     durationType: "recurring",
-    meetingLink: "https://zoom.us/j/1234567890?pwd=abcdefghijklmnopqrstuvwxyz"
+    meetingLink: "https://zoom.us/j/1234567890?pwd=abcdefghijklmnopqrstuvwxyz",
+    maxStudents: 15
   },
   "recorded-on-demand": {
     deliveryMode: "online",
     classFormat: "recorded",
     classSize: "group",
-    durationType: "recurring"
+    durationType: "recurring",
+    maxStudents: 50
   },
   "offline-student-travels": {
     deliveryMode: "offline",
     classFormat: "outbound",
     classSize: "group",
     durationType: "recurring",
+    maxStudents: 8,
     address: {
       street: "456 Tutor St",
       city: "San Francisco",
@@ -111,6 +123,7 @@ const classTypeConfigs: Record<LectureType, Partial<ClassCreationState>> = {
     classFormat: "inbound",
     classSize: "one-on-one",
     durationType: "recurring",
+    maxStudents: 1,
     address: {
       street: "123 Student St",
       city: "San Francisco",
@@ -131,6 +144,11 @@ export const autoFillClassCreation = async (
   
   // Get class-type specific configuration
   const typeConfig = classTypeConfigs[classType];
+  
+  if (!typeConfig) {
+    console.error(`No configuration found for class type: ${classType}`);
+    return;
+  }
   
   // Scroll to top of form to ensure visibility
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -154,12 +172,12 @@ export const autoFillClassCreation = async (
   // Step 2: Details - Fill fields with minimal delays
   console.log("Step 2: Filling Details");
   await delay(100);
-  updateFormState({ title: `Auto-generated ${classType} Test Class` });
+  updateFormState({ title: `Auto-generated ${classType.replace(/-/g, ' ')} Test Class` });
   await delay(100);
   updateFormState({ subject: "Technology & Coding" });
   await delay(100);
   updateFormState({ 
-    description: `This is an automatically generated ${classType} class for testing purposes. It includes a detailed description of what students will learn in this course.`
+    description: `This is an automatically generated ${classType} class for testing purposes. It includes a detailed description of what students will learn in this comprehensive course covering modern programming concepts and practical applications.`
   });
   await delay(100);
   updateFormState({ 
@@ -213,7 +231,7 @@ export const autoFillClassCreation = async (
   await delay(100);
   updateFormState({ currency: "USD" });
   await delay(100);
-  updateFormState({ maxStudents: typeConfig.classSize === "group" ? 15 : 1 });
+  updateFormState({ maxStudents: typeConfig.maxStudents });
   await delay(100);
   updateFormState({ autoRenewal: true });
   await delay(200);
@@ -240,15 +258,7 @@ export const autoFillClassCreation = async (
     };
     
     await delay(100);
-    updateFormState({ address: { ...address, street: address.street } });
-    await delay(100);
-    updateFormState({ address: { ...address, city: address.city } });
-    await delay(100);
-    updateFormState({ address: { ...address, state: address.state } });
-    await delay(100);
-    updateFormState({ address: { ...address, zipCode: address.zipCode } });
-    await delay(100);
-    updateFormState({ address: { ...address, country: address.country } });
+    updateFormState({ address });
   }
   await delay(200);
   setStep(5);
@@ -261,20 +271,24 @@ export const autoFillClassCreation = async (
   // Add syllabus items quickly
   const syllabus = [
     {
-      title: "Introduction to Programming",
-      description: "Basic concepts of programming, variables, and data types"
+      title: "Introduction to Programming Fundamentals",
+      description: "Basic concepts of programming, variables, data types, and setting up the development environment"
     },
     {
-      title: "Control Structures",
-      description: "Loops, conditionals, and flow control"
+      title: "Control Structures and Logic",
+      description: "Loops, conditionals, flow control, and building logical thinking in programming"
     },
     {
-      title: "Functions and Classes",
-      description: "Building blocks of object-oriented programming"
+      title: "Functions and Modular Programming",
+      description: "Creating reusable code blocks, understanding scope, and building modular applications"
     },
     {
-      title: "Final Project",
-      description: "Creating a complete application using all learned concepts"
+      title: "Object-Oriented Programming Concepts",
+      description: "Classes, objects, inheritance, polymorphism, and encapsulation principles"
+    },
+    {
+      title: "Final Project and Portfolio Development",
+      description: "Creating a complete application using all learned concepts and building a professional portfolio"
     }
   ];
   
@@ -285,26 +299,44 @@ export const autoFillClassCreation = async (
   await delay(100);
   updateFormState({ syllabus: syllabus.slice(0, 3) });
   await delay(100);
+  updateFormState({ syllabus: syllabus.slice(0, 4) });
+  await delay(100);
   updateFormState({ syllabus: syllabus });
   
   // Add materials quickly with lessonIndex
   const materials = [
     {
-      name: "Course Handbook",
+      name: "Course Handbook & Setup Guide",
       type: "pdf",
       url: "https://example.com/handbook.pdf",
       lessonIndex: 0
     },
     {
-      name: "Starter Code",
+      name: "Starter Code Repository",
       type: "link",
       url: "https://github.com/example/starter-code",
       lessonIndex: 1
+    },
+    {
+      name: "Practice Exercises Collection",
+      type: "pdf",
+      url: "https://example.com/exercises.pdf",
+      lessonIndex: 2
+    },
+    {
+      name: "OOP Examples and Templates",
+      type: "link",
+      url: "https://github.com/example/oop-examples",
+      lessonIndex: 3
     }
   ];
   
   await delay(100);
   updateFormState({ materials: [materials[0]] });
+  await delay(100);
+  updateFormState({ materials: materials.slice(0, 2) });
+  await delay(100);
+  updateFormState({ materials: materials.slice(0, 3) });
   await delay(100);
   updateFormState({ materials: materials });
   await delay(200);

@@ -1,9 +1,8 @@
 
-import { X, Play } from "lucide-react";
-import { DialogHeader, DialogTitle, DialogClose } from "@/components/ui/dialog";
+import { X, TestTube } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ClassCreationStepper from "./ClassCreationStepper";
+import { TutorClass } from "@/hooks/use-tutor-classes";
 
 interface ClassCreationHeaderProps {
   steps: string[];
@@ -11,6 +10,7 @@ interface ClassCreationHeaderProps {
   onStepClick: (step: number) => void;
   onTestClick: () => void;
   onClose: () => void;
+  editingClass?: TutorClass | null;
 }
 
 const ClassCreationHeader = ({ 
@@ -18,45 +18,51 @@ const ClassCreationHeader = ({
   currentStep, 
   onStepClick, 
   onTestClick, 
-  onClose 
+  onClose,
+  editingClass
 }: ClassCreationHeaderProps) => {
   return (
-    <DialogHeader className="px-6 pt-6 pb-0">
-      <div className="flex items-center justify-between">
-        <DialogTitle className="text-xl font-semibold text-[#1F4E79]">Create New Class</DialogTitle>
+    <div className="border-b bg-white px-6 py-4">
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <h2 className="text-xl font-semibold text-[#1F4E79]">
+            {editingClass ? 'Edit Class' : 'Create New Class'}
+          </h2>
+          {editingClass && (
+            <p className="text-sm text-gray-600 mt-1">
+              Editing: {editingClass.title}
+            </p>
+          )}
+        </div>
         <div className="flex items-center gap-2">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  onClick={onTestClick}
-                  variant="outline" 
-                  size="sm"
-                  className="gap-1 border-[#1F4E79]/20 bg-amber-50 text-amber-700 hover:bg-amber-100"
-                >
-                  <Play className="h-3.5 w-3.5" />
-                  Test
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Auto-fill form for testing</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-          <DialogClose asChild onClick={onClose}>
-            <Button variant="ghost" size="icon" className="rounded-full">
-              <X className="h-4 w-4" />
-              <span className="sr-only">Close</span>
+          {!editingClass && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onTestClick}
+              className="flex items-center gap-2 text-xs"
+            >
+              <TestTube className="h-3 w-3" />
+              Test Auto-Fill
             </Button>
-          </DialogClose>
+          )}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onClose}
+            className="h-8 w-8"
+          >
+            <X className="h-4 w-4" />
+          </Button>
         </div>
       </div>
-      <ClassCreationStepper 
+      
+      <ClassCreationStepper
         steps={steps}
         currentStep={currentStep}
         onStepClick={onStepClick}
       />
-    </DialogHeader>
+    </div>
   );
 };
 

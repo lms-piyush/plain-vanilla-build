@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   Dialog, 
@@ -21,6 +21,8 @@ import { useFormStateManager } from "@/hooks/use-form-state-manager";
 import { saveClass } from "@/services/class-creation-service";
 import ClassCreationHeader from "./ClassCreationHeader";
 import DialogActions from "./DialogActions";
+import { TutorClass } from "@/hooks/use-tutor-classes";
+import { supabase } from "@/integrations/supabase/client";
 
 const steps = [
   "Delivery & Type",
@@ -36,16 +38,128 @@ interface CreateClassDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onClassCreated?: () => void;
+  editingClass?: TutorClass | null;
 }
 
-const CreateClassDialog = ({ open, onOpenChange, onClassCreated }: CreateClassDialogProps) => {
+const CreateClassDialog = ({ open, onOpenChange, onClassCreated, editingClass }: CreateClassDialogProps) => {
   const [currentStep, setCurrentStep] = useState(0);
   const [typeSelectorOpen, setTypeSelectorOpen] = useState(false);
   const [isPublishing, setIsPublishing] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { reset } = useClassCreationStore();
-  const { formState } = useFormStateManager();
+  const { reset, formState, setDeliveryMode, setClassFormat, setClassSize, setDurationType, setBasicDetails, setSchedule, setPricing, setLocation, setSyllabus, addMaterial } = useClassCreationStore();
+  const { updateFormState } = useFormStateManager();
+
+  // Load existing class data when editing
+  useEffect(() => {
+    const loadClassData = async () => {
+      if (editingClass && open) {
+        console.log('Loading existing class data:', editingClass);
+        
+        // Set basic class details
+        setDeliveryMode(editingClass.delivery_mode);
+        setClassFormat(editingClass.class_format);
+        setClassSize(editingClass.class_size);
+        setDurationType(editingClass.duration_type);
+        
+        setBasicDetails({
+          title: editingClass.title || '',
+          subject: editingClass.subject || '',
+          description: editingClass.description || '',
+          thumbnailUrl: editingClass.thumbnail_url || ''
+        });
+        
+        setPricing({
+          price: editingClass.price || null,
+          currency: editingClass.currency || 'USD',
+          maxStudents: editingClass.max_students || null,
+          autoRenewal: editingClass.auto_renewal || false
+        });
+
+        try {
+          // Load schedule data
+          const { data: scheduleData } = await supabase
+            .from('class_schedules')
+            .select('*')
+            .eq('class_id', editingClass.id)
+            .maybeSingle();
+
+          if (scheduleData) {
+            setSchedule({
+              frequency: scheduleData.frequency as any,
+              startDate: scheduleData.start_date,
+              endDate: scheduleData.end_date,
+              totalSessions: scheduleData.total_sessions
+            });
+          }
+
+          // Load location data
+          const { data: locationData } = await supabase
+            .from('class_locations')
+            .select('*')
+            .eq('class_id', editingClass.id)
+            .maybeSingle();
+
+          if (locationData) {
+            setLocation({
+              meetingLink: locationData.meeting_link || '',
+              address: {
+                street: locationData.street || '',
+                city: locationData.city || '',
+                state: locationData.state || '',
+                zipCode: locationData.zip_code || '',
+                country: locationData.country || ''
+              }
+            });
+          }
+
+          // Load syllabus data
+          const { data: syllabusData } = await supabase
+            .from('class_syllabus')
+            .select('*')
+            .eq('class_id', editingClass.id)
+            .order('week_number');
+
+          if (syllabusData && syllabusData.length > 0) {
+            const syllabus = syllabusData.map(item => ({
+              title: item.title,
+              description: item.description || ''
+            }));
+            setSyllabus(syllabus);
+
+            // Load materials for each lesson
+            for (const lesson of syllabusData) {
+              const { data: materialsData } = await supabase
+                .from('lesson_materials')
+                .select('*')
+                .eq('lesson_id', lesson.id)
+                .order('display_order');
+
+              if (materialsData && materialsData.length > 0) {
+                materialsData.forEach(material => {
+                  addMaterial({
+                    name: material.material_name,
+                    type: material.material_type,
+                    url: material.material_url,
+                    lessonIndex: lesson.week_number - 1
+                  });
+                });
+              }
+            }
+          }
+        } catch (error) {
+          console.error('Error loading class data:', error);
+          toast({
+            title: "Error loading class data",
+            description: "Some class details may not be loaded correctly.",
+            variant: "destructive"
+          });
+        }
+      }
+    };
+
+    loadClassData();
+  }, [editingClass, open]);
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -119,7 +233,7 @@ const CreateClassDialog = ({ open, onOpenChange, onClassCreated }: CreateClassDi
       title: "Test Mode Activated",
       description: `Auto-filling ${selectedType} class creation form...`,
     });
-    await autoFillClassCreation(selectedType, setCurrentStep, () => {});
+    await autoFillClassCreation(selectedType, setCurrentStep, updateFormState);
   };
 
   const renderStep = () => {
@@ -153,6 +267,7 @@ const CreateClassDialog = ({ open, onOpenChange, onClassCreated }: CreateClassDi
             onStepClick={handleJumpToStep}
             onTestClick={() => setTypeSelectorOpen(true)}
             onClose={handleClose}
+            editingClass={editingClass}
           />
           
           <div className="overflow-y-auto max-h-[calc(90vh-150px)] px-6 py-4">
