@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useClassCreationStore } from "@/hooks/use-class-creation-store";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useDesignTokens } from "@/hooks/use-design-tokens";
+import { uploadClassThumbnail, deleteClassThumbnail } from "@/services/file-upload-service";
+import { toast } from "@/components/ui/sonner";
+import { Upload, X } from "lucide-react";
 
 // Mock data for subjects
 const subjectOptions = [
@@ -37,6 +39,8 @@ const DetailsStep = ({ onNext, onBack }: DetailsStepProps) => {
   const [subject, setSubject] = useState(formState.subject);
   const [description, setDescription] = useState(formState.description);
   const [thumbnailUrl, setThumbnailUrl] = useState(formState.thumbnailUrl);
+  
+  const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false);
   
   useEffect(() => {
     if (subject) {
@@ -77,14 +81,48 @@ const DetailsStep = ({ onNext, onBack }: DetailsStepProps) => {
     setShowSubjectDropdown(false);
   };
   
-  // Placeholder thumbnail upload function
-  const handleThumbnailUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleThumbnailUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // In a real application, you would upload the file to a storage service
-      // and then set the URL. For now, we'll create a temporary object URL
-      const tempUrl = URL.createObjectURL(file);
-      setThumbnailUrl(tempUrl);
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error('File size must be less than 5MB');
+      return;
+    }
+
+    setIsUploadingThumbnail(true);
+    try {
+      // Delete old thumbnail if exists
+      if (thumbnailUrl) {
+        await deleteClassThumbnail(thumbnailUrl);
+      }
+
+      const uploadedUrl = await uploadClassThumbnail(file);
+      setThumbnailUrl(uploadedUrl);
+      toast.success('Thumbnail uploaded successfully');
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to upload thumbnail');
+    } finally {
+      setIsUploadingThumbnail(false);
+    }
+  };
+
+  const handleRemoveThumbnail = async () => {
+    if (thumbnailUrl) {
+      try {
+        await deleteClassThumbnail(thumbnailUrl);
+        setThumbnailUrl("");
+        toast.success('Thumbnail removed');
+      } catch (error: any) {
+        toast.error('Failed to remove thumbnail');
+      }
     }
   };
   
@@ -200,32 +238,37 @@ const DetailsStep = ({ onNext, onBack }: DetailsStepProps) => {
                       variant="destructive"
                       size="sm"
                       className="absolute top-2 right-2"
-                      onClick={() => setThumbnailUrl("")}
+                      onClick={handleRemoveThumbnail}
+                      disabled={isUploadingThumbnail}
                     >
-                      Remove
+                      <X className="h-4 w-4" />
                     </Button>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-4">
                   <div className="aspect-video bg-gray-100 flex items-center justify-center rounded-md">
-                    <p className="text-muted-foreground">16:9 Aspect Ratio</p>
+                    <div className="text-center">
+                      <Upload className="h-8 w-8 mx-auto mb-2 text-gray-400" />
+                      <p className="text-muted-foreground">16:9 Aspect Ratio</p>
+                    </div>
                   </div>
                   <Input
                     id="thumbnail"
                     type="file"
                     accept="image/*"
                     onChange={handleThumbnailUpload}
+                    disabled={isUploadingThumbnail}
                     className="hidden"
                   />
                   <Label 
                     htmlFor="thumbnail" 
-                    className="bg-[#1F4E79] text-white px-4 py-2 rounded-md cursor-pointer inline-block"
+                    className="bg-[#1F4E79] text-white px-4 py-2 rounded-md cursor-pointer inline-block hover:bg-[#1a4369] disabled:opacity-50"
                   >
-                    Upload Thumbnail
+                    {isUploadingThumbnail ? 'Uploading...' : 'Upload Thumbnail'}
                   </Label>
                   <p className="text-xs text-muted-foreground">
-                    Recommended size: 1280 × 720px (16:9 ratio)
+                    Max size: 5MB. Recommended: 1280 × 720px (16:9 ratio)
                   </p>
                 </div>
               )}

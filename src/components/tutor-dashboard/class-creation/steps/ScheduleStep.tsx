@@ -16,7 +16,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from "@/components/ui/select";
-import { Plus, Trash2 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 
 interface ScheduleStepProps {
@@ -53,40 +53,41 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   const [frequency, setFrequency] = useState<Frequency | null>(formState.frequency || null);
   const [startDate, setStartDate] = useState(formState.startDate || "");
   const [endDate, setEndDate] = useState(formState.endDate || "");
-  const [timeSlots, setTimeSlots] = useState<TimeSlot[]>(
-    formState.timeSlots.length > 0 
-      ? formState.timeSlots 
-      : [{ day: "monday", startTime: "09:00", endTime: "10:00" }]
-  );
+  const [startTime, setStartTime] = useState("09:00");
+  const [endTime, setEndTime] = useState("10:00");
+  const [selectedDay, setSelectedDay] = useState<DayOfWeek>("monday");
+  const [dayOfMonth, setDayOfMonth] = useState("1");
+  const [skipFirstWeek, setSkipFirstWeek] = useState(false);
   
   const [errors, setErrors] = useState({
     frequency: "",
     startDate: "",
     endDate: "",
-    timeSlots: ""
+    startTime: "",
+    endTime: "",
+    selectedDay: "",
+    dayOfMonth: ""
   });
   
   const validateForm = () => {
     const newErrors = {
       frequency: formState.durationType === "recurring" && !frequency ? "Frequency is required for recurring classes" : "",
       startDate: !startDate ? "Start date is required" : "",
-      endDate: !endDate ? "End date is required" : "",
-      timeSlots: timeSlots.length === 0 ? "At least one time slot is required" : ""
+      endDate: "",
+      startTime: !startTime ? "Start time is required" : "",
+      endTime: !endTime ? "End time is required" : "",
+      selectedDay: (frequency === "weekly" || frequency === "biweekly") && !selectedDay ? "Day of week is required" : "",
+      dayOfMonth: frequency === "monthly" && (!dayOfMonth || parseInt(dayOfMonth) < 1 || parseInt(dayOfMonth) > 31) ? "Valid day of month is required (1-31)" : ""
     };
     
-    // Validate date range
+    // Validate date range if end date is provided
     if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
       newErrors.endDate = "End date must be after start date";
     }
     
-    // Validate each time slot
-    if (timeSlots.some(slot => !slot.day || !slot.startTime || !slot.endTime)) {
-      newErrors.timeSlots = "All time slot fields are required";
-    }
-    
-    // Validate time slot order
-    if (timeSlots.some(slot => slot.startTime >= slot.endTime)) {
-      newErrors.timeSlots = "Start time must be before end time";
+    // Validate time range
+    if (startTime && endTime && startTime >= endTime) {
+      newErrors.endTime = "End time must be after start time";
     }
     
     setErrors(newErrors);
@@ -98,40 +99,142 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
       setSchedule({
         frequency: formState.durationType === "recurring" ? frequency : null,
         startDate,
-        endDate,
-        totalSessions: null // Remove total_sessions as it will be managed by schedules and time slots
+        endDate: endDate || null,
+        totalSessions: null
       });
       
-      // Update time slots in store
+      // Clear existing time slots and add new one based on frequency
       formState.timeSlots.forEach((_, index) => {
         removeTimeSlot(0);
       });
       
-      timeSlots.forEach(slot => {
-        addTimeSlot(slot);
-      });
+      // Create time slot based on frequency
+      const timeSlot: TimeSlot = {
+        day: frequency === "daily" ? "monday" : selectedDay, // For daily, we'll handle this differently in backend
+        startTime,
+        endTime
+      };
+      
+      addTimeSlot(timeSlot);
       
       onNext();
     }
   };
   
-  const handleAddTimeSlot = () => {
-    setTimeSlots([
-      ...timeSlots,
-      { day: "monday", startTime: "09:00", endTime: "10:00" }
-    ]);
-  };
-  
-  const handleRemoveTimeSlot = (index: number) => {
-    setTimeSlots(timeSlots.filter((_, i) => i !== index));
-  };
-  
-  const handleTimeSlotChange = (index: number, field: keyof TimeSlot, value: string) => {
-    setTimeSlots(
-      timeSlots.map((slot, i) => 
-        i === index ? { ...slot, [field]: value } : slot
-      )
-    );
+  const renderFrequencyFields = () => {
+    if (!frequency) return null;
+    
+    switch (frequency) {
+      case "daily":
+        return (
+          <div className="space-y-4">
+            <div className="bg-blue-50 p-3 rounded-md">
+              <p className="text-sm text-blue-800">
+                Daily classes will occur every day at the specified time between the start and end dates.
+              </p>
+            </div>
+          </div>
+        );
+        
+      case "weekly":
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-base">
+                Day of the Week <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={selectedDay}
+                onValueChange={(value) => setSelectedDay(value as DayOfWeek)}
+              >
+                <SelectTrigger className={errors.selectedDay ? "border-red-500" : ""}>
+                  <SelectValue placeholder="Select day" />
+                </SelectTrigger>
+                <SelectContent>
+                  {daysOfWeek.map((day) => (
+                    <SelectItem key={day.value} value={day.value}>
+                      {day.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.selectedDay && (
+                <p className="text-red-500 text-sm">{errors.selectedDay}</p>
+              )}
+            </div>
+          </div>
+        );
+        
+      case "biweekly":
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-base">
+                Day of the Week <span className="text-red-500">*</span>
+              </Label>
+              <Select
+                value={selectedDay}
+                onValueChange={(value) => setSelectedDay(value as DayOfWeek)}
+              >
+                <SelectTrigger className={errors.selectedDay ? "border-red-500" : ""}>
+                  <SelectValue placeholder="Select day" />
+                </SelectTrigger>
+                <SelectContent>
+                  {daysOfWeek.map((day) => (
+                    <SelectItem key={day.value} value={day.value}>
+                      {day.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              {errors.selectedDay && (
+                <p className="text-red-500 text-sm">{errors.selectedDay}</p>
+              )}
+            </div>
+            
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="skip-first-week"
+                checked={skipFirstWeek}
+                onCheckedChange={(checked) => setSkipFirstWeek(checked === true)}
+              />
+              <Label htmlFor="skip-first-week" className="text-sm">
+                Skip first week (custom biweekly pattern)
+              </Label>
+            </div>
+          </div>
+        );
+        
+      case "monthly":
+        return (
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="day-of-month" className="text-base">
+                Day of Month <span className="text-red-500">*</span>
+              </Label>
+              <Input
+                id="day-of-month"
+                type="number"
+                min="1"
+                max="31"
+                value={dayOfMonth}
+                onChange={(e) => setDayOfMonth(e.target.value)}
+                placeholder="15"
+                className={errors.dayOfMonth ? "border-red-500" : ""}
+              />
+              {errors.dayOfMonth && (
+                <p className="text-red-500 text-sm">{errors.dayOfMonth}</p>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Enter the day of the month (1-31) when the class should occur
+              </p>
+            </div>
+          </div>
+        );
+        
+      default:
+        return null;
+    }
   };
   
   return (
@@ -183,7 +286,7 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
           
           <div className="space-y-2">
             <Label htmlFor="endDate" className="text-base">
-              End Date <span className="text-red-500">*</span>
+              End Date <span className="text-muted-foreground">(Optional)</span>
             </Label>
             <Input
               id="endDate"
@@ -196,89 +299,70 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
             {errors.endDate && (
               <p className="text-red-500 text-sm">{errors.endDate}</p>
             )}
+            <p className="text-xs text-muted-foreground">
+              Leave empty for ongoing classes
+            </p>
           </div>
+          
+          {renderFrequencyFields()}
         </div>
         
         <div className="space-y-4">
-          <div>
-            <div className="flex items-center justify-between mb-2">
-              <Label className="text-base">
-                Time Slots <span className="text-red-500">*</span>
-              </Label>
-              <Button 
-                type="button" 
-                variant="outline" 
-                size="sm" 
-                onClick={handleAddTimeSlot}
-                className="flex items-center gap-1"
-              >
-                <Plus className="h-4 w-4" />
-                Add Slot
-              </Button>
-            </div>
+          <div className="space-y-4">
+            <h4 className="font-medium">Class Time</h4>
             
-            {timeSlots.map((slot, index) => (
-              <div key={index} className="flex items-center gap-2 mb-3">
-                <Select
-                  value={slot.day}
-                  onValueChange={(value) => handleTimeSlotChange(index, "day", value)}
-                >
-                  <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Day" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {daysOfWeek.map((day) => (
-                      <SelectItem key={day.value} value={day.value}>
-                        {day.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="startTime" className="text-base">
+                  Start Time <span className="text-red-500">*</span>
+                </Label>
                 <Input
+                  id="startTime"
                   type="time"
-                  value={slot.startTime}
-                  onChange={(e) => handleTimeSlotChange(index, "startTime", e.target.value)}
-                  className="flex-1"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                  className={errors.startTime ? "border-red-500" : ""}
                 />
-                
-                <span className="text-muted-foreground">to</span>
-                
-                <Input
-                  type="time"
-                  value={slot.endTime}
-                  onChange={(e) => handleTimeSlotChange(index, "endTime", e.target.value)}
-                  className="flex-1"
-                />
-                
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => handleRemoveTimeSlot(index)}
-                  disabled={timeSlots.length === 1}
-                  className="text-red-500"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  <span className="sr-only">Remove time slot</span>
-                </Button>
+                {errors.startTime && (
+                  <p className="text-red-500 text-sm">{errors.startTime}</p>
+                )}
               </div>
-            ))}
-            
-            {errors.timeSlots && (
-              <p className="text-red-500 text-sm">{errors.timeSlots}</p>
-            )}
+              
+              <div className="space-y-2">
+                <Label htmlFor="endTime" className="text-base">
+                  End Time <span className="text-red-500">*</span>
+                </Label>
+                <Input
+                  id="endTime"
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                  className={errors.endTime ? "border-red-500" : ""}
+                />
+                {errors.endTime && (
+                  <p className="text-red-500 text-sm">{errors.endTime}</p>
+                )}
+              </div>
+            </div>
           </div>
           
-          <div className="bg-blue-50 p-4 rounded-md mt-4">
+          <div className="bg-blue-50 p-4 rounded-md">
             <h4 className="font-medium text-[#1F4E79] mb-2">Schedule Tips</h4>
             <ul className="text-sm space-y-2 list-disc list-inside text-gray-700">
-              <li>Choose consistent days and times for better student retention</li>
-              <li>Consider time zones if teaching students internationally</li>
-              <li>Allow buffers between sessions for preparation</li>
-              <li>Sessions will be automatically calculated based on your schedule dates and time slots</li>
-              {formState.durationType === "recurring" && (
-                <li>Recurring classes will automatically generate sessions based on frequency</li>
+              <li>Choose consistent times for better student retention</li>
+              <li>Consider time zones if teaching internationally</li>
+              <li>Sessions will be automatically calculated based on your schedule</li>
+              {frequency === "daily" && (
+                <li>Daily classes will occur every day between start and end dates</li>
+              )}
+              {frequency === "weekly" && (
+                <li>Weekly classes will occur every week on the selected day</li>
+              )}
+              {frequency === "biweekly" && (
+                <li>Bi-weekly classes will occur every 2 weeks on the selected day</li>
+              )}
+              {frequency === "monthly" && (
+                <li>Monthly classes will occur on the same day each month</li>
               )}
             </ul>
           </div>
