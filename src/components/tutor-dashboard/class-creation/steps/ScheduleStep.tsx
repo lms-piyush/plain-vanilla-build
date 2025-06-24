@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   useClassCreationStore, 
   TimeSlot, 
@@ -47,20 +47,38 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   const [startDate, setStartDate] = useState(formState.startDate || "");
   const [endDate, setEndDate] = useState(formState.endDate || "");
   
-  // Daily frequency state
-  const [dailyTimeSlots, setDailyTimeSlots] = useState<DailyTimeSlot[]>([
-    { startTime: "09:00", endTime: "10:00" }
-  ]);
+  // Initialize state from existing formState.timeSlots
+  const [dailyTimeSlots, setDailyTimeSlots] = useState<DailyTimeSlot[]>(() => {
+    if (formState.timeSlots.length > 0 && formState.frequency === "daily") {
+      return formState.timeSlots.map(slot => ({
+        startTime: slot.startTime,
+        endTime: slot.endTime
+      }));
+    }
+    return [{ startTime: "09:00", endTime: "10:00" }];
+  });
   
-  // Weekly frequency state
-  const [weeklyTimeSlots, setWeeklyTimeSlots] = useState<WeeklyTimeSlot[]>([
-    { dayOfWeek: "monday", startTime: "09:00", endTime: "10:00" }
-  ]);
+  const [weeklyTimeSlots, setWeeklyTimeSlots] = useState<WeeklyTimeSlot[]>(() => {
+    if (formState.timeSlots.length > 0 && formState.frequency === "weekly") {
+      return formState.timeSlots.map(slot => ({
+        dayOfWeek: slot.dayOfWeek,
+        startTime: slot.startTime,
+        endTime: slot.endTime
+      }));
+    }
+    return [{ dayOfWeek: "monday", startTime: "09:00", endTime: "10:00" }];
+  });
   
-  // Monthly frequency state
-  const [monthlyDates, setMonthlyDates] = useState<MonthlyDate[]>([
-    { dayOfMonth: 1, startTime: "09:00", endTime: "10:00" }
-  ]);
+  const [monthlyDates, setMonthlyDates] = useState<MonthlyDate[]>(() => {
+    if (formState.timeSlots.length > 0 && formState.frequency === "monthly") {
+      return formState.timeSlots.map((slot, index) => ({
+        dayOfMonth: index + 1, // Default fallback
+        startTime: slot.startTime,
+        endTime: slot.endTime
+      }));
+    }
+    return [{ dayOfMonth: 1, startTime: "09:00", endTime: "10:00" }];
+  });
   
   const [errors, setErrors] = useState({
     frequency: "",
@@ -68,6 +86,16 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
     endDate: "",
     timeSlots: ""
   });
+  
+  // Update local state when frequency changes
+  useEffect(() => {
+    if (frequency !== formState.frequency && formState.timeSlots.length > 0) {
+      // Reset to defaults when frequency changes
+      setDailyTimeSlots([{ startTime: "09:00", endTime: "10:00" }]);
+      setWeeklyTimeSlots([{ dayOfWeek: "monday", startTime: "09:00", endTime: "10:00" }]);
+      setMonthlyDates([{ dayOfMonth: 1, startTime: "09:00", endTime: "10:00" }]);
+    }
+  }, [frequency, formState.frequency, formState.timeSlots.length]);
   
   const validateForm = () => {
     const newErrors = {
@@ -125,7 +153,7 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
       
       if (frequency === "daily") {
         timeSlots = dailyTimeSlots.map(slot => ({
-          dayOfWeek: "monday",
+          dayOfWeek: "monday", // Placeholder for daily
           startTime: slot.startTime,
           endTime: slot.endTime
         }));
@@ -137,7 +165,7 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
         }));
       } else if (frequency === "monthly") {
         timeSlots = monthlyDates.map(slot => ({
-          dayOfWeek: "monday",
+          dayOfWeek: "monday", // Placeholder for monthly
           startTime: slot.startTime,
           endTime: slot.endTime
         }));
@@ -241,7 +269,7 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   };
   
   return (
-    <div className="space-y-6 pb-20">
+    <div className="space-y-6 pb-24 min-h-screen overflow-y-auto">
       <div className="grid md:grid-cols-2 gap-6">
         <div className="space-y-6">
           <FrequencySelector
@@ -271,8 +299,8 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
         </div>
       </div>
       
-      {/* Fixed positioning for buttons to ensure visibility */}
-      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-50 md:relative md:bg-transparent md:border-t-0 md:p-0 md:z-auto">
+      {/* Fixed positioning for buttons with proper spacing */}
+      <div className="sticky bottom-0 left-0 right-0 bg-white border-t p-4 shadow-lg mt-8">
         <div className="flex justify-between items-center max-w-4xl mx-auto">
           <Button 
             variant="outline" 
