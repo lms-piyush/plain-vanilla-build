@@ -111,10 +111,6 @@ const MyClasses = () => {
                   View
                 </Link>
               </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
-              </DropdownMenuItem>
               <DropdownMenuItem 
                 className="cursor-pointer"
                 onClick={() => handleDuplicate(classItem.id, classItem.title)}
@@ -135,14 +131,25 @@ const MyClasses = () => {
         </div>
         <div className="absolute bottom-4 left-4 text-white">
           <div className="flex items-center text-sm">
-            {getDeliveryIcon(classItem.delivery_mode)}
+            {classItem.delivery_mode === 'online' ? (
+              <Globe className="h-3.5 w-3.5 mr-2 text-white" />
+            ) : (
+              <MapPin className="h-3.5 w-3.5 mr-2 text-white" />
+            )}
             <span className="capitalize">{classItem.delivery_mode} • {classItem.class_size}</span>
           </div>
         </div>
       </div>
       <CardContent className="p-4">
         <div className="flex justify-between items-start mb-2">
-          {getStatusBadge(classItem.status)}
+          <Badge className={`${
+            classItem.status === 'active' ? 'bg-green-100 text-green-800' :
+            classItem.status === 'draft' ? 'bg-yellow-100 text-yellow-800' :
+            'bg-gray-100 text-gray-800'
+          }`}>
+            {classItem.status === 'active' ? 'Active' : 
+             classItem.status === 'draft' ? 'Draft' : 'Inactive'}
+          </Badge>
           <div className="flex items-center">
             <Star className="h-3.5 w-3.5 fill-[#F29F05] text-[#F29F05]" />
             <span className="text-xs ml-1 font-medium">-</span>
@@ -199,7 +206,6 @@ const MyClasses = () => {
           </Button>
         </div>
 
-        {/* Create Class Dialog */}
         <SimpleCreateClassDialog
           open={createClassDialogOpen}
           onOpenChange={setCreateClassDialogOpen}
@@ -223,26 +229,25 @@ const MyClasses = () => {
           </Button>
         </div>
 
-        {/* Active/Inactive/Drafts Tabs */}
         <Tabs defaultValue="active" className="w-full">
           <TabsList className="w-full bg-white border-b border-[#1F4E79]/10 rounded-none p-0 h-auto">
             <TabsTrigger 
               value="active" 
               className="rounded-none text-sm py-3 px-4 data-[state=active]:text-[#1F4E79] data-[state=active]:border-b-2 data-[state=active]:border-[#1F4E79] font-medium data-[state=active]:shadow-none"
             >
-              Active Classes ({activeClasses.length})
+              Active Classes ({classes.filter(c => c.status === 'active').length})
             </TabsTrigger>
             <TabsTrigger 
               value="drafts" 
               className="rounded-none text-sm py-3 px-4 data-[state=active]:text-[#1F4E79] data-[state=active]:border-b-2 data-[state=active]:border-[#1F4E79] font-medium data-[state=active]:shadow-none"
             >
-              Drafts ({draftClasses.length})
+              Drafts ({classes.filter(c => c.status === 'draft').length})
             </TabsTrigger>
             <TabsTrigger 
               value="inactive" 
               className="rounded-none text-sm py-3 px-4 data-[state=active]:text-[#1F4E79] data-[state=active]:border-b-2 data-[state=active]:border-[#1F4E79] font-medium data-[state=active]:shadow-none"
             >
-              Inactive Classes ({inactiveClasses.length})
+              Inactive Classes ({classes.filter(c => c.status === 'inactive').length})
             </TabsTrigger>
           </TabsList>
           
@@ -251,9 +256,9 @@ const MyClasses = () => {
               <div className="text-center py-12">
                 <p className="text-muted-foreground">Loading classes...</p>
               </div>
-            ) : activeClasses.length > 0 ? (
+            ) : classes.filter(c => c.status === 'active').length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {activeClasses.map(renderClassCard)}
+                {classes.filter(c => c.status === 'active').map(renderClassCard)}
               </div>
             ) : (
               <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-[#1F4E79]/10">
@@ -271,9 +276,9 @@ const MyClasses = () => {
               <div className="text-center py-12">
                 <p className="text-muted-foreground">Loading drafts...</p>
               </div>
-            ) : draftClasses.length > 0 ? (
+            ) : classes.filter(c => c.status === 'draft').length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {draftClasses.map(renderClassCard)}
+                {classes.filter(c => c.status === 'draft').map(renderClassCard)}
               </div>
             ) : (
               <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-[#1F4E79]/10">
@@ -287,9 +292,9 @@ const MyClasses = () => {
               <div className="text-center py-12">
                 <p className="text-muted-foreground">Loading inactive classes...</p>
               </div>
-            ) : inactiveClasses.length > 0 ? (
+            ) : classes.filter(c => c.status === 'inactive').length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {inactiveClasses.map(renderClassCard)}
+                {classes.filter(c => c.status === 'inactive').map(renderClassCard)}
               </div>
             ) : (
               <div className="text-center py-12 bg-white rounded-lg shadow-sm border border-[#1F4E79]/10">
