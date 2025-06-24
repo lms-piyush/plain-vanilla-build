@@ -1,3 +1,4 @@
+
 import { create } from 'zustand';
 
 // Define the types for our form state
@@ -286,4 +287,4 @@ export const useClassCreationStore = create<ClassCreationStore>((set) => ({
   })),
   
   reset: () => set({ formState: initialState }),
-});
+}));
