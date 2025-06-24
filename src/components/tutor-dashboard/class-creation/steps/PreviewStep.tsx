@@ -1,10 +1,12 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useClassCreationStore } from "@/hooks/use-class-creation-store";
-import { Calendar, Clock, Users, DollarSign, MapPin, Link as LinkIcon, BookOpen } from "lucide-react";
 import PublishConfirmationModal from "../PublishConfirmationModal";
+import ClassPreviewCard from "../ClassPreviewCard";
+import ClassDetailsCard from "../ClassDetailsCard";
 
 interface PreviewStepProps {
   onBack: () => void;
@@ -95,8 +97,6 @@ const PreviewStep = ({ onBack, onSaveAsDraft, onPublish, isPublishing = false, e
     }
   };
 
-  const connectionDetails = getConnectionDetails();
-
   return (
     <div className="space-y-6 pb-24 md:pb-6">
       <div className="text-center mb-6">
@@ -108,165 +108,19 @@ const PreviewStep = ({ onBack, onSaveAsDraft, onPublish, isPublishing = false, e
 
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Left Column - Class Preview */}
-        <div className="space-y-4">
-          {/* Class Image Placeholder */}
-          <div className="aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-            {formState.thumbnailUrl ? (
-              <img 
-                src={formState.thumbnailUrl} 
-                alt="Class thumbnail" 
-                className="w-full h-full object-cover rounded-lg"
-              />
-            ) : (
-              <p className="text-gray-500">No thumbnail uploaded</p>
-            )}
-          </div>
-
-          {/* Class Title and Type */}
-          <div>
-            <h3 className="text-xl font-semibold mb-2">
-              {formState.title || 'Untitled Class'}
-            </h3>
-            <p className="text-sm text-gray-600 mb-2">{formatClassType()}</p>
-            <Badge variant="secondary" className="text-xs">
-              {formState.subject || 'No subject'}
-            </Badge>
-          </div>
-
-          {/* Description */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <BookOpen className="h-4 w-4" />
-                Description
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600">
-                {formState.description || 'No description provided'}
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Syllabus Preview */}
-          {formState.syllabus.length > 0 && (
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Syllabus</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {formState.syllabus.map((item, index) => (
-                    <div key={index} className="border-l-2 border-blue-200 pl-3">
-                      <p className="font-medium text-sm">{item.title}</p>
-                      <p className="text-xs text-gray-600">{item.description}</p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+        <ClassPreviewCard 
+          formState={formState}
+          formatClassType={formatClassType}
+        />
 
         {/* Right Column - Class Details */}
-        <div className="space-y-4">
-          {/* Schedule */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                Schedule
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm font-medium">{formatSchedule()}</p>
-              {formState.frequency && (
-                <p className="text-xs text-gray-600 mt-1">
-                  Frequency: {formState.frequency.charAt(0).toUpperCase() + formState.frequency.slice(1)}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Time Slots */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Time Slots
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm">{formatTimeSlots()}</p>
-            </CardContent>
-          </Card>
-
-          {/* Class Size */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <Users className="h-4 w-4" />
-                Class Size
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm font-medium">
-                Max: {formState.maxStudents || 'Not set'}
-                {formState.classSize === 'one-on-one' && ' (One-on-one)'}
-              </p>
-            </CardContent>
-          </Card>
-
-          {/* Pricing */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                <DollarSign className="h-4 w-4" />
-                Pricing
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-lg font-bold text-green-600">{formatPrice()}</p>
-              {formState.durationType === 'recurring' && formState.price && formState.price > 0 && (
-                <p className="text-xs text-gray-600">
-                  Monthly fee • {formState.autoRenewal ? 'Auto-renewal' : 'Manual renewal'}
-                </p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Connection Details */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm flex items-center gap-2">
-                {formState.deliveryMode === 'online' ? <LinkIcon className="h-4 w-4" /> : <MapPin className="h-4 w-4" />}
-                Connection Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm font-medium">{connectionDetails.type}</p>
-              <p className="text-sm text-gray-600 mt-1">{connectionDetails.detail}</p>
-            </CardContent>
-          </Card>
-
-          {/* Class Materials */}
-          {formState.materials.length > 0 && (
-            <Card>
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm">Class Materials</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-1">
-                  {formState.materials.map((material, index) => (
-                    <p key={index} className="text-sm">
-                      • {material.name} ({material.type})
-                    </p>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+        <ClassDetailsCard
+          formState={formState}
+          formatSchedule={formatSchedule}
+          formatTimeSlots={formatTimeSlots}
+          formatPrice={formatPrice}
+          getConnectionDetails={getConnectionDetails}
+        />
       </div>
 
       {/* Fixed Action Buttons for mobile, relative for desktop */}
