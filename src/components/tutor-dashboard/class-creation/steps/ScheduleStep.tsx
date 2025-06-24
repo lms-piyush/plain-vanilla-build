@@ -214,7 +214,11 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   
   const updateMonthlyDate = (index: number, field: keyof MonthlyDate, value: string | number) => {
     const updated = [...monthlyDates];
-    updated[index][field] = value as any;
+    if (field === 'dayOfMonth') {
+      updated[index][field] = value as number;
+    } else {
+      updated[index][field] = value as string;
+    }
     setMonthlyDates(updated);
   };
   
