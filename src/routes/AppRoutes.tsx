@@ -76,6 +76,7 @@ import LearningGuides from "@/pages/dashboard/resources/LearningGuides";
 // Class Pages
 import BookClass from "@/pages/dashboard/classes/BookClass";
 import { default as PublicClassDetails } from "@/pages/dashboard/classes/ClassDetails";
+import ClassManageDetails from "@/pages/tutor/ClassManageDetails";
 
 const AppRoutes = () => {
   return (
@@ -153,6 +154,10 @@ const AppRoutes = () => {
         <Route 
           path="/tutor/classes" 
           element={<ProtectedRoute allowedRoles={["tutor"]}><TutorClasses /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/tutor/classes/:id" 
+          element={<ProtectedRoute allowedRoles={["tutor"]}><ClassManageDetails /></ProtectedRoute>} 
         />
         <Route 
           path="/tutor/earnings" 

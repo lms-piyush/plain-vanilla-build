@@ -9,9 +9,11 @@ import { useTutorClasses } from '@/hooks/use-tutor-classes';
 import { TutorClass } from '@/hooks/use-tutor-classes';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
+import { useNavigate } from 'react-router-dom';
 
 const Classes = () => {
   const [createClassDialogOpen, setCreateClassDialogOpen] = useState(false);
+  const navigate = useNavigate();
   const [manageDialogOpen, setManageDialogOpen] = useState(false);
   const [selectedClass, setSelectedClass] = useState<TutorClass | null>(null);
   const [editingClass, setEditingClass] = useState<TutorClass | null>(null);
@@ -36,11 +38,15 @@ const Classes = () => {
     setCreateClassDialogOpen(true);
   };
 
-  const handleManageClass = (classItem: TutorClass) => {
-    setSelectedClass(classItem);
-    setManageDialogOpen(true);
-  };
+  // const handleManageClass = (classItem: TutorClass) => {
+  //   setSelectedClass(classItem);
+  //   setManageDialogOpen(true);
+  // };
 
+  const handleManageClass = (classItem: TutorClass) => {
+    navigate(`/tutor/classes/${classItem.id}`);
+  };
+  
   const handleDeleteClass = async (classItem: TutorClass) => {
     if (isDeleting) return;
     
