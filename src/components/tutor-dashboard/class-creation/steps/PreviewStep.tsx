@@ -1,18 +1,31 @@
-
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useClassCreationStore } from "@/hooks/use-class-creation-store";
 import { Calendar, Clock, Users, DollarSign, MapPin, Link as LinkIcon, BookOpen } from "lucide-react";
+import PublishConfirmationModal from "../PublishConfirmationModal";
 
 interface PreviewStepProps {
   onBack: () => void;
   onSaveAsDraft: () => void;
   onPublish: () => void;
+  isPublishing?: boolean;
+  editingClass?: boolean;
 }
 
-const PreviewStep = ({ onBack, onSaveAsDraft, onPublish }: PreviewStepProps) => {
+const PreviewStep = ({ onBack, onSaveAsDraft, onPublish, isPublishing = false, editingClass = false }: PreviewStepProps) => {
   const { formState } = useClassCreationStore();
+  const [showPublishModal, setShowPublishModal] = useState(false);
+
+  const handlePublishClick = () => {
+    setShowPublishModal(true);
+  };
+
+  const handleConfirmPublish = () => {
+    setShowPublishModal(false);
+    onPublish();
+  };
 
   const formatClassType = () => {
     const parts = [];
@@ -85,11 +98,11 @@ const PreviewStep = ({ onBack, onSaveAsDraft, onPublish }: PreviewStepProps) => 
   const connectionDetails = getConnectionDetails();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-24 md:pb-6">
       <div className="text-center mb-6">
         <h2 className="text-2xl font-bold text-[#1F4E79] mb-2">Class Preview</h2>
         <Badge variant="outline" className="text-sm">
-          Draft
+          {editingClass ? 'Editing' : 'Draft'}
         </Badge>
       </div>
 
@@ -256,29 +269,35 @@ const PreviewStep = ({ onBack, onSaveAsDraft, onPublish }: PreviewStepProps) => 
         </div>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex justify-between items-center pt-6 border-t">
-        <Button 
-          variant="outline" 
-          onClick={onBack}
-        >
-          Back
-        </Button>
-        
-        <div className="flex gap-3">
+      {/* Fixed Action Buttons for mobile, relative for desktop */}
+      <div className="fixed bottom-0 left-0 right-0 bg-white border-t p-4 z-50 md:relative md:bg-transparent md:border-t-0 md:p-0 md:z-auto">
+        <div className="flex justify-between items-center max-w-4xl mx-auto">
           <Button 
             variant="outline" 
-            onClick={onSaveAsDraft}
-            className="bg-white hover:bg-gray-50"
+            onClick={onBack}
+            disabled={isPublishing}
+            className="w-20 md:w-auto"
           >
-            Save as Draft
+            Back
           </Button>
-          <Button 
-            onClick={onPublish}
-            className="bg-[#1F4E79] hover:bg-[#1a4369]"
-          >
-            Publish Now
-          </Button>
+          
+          <div className="flex gap-2 md:gap-3">
+            <Button 
+              variant="outline" 
+              onClick={onSaveAsDraft}
+              disabled={isPublishing}
+              className="bg-white hover:bg-gray-50 text-xs md:text-sm px-3 md:px-4"
+            >
+              Save as Draft
+            </Button>
+            <Button 
+              onClick={handlePublishClick}
+              disabled={isPublishing}
+              className="bg-[#1F4E79] hover:bg-[#1a4369] text-xs md:text-sm px-3 md:px-4"
+            >
+              {editingClass ? 'Update & Publish' : 'Publish Now'}
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -311,6 +330,14 @@ const PreviewStep = ({ onBack, onSaveAsDraft, onPublish }: PreviewStepProps) => 
           </div>
         </CardContent>
       </Card>
+
+      <PublishConfirmationModal
+        open={showPublishModal}
+        onOpenChange={setShowPublishModal}
+        onConfirm={handleConfirmPublish}
+        isPublishing={isPublishing}
+        editingClass={editingClass}
+      />
     </div>
   );
 };

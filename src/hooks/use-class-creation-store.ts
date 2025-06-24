@@ -1,4 +1,3 @@
-
 import { create } from 'zustand';
 
 // Define the types for our form state
@@ -6,7 +5,7 @@ export type DeliveryMode = 'online' | 'offline';
 export type ClassFormat = 'live' | 'recorded' | 'inbound' | 'outbound';
 export type ClassSize = 'group' | 'one-on-one';
 export type DurationType = 'recurring' | 'fixed';
-export type Frequency = 'daily' | 'weekly' | 'biweekly' | 'monthly';
+export type Frequency = 'daily' | 'weekly' | 'monthly';
 export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
 export type TimeSlot = {
   dayOfWeek: DayOfWeek;
@@ -287,4 +286,4 @@ export const useClassCreationStore = create<ClassCreationStore>((set) => ({
   })),
   
   reset: () => set({ formState: initialState }),
-}));
+});

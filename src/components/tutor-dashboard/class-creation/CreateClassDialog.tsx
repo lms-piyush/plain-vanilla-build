@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -304,7 +303,15 @@ const CreateClassDialog = ({ open, onOpenChange, onClassCreated, editingClass }:
       case 5:
         return <CurriculumStep onNext={handleNext} onBack={handleBack} />;
       case 6:
-        return <PreviewStep onBack={handleBack} onSaveAsDraft={handleSaveAsDraft} onPublish={handlePublish} />;
+        return (
+          <PreviewStep 
+            onBack={handleBack} 
+            onSaveAsDraft={handleSaveAsDraft} 
+            onPublish={handlePublish}
+            isPublishing={isPublishing}
+            editingClass={!!editingClass}
+          />
+        );
       default:
         return <ClassTypeStep onNext={handleNext} />;
     }
@@ -326,14 +333,6 @@ const CreateClassDialog = ({ open, onOpenChange, onClassCreated, editingClass }:
           <div className="overflow-y-auto max-h-[calc(90vh-150px)] px-6 py-4">
             {renderStep()}
           </div>
-          
-          {currentStep === 6 && (
-            <DialogActions
-              isPublishing={isPublishing}
-              onSaveAsDraft={handleSaveAsDraft}
-              onPublish={handlePublish}
-            />
-          )}
         </DialogContent>
       </Dialog>
       
