@@ -6,12 +6,12 @@ import { TutorClass } from '@/hooks/use-tutor-classes';
 
 interface ClassesGridProps {
   classes: TutorClass[];
+  onEditClass: (classItem: TutorClass) => void;
   onCreateClass: () => void;
-  onEdit?: (classItem: TutorClass) => void;
-  onDelete?: (id: string, title: string) => void;
+  onDeleteClass: (classItem: TutorClass) => void;
 }
 
-const ClassesGrid = ({ classes, onCreateClass, onEdit, onDelete }: ClassesGridProps) => {
+const ClassesGrid = ({ classes, onEditClass, onCreateClass, onDeleteClass }: ClassesGridProps) => {
   if (classes.length === 0) {
     return (
       <div className="bg-white p-8 rounded-lg shadow-sm border border-gray-100 text-center">
@@ -33,8 +33,8 @@ const ClassesGrid = ({ classes, onCreateClass, onEdit, onDelete }: ClassesGridPr
         <ClassCard
           key={classItem.id}
           classItem={classItem}
-          onEdit={onEdit}
-          onDelete={onDelete}
+          onEdit={onEditClass}
+          onDelete={onDeleteClass}
         />
       ))}
     </div>

@@ -1,15 +1,19 @@
+
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import CreateClassDialog from '@/components/tutor-dashboard/class-creation/CreateClassDialog';
 import ClassesGrid from '@/components/tutor-dashboard/ClassesGrid';
 import ClassesPagination from '@/components/tutor-dashboard/ClassesPagination';
-import { useTutorClasses, TutorClass } from '@/hooks/use-tutor-classes';
-import { useToast } from '@/hooks/use-toast';
+import { useTutorClasses } from '@/hooks/use-tutor-classes';
+import { TutorClass } from '@/hooks/use-tutor-classes';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/sonner';
 
 const Classes = () => {
   const [createClassDialogOpen, setCreateClassDialogOpen] = useState(false);
+  const [editingClass, setEditingClass] = useState<TutorClass | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const { toast } = useToast();
+  const [isDeleting, setIsDeleting] = useState(false);
   
   const classesPerPage = 6;
   const { classes, totalCount, isLoading, error, refetch } = useTutorClasses({
@@ -20,32 +24,48 @@ const Classes = () => {
   const totalPages = Math.ceil(totalCount / classesPerPage);
 
   const handleCreateClass = () => {
+    setEditingClass(null);
     setCreateClassDialogOpen(true);
+  };
+
+  const handleEditClass = (classItem: TutorClass) => {
+    setEditingClass(classItem);
+    setCreateClassDialogOpen(true);
+  };
+
+  const handleDeleteClass = async (classItem: TutorClass) => {
+    if (isDeleting) return;
+    
+    setIsDeleting(true);
+    try {
+      const { error } = await supabase
+        .from('classes')
+        .delete()
+        .eq('id', classItem.id);
+
+      if (error) {
+        console.error('Error deleting class:', error);
+        toast.error(`Failed to delete class: ${error.message}`);
+        return;
+      }
+
+      toast.success(`Class "${classItem.title}" has been deleted successfully`);
+      refetch();
+    } catch (err: any) {
+      console.error('Unexpected error deleting class:', err);
+      toast.error('An unexpected error occurred while deleting the class');
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   const handleClassCreated = () => {
     refetch();
+    setEditingClass(null);
   };
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
-  };
-
-  const handleEdit = (classItem: TutorClass) => {
-    toast({
-      title: "Edit Class",
-      description: `Opening edit for "${classItem.title}"`,
-    });
-    // Existing edit logic can be implemented here
-  };
-
-  const handleDelete = (id: string, title: string) => {
-    toast({
-      title: "Confirm deletion",
-      description: `Are you sure you want to delete "${title}"?`,
-      variant: "destructive",
-    });
-    // Existing delete logic can be implemented here
   };
 
   if (error) {
@@ -78,10 +98,12 @@ const Classes = () => {
         </button>
       </div>
 
+      {/* Enhanced Create Class Dialog */}
       <CreateClassDialog
         open={createClassDialogOpen}
         onOpenChange={setCreateClassDialogOpen}
         onClassCreated={handleClassCreated}
+        editingClass={editingClass}
       />
 
       {isLoading ? (
@@ -93,9 +115,9 @@ const Classes = () => {
           <div className="mb-8">
             <ClassesGrid
               classes={classes}
+              onEditClass={handleEditClass}
               onCreateClass={handleCreateClass}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
+              onDeleteClass={handleDeleteClass}
             />
           </div>
 
