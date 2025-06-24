@@ -12,7 +12,7 @@ const ClassCardActions = ({ classItem }: ClassCardActionsProps) => {
   return (
     <div className="flex gap-2">
       <Link 
-        to={`/tutor-dashboard/classes/${classItem.id}`}
+        to={`/tutor/classes/${classItem.id}`}
         className="flex-1 bg-primary text-white px-3 py-2 rounded-md text-sm hover:bg-primary/90 transition-colors flex items-center justify-center"
       >
         <Settings className="h-4 w-4 mr-1" />

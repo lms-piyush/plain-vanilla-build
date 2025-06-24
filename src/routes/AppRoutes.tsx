@@ -134,10 +134,6 @@ const AppRoutes = () => {
         element={<ProtectedRoute allowedRoles={["tutor"]}><MyClasses /></ProtectedRoute>} 
       />
       <Route 
-        path="/tutor-dashboard/classes/:id" 
-        element={<ProtectedRoute allowedRoles={["tutor"]}><ClassDetails /></ProtectedRoute>} 
-      />
-      <Route 
         path="/tutor-dashboard/messages" 
         element={<ProtectedRoute allowedRoles={["tutor"]}><Messages /></ProtectedRoute>} 
       />
