@@ -196,7 +196,11 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   
   const updateWeeklyTimeSlot = (index: number, field: keyof WeeklyTimeSlot, value: string | DayOfWeek) => {
     const updated = [...weeklyTimeSlots];
-    updated[index][field] = value as any;
+    if (field === 'dayOfWeek') {
+      updated[index][field] = value as DayOfWeek;
+    } else {
+      updated[index][field] = value as string;
+    }
     setWeeklyTimeSlots(updated);
   };
   
