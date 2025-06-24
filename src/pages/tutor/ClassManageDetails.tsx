@@ -131,7 +131,7 @@ const ClassManageDetails = () => {
   const totalSessions = classDetails.class_schedules?.[0]?.total_sessions || classDetails.class_syllabus?.length || 12;
   const completionRate = Math.round((completedSessions / totalSessions) * 100);
 
-  // Filter materials by session
+  // Filter materials by session - fixed to handle the correct data structure
   const filteredMaterials = selectedSessionFilter === 'all' 
     ? classDetails.class_syllabus?.flatMap(session => 
         session.lesson_materials?.map(material => ({
@@ -506,8 +506,8 @@ const ClassManageDetails = () => {
                         <p className="font-medium">{material.material_name}</p>
                         <p className="text-sm text-muted-foreground capitalize">
                           {material.material_type}
-                          {selectedSessionFilter === 'all' && material.session_title && 
-                            ` • ${material.session_title}`
+                          {selectedSessionFilter === 'all' && (material as any).session_title && 
+                            ` • ${(material as any).session_title}`
                           }
                         </p>
                       </div>

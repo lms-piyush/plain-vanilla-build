@@ -83,7 +83,8 @@ export const useClassDetails = (classId: string) => {
     try {
       setIsLoading(true);
       
-      const { data, error } = await supabase
+      // First, fetch the main class data
+      const { data: classData, error: classError } = await supabase
         .from("classes")
         .select(`
           *,
@@ -108,17 +109,6 @@ export const useClassDetails = (classId: string) => {
             frequency,
             total_sessions
           ),
-          student_enrollments!student_enrollments_class_id_fkey (
-            id,
-            student_id,
-            enrollment_date,
-            status,
-            payment_status,
-            profiles!student_enrollments_student_id_fkey (
-              full_name,
-              role
-            )
-          ),
           class_syllabus!class_syllabus_class_id_fkey (
             id,
             week_number,
@@ -137,11 +127,44 @@ export const useClassDetails = (classId: string) => {
         .eq("tutor_id", user.id)
         .single();
 
-      if (error) throw error;
+      if (classError) throw classError;
+
+      // Separately fetch student enrollments with profiles
+      const { data: enrollmentsData, error: enrollmentsError } = await supabase
+        .from("student_enrollments")
+        .select(`
+          id,
+          student_id,
+          enrollment_date,
+          status,
+          payment_status
+        `)
+        .eq("class_id", classId);
+
+      if (enrollmentsError) {
+        console.error("Error fetching enrollments:", enrollmentsError);
+      }
+
+      // Fetch profile data for each enrolled student
+      const enrolledStudents = [];
+      if (enrollmentsData) {
+        for (const enrollment of enrollmentsData) {
+          const { data: profileData } = await supabase
+            .from("profiles")
+            .select("full_name, role")
+            .eq("id", enrollment.student_id)
+            .single();
+
+          enrolledStudents.push({
+            ...enrollment,
+            profiles: profileData || undefined
+          });
+        }
+      }
 
       setClassDetails({
-        ...data,
-        enrolled_students: data.student_enrollments,
+        ...classData,
+        enrolled_students: enrolledStudents,
       });
       setError(null);
     } catch (err: any) {
