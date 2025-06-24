@@ -1,12 +1,13 @@
+
 import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { TutorClass } from '@/hooks/use-tutor-classes';
-import BasicInfoForm from './class-creation/BasicInfoForm';
-import ClassConfigForm from './class-creation/ClassConfigForm';
-import ScheduleForm from './class-creation/ScheduleForm';
+import SimpleBasicInfoForm from './class-creation/SimpleBasicInfoForm';
+import SimpleClassConfigForm from './class-creation/SimpleClassConfigForm';
+import SimpleScheduleForm from './class-creation/SimpleScheduleForm';
 
 interface SimpleCreateClassDialogProps {
   open: boolean;
@@ -305,7 +306,7 @@ const SimpleCreateClassDialog = ({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <BasicInfoForm
+          <SimpleBasicInfoForm
             title={title}
             setTitle={setTitle}
             description={description}
@@ -321,7 +322,7 @@ const SimpleCreateClassDialog = ({
             classSize={classSize}
           />
 
-          <ClassConfigForm
+          <SimpleClassConfigForm
             deliveryMode={deliveryMode}
             setDeliveryMode={setDeliveryMode}
             meetingLink={meetingLink}
@@ -334,7 +335,7 @@ const SimpleCreateClassDialog = ({
             setDurationType={setDurationType}
           />
 
-          <ScheduleForm
+          <SimpleScheduleForm
             startDate={startDate}
             setStartDate={setStartDate}
             startTime={startTime}
