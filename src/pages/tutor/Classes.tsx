@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import CreateClassDialog from '@/components/tutor-dashboard/class-creation/CreateClassDialog';
+import ClassDetailsDialog from '@/components/tutor-dashboard/ClassDetailsDialog';
 import ClassesGrid from '@/components/tutor-dashboard/ClassesGrid';
 import ClassesPagination from '@/components/tutor-dashboard/ClassesPagination';
 import { useTutorClasses } from '@/hooks/use-tutor-classes';
@@ -11,6 +12,8 @@ import { toast } from '@/components/ui/sonner';
 
 const Classes = () => {
   const [createClassDialogOpen, setCreateClassDialogOpen] = useState(false);
+  const [manageDialogOpen, setManageDialogOpen] = useState(false);
+  const [selectedClass, setSelectedClass] = useState<TutorClass | null>(null);
   const [editingClass, setEditingClass] = useState<TutorClass | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -31,6 +34,11 @@ const Classes = () => {
   const handleEditClass = (classItem: TutorClass) => {
     setEditingClass(classItem);
     setCreateClassDialogOpen(true);
+  };
+
+  const handleManageClass = (classItem: TutorClass) => {
+    setSelectedClass(classItem);
+    setManageDialogOpen(true);
   };
 
   const handleDeleteClass = async (classItem: TutorClass) => {
@@ -106,6 +114,13 @@ const Classes = () => {
         editingClass={editingClass}
       />
 
+      {/* Manage Class Dialog */}
+      <ClassDetailsDialog
+        open={manageDialogOpen}
+        onOpenChange={setManageDialogOpen}
+        selectedClass={selectedClass}
+      />
+
       {isLoading ? (
         <div className="text-center py-12">
           <p className="text-gray-500">Loading classes...</p>
@@ -116,6 +131,7 @@ const Classes = () => {
             <ClassesGrid
               classes={classes}
               onEditClass={handleEditClass}
+              onManageClass={handleManageClass}
               onCreateClass={handleCreateClass}
               onDeleteClass={handleDeleteClass}
             />

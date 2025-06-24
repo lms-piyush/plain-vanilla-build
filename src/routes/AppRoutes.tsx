@@ -1,4 +1,3 @@
-
 import { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
@@ -37,7 +36,6 @@ import Feedback from "@/pages/dashboard/tutor-dashboard/Feedback";
 // Tutor pages
 import TutorDashboardMain from "@/pages/tutor/Dashboard";
 import TutorClasses from "@/pages/tutor/Classes";
-import ManageClass from "@/pages/tutor/ManageClass";
 import TutorEarnings from "@/pages/tutor/Earnings";
 import TutorMessages from "@/pages/tutor/Messages";
 import TutorFeedback from "@/pages/tutor/Feedback";
@@ -134,6 +132,10 @@ const AppRoutes = () => {
         element={<ProtectedRoute allowedRoles={["tutor"]}><MyClasses /></ProtectedRoute>} 
       />
       <Route 
+        path="/tutor-dashboard/classes/:id" 
+        element={<ProtectedRoute allowedRoles={["tutor"]}><ClassDetails /></ProtectedRoute>} 
+      />
+      <Route 
         path="/tutor-dashboard/messages" 
         element={<ProtectedRoute allowedRoles={["tutor"]}><Messages /></ProtectedRoute>} 
       />
@@ -151,10 +153,6 @@ const AppRoutes = () => {
         <Route 
           path="/tutor/classes" 
           element={<ProtectedRoute allowedRoles={["tutor"]}><TutorClasses /></ProtectedRoute>} 
-        />
-        <Route 
-          path="/tutor/classes/:id" 
-          element={<ProtectedRoute allowedRoles={["tutor"]}><ManageClass /></ProtectedRoute>} 
         />
         <Route 
           path="/tutor/earnings" 
