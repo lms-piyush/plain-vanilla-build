@@ -7,9 +7,11 @@ import ClassCardActions from './ClassCardActions';
 
 interface ClassCardProps {
   classItem: TutorClass;
+  onEdit?: (classItem: TutorClass) => void;
+  onDelete?: (id: string, title: string) => void;
 }
 
-const ClassCard = ({ classItem }: ClassCardProps) => {
+const ClassCard = ({ classItem, onEdit, onDelete }: ClassCardProps) => {
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow">
       <ClassCardHeader 
@@ -22,7 +24,11 @@ const ClassCard = ({ classItem }: ClassCardProps) => {
       <ClassCardContent classItem={classItem} />
       
       <div className="px-4 pb-4">
-        <ClassCardActions classItem={classItem} />
+        <ClassCardActions 
+          classItem={classItem}
+          onEdit={onEdit}
+          onDelete={onDelete}
+        />
       </div>
     </div>
   );

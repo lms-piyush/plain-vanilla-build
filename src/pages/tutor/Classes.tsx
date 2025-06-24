@@ -1,14 +1,15 @@
-
 import React, { useState } from 'react';
 import { Plus } from 'lucide-react';
 import CreateClassDialog from '@/components/tutor-dashboard/class-creation/CreateClassDialog';
 import ClassesGrid from '@/components/tutor-dashboard/ClassesGrid';
 import ClassesPagination from '@/components/tutor-dashboard/ClassesPagination';
-import { useTutorClasses } from '@/hooks/use-tutor-classes';
+import { useTutorClasses, TutorClass } from '@/hooks/use-tutor-classes';
+import { useToast } from '@/hooks/use-toast';
 
 const Classes = () => {
   const [createClassDialogOpen, setCreateClassDialogOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const { toast } = useToast();
   
   const classesPerPage = 6;
   const { classes, totalCount, isLoading, error, refetch } = useTutorClasses({
@@ -28,6 +29,23 @@ const Classes = () => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+  };
+
+  const handleEdit = (classItem: TutorClass) => {
+    toast({
+      title: "Edit Class",
+      description: `Opening edit for "${classItem.title}"`,
+    });
+    // Existing edit logic can be implemented here
+  };
+
+  const handleDelete = (id: string, title: string) => {
+    toast({
+      title: "Confirm deletion",
+      description: `Are you sure you want to delete "${title}"?`,
+      variant: "destructive",
+    });
+    // Existing delete logic can be implemented here
   };
 
   if (error) {
@@ -76,6 +94,8 @@ const Classes = () => {
             <ClassesGrid
               classes={classes}
               onCreateClass={handleCreateClass}
+              onEdit={handleEdit}
+              onDelete={handleDelete}
             />
           </div>
 

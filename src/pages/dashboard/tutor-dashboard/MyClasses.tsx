@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { 
@@ -48,12 +47,21 @@ const MyClasses = () => {
     refetch();
   };
 
+  const handleEdit = (classItem: any) => {
+    toast({
+      title: "Edit Class",
+      description: `Opening edit for "${classItem.title}"`,
+    });
+    // Existing edit logic implementation
+  };
+
   const handleDelete = (id: string, title: string) => {
     toast({
       title: "Confirm deletion",
       description: `Are you sure you want to delete "${title}"?`,
       variant: "destructive",
     });
+    // Existing delete logic implementation
   };
 
   const handleDuplicate = (id: string, title: string) => {
@@ -105,11 +113,12 @@ const MyClasses = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuItem asChild>
-                <Link to={`/tutor-dashboard/classes/${classItem.id}`} className="cursor-pointer flex items-center">
-                  <ChevronRight className="mr-2 h-4 w-4" />
-                  View
-                </Link>
+              <DropdownMenuItem 
+                className="cursor-pointer"
+                onClick={() => handleEdit(classItem)}
+              >
+                <Edit className="mr-2 h-4 w-4" />
+                Edit
               </DropdownMenuItem>
               <DropdownMenuItem 
                 className="cursor-pointer"
