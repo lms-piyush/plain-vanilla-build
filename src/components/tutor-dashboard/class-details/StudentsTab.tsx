@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, Eye } from "lucide-react";
-import { ClassDetails } from "@/hooks/use-class-details";
+import { ClassDetails } from "@/types/class-details";
 import StudentDetailsCard from "./StudentDetailsCard";
 
 interface StudentsTabProps {

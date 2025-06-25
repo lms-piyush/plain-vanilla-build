@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Download, Edit, Trash2 } from "lucide-react";
-import { ClassDetails } from "@/hooks/use-class-details";
+import { ClassDetails } from "@/types/class-details";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { deleteCourseMaterial } from "@/services/file-upload-service";

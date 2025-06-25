@@ -1,10 +1,9 @@
-
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Edit, Trash2, Eye } from "lucide-react";
-import { ClassDetails } from "@/hooks/use-class-details";
+import { ClassDetails } from "@/types/class-details";
 
 interface SessionsTabProps {
   classDetails: ClassDetails;

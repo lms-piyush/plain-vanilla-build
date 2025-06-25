@@ -1,8 +1,7 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, Video, Plus } from "lucide-react";
-import { ClassDetails } from "@/hooks/use-class-details";
+import { ClassDetails } from "@/types/class-details";
 
 interface NextSessionProps {
   classDetails: ClassDetails;

@@ -1,7 +1,6 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { ClassDetails } from "@/hooks/use-class-details";
+import { ClassDetails } from "@/types/class-details";
 
 interface CourseProgressProps {
   classDetails: ClassDetails;

@@ -1,7 +1,6 @@
-
 import { Card, CardContent } from "@/components/ui/card";
 import { Users, Calendar, Star, BookOpen } from "lucide-react";
-import { ClassDetails } from "@/hooks/use-class-details";
+import { ClassDetails } from "@/types/class-details";
 
 interface StatsGridProps {
   classDetails: ClassDetails;
