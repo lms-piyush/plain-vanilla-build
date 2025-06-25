@@ -13,6 +13,7 @@ import NextSession from "@/components/tutor-dashboard/class-details/NextSession"
 import SessionsTab from "@/components/tutor-dashboard/class-details/SessionsTab";
 import StudentsTab from "@/components/tutor-dashboard/class-details/StudentsTab";
 import MaterialsTab from "@/components/tutor-dashboard/class-details/MaterialsTab";
+import ClassSettingsCard from "@/components/tutor-dashboard/class-details/ClassSettingsCard";
 
 const ClassManageDetails = () => {
   const { id } = useParams<{ id: string }>();
@@ -152,6 +153,12 @@ const ClassManageDetails = () => {
           >
             Materials
           </TabsTrigger>
+          <TabsTrigger 
+            value="settings"
+            className="rounded-none text-sm py-3 px-4 data-[state=active]:text-[#1F4E79] data-[state=active]:border-b-2 data-[state=active]:border-[#1F4E79] font-medium data-[state=active]:shadow-none"
+          >
+            Settings
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="sessions" className="pt-4">
@@ -175,6 +182,10 @@ const ClassManageDetails = () => {
             onEditMaterial={handleEditMaterial}
             onNewMaterial={handleNewMaterial}
           />
+        </TabsContent>
+
+        <TabsContent value="settings" className="pt-4">
+          <ClassSettingsCard classDetails={classDetails} />
         </TabsContent>
       </Tabs>
 

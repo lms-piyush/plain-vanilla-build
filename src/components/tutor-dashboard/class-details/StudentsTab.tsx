@@ -1,16 +1,37 @@
 
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, Eye } from "lucide-react";
 import { ClassDetails } from "@/hooks/use-class-details";
+import StudentDetailsCard from "./StudentDetailsCard";
 
 interface StudentsTabProps {
   classDetails: ClassDetails;
 }
 
 const StudentsTab = ({ classDetails }: StudentsTabProps) => {
+  const [selectedStudent, setSelectedStudent] = useState<any>(null);
+
+  const handleViewDetails = (student: any) => {
+    setSelectedStudent(student);
+  };
+
+  const handleBackToList = () => {
+    setSelectedStudent(null);
+  };
+
+  if (selectedStudent) {
+    return (
+      <StudentDetailsCard 
+        student={selectedStudent} 
+        onClose={handleBackToList}
+      />
+    );
+  }
+
   return (
     <Card className="border-[#1F4E79]/10">
       <CardHeader>
@@ -19,34 +40,50 @@ const StudentsTab = ({ classDetails }: StudentsTabProps) => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {classDetails.enrolled_students?.map((enrollment) => (
-            <div key={enrollment.id} className="flex items-center justify-between p-4 border rounded-lg">
-              <div className="flex items-center space-x-3">
-                <Avatar>
-                  <AvatarFallback>
-                    {enrollment.profiles?.full_name?.charAt(0) || 'S'}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium">{enrollment.profiles?.full_name || 'Student Name'}</p>
-                  <p className="text-sm text-muted-foreground">
-                    Enrolled: {new Date(enrollment.enrollment_date).toLocaleDateString()}
-                  </p>
+          {classDetails.enrolled_students?.map((enrollment) => {
+            const displayName = enrollment.profiles?.full_name || enrollment.profiles?.email || 'Student Name';
+            const displayEmail = enrollment.profiles?.email || 'No email available';
+            
+            return (
+              <div key={enrollment.id} className="flex items-center justify-between p-4 border rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <Avatar>
+                    <AvatarFallback>
+                      {displayName.charAt(0)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div>
+                    <p className="font-medium">{displayName}</p>
+                    <p className="text-sm text-muted-foreground">
+                      Enrolled: {new Date(enrollment.enrollment_date).toLocaleDateString()}
+                    </p>
+                    {enrollment.profiles?.full_name && (
+                      <p className="text-xs text-muted-foreground">{displayEmail}</p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant={enrollment.status === 'active' ? 'default' : 'secondary'}>
+                    {enrollment.status}
+                  </Badge>
+                  <Badge variant={enrollment.payment_status === 'paid' ? 'default' : 'destructive'}>
+                    {enrollment.payment_status}
+                  </Badge>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleViewDetails(enrollment)}
+                  >
+                    <Eye className="h-4 w-4 mr-1" />
+                    View Details
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    <MessageSquare className="h-4 w-4" />
+                  </Button>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Badge variant={enrollment.status === 'active' ? 'default' : 'secondary'}>
-                  {enrollment.status}
-                </Badge>
-                <Badge variant={enrollment.payment_status === 'paid' ? 'default' : 'destructive'}>
-                  {enrollment.payment_status}
-                </Badge>
-                <Button variant="outline" size="sm">
-                  <MessageSquare className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
+            );
+          })}
           
           {(!classDetails.enrolled_students || classDetails.enrolled_students.length === 0) && (
             <div className="text-center py-8">
