@@ -99,6 +99,7 @@ export type Database = {
           description: string | null
           end_time: string | null
           id: string
+          is_completed: boolean | null
           learning_objectives: string[] | null
           notes: string | null
           session_date: string | null
@@ -114,6 +115,7 @@ export type Database = {
           description?: string | null
           end_time?: string | null
           id?: string
+          is_completed?: boolean | null
           learning_objectives?: string[] | null
           notes?: string | null
           session_date?: string | null
@@ -129,6 +131,7 @@ export type Database = {
           description?: string | null
           end_time?: string | null
           id?: string
+          is_completed?: boolean | null
           learning_objectives?: string[] | null
           notes?: string | null
           session_date?: string | null
@@ -294,6 +297,13 @@ export type Database = {
           upload_date?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "fk_lesson_materials_lesson_id"
+            columns: ["lesson_id"]
+            isOneToOne: false
+            referencedRelation: "class_syllabus"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "lesson_materials_lesson_id_fkey"
             columns: ["lesson_id"]
