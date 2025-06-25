@@ -16,6 +16,7 @@ interface SessionDialogProps {
   onSuccess: () => void;
   isNewSession?: boolean;
   nextSessionNumber?: number;
+  classDetails?: any;
 }
 
 const SessionDialog = ({ 
@@ -25,7 +26,8 @@ const SessionDialog = ({
   classId, 
   onSuccess, 
   isNewSession = false,
-  nextSessionNumber = 1 
+  nextSessionNumber = 1,
+  classDetails
 }: SessionDialogProps) => {
   const { createSession, updateSession, isLoading } = useClassSessions();
   const [formData, setFormData] = useState({
@@ -40,13 +42,46 @@ const SessionDialog = ({
     notes: '',
   });
 
+  // Calculate next session date and time based on class frequency
+  const calculateNextSessionDateTime = () => {
+    if (!classDetails?.class_schedules?.[0] || !classDetails?.class_time_slots?.[0]) {
+      return {
+        date: new Date().toISOString().split('T')[0],
+        startTime: '16:00',
+        endTime: '17:30'
+      };
+    }
+
+    const schedule = classDetails.class_schedules[0];
+    const timeSlot = classDetails.class_time_slots[0];
+    const startDate = new Date(schedule.start_date || new Date());
+    
+    // Calculate next session date based on frequency and session number
+    const nextSessionDate = new Date(startDate);
+    const sessionIndex = nextSessionNumber - 1;
+    
+    if (schedule.frequency === 'weekly') {
+      nextSessionDate.setDate(startDate.getDate() + (sessionIndex * 7));
+    } else if (schedule.frequency === 'daily') {
+      nextSessionDate.setDate(startDate.getDate() + sessionIndex);
+    } else if (schedule.frequency === 'monthly') {
+      nextSessionDate.setMonth(startDate.getMonth() + sessionIndex);
+    }
+
+    return {
+      date: nextSessionDate.toISOString().split('T')[0],
+      startTime: timeSlot.start_time,
+      endTime: timeSlot.end_time
+    };
+  };
+
   useEffect(() => {
     if (session) {
       // Prefill existing session data
       setFormData({
         title: session.title || '',
         description: session.description || '',
-        session_number: session.week_number || 1, // Map week_number back to session_number
+        session_number: session.week_number || 1,
         session_date: session.session_date || '',
         start_time: session.start_time || '',
         end_time: session.end_time || '',
@@ -55,20 +90,21 @@ const SessionDialog = ({
         notes: session.notes || '',
       });
     } else if (isNewSession) {
-      // For new sessions, only require title and notes
+      // For new sessions, auto-calculate date/time and only require title and notes
+      const { date, startTime, endTime } = calculateNextSessionDateTime();
       setFormData({
         title: '',
         description: '',
         session_number: nextSessionNumber,
-        session_date: '',
-        start_time: '',
-        end_time: '',
+        session_date: date,
+        start_time: startTime,
+        end_time: endTime,
         status: 'upcoming',
         attendance: '',
         notes: '',
       });
     }
-  }, [session, isNewSession, nextSessionNumber]);
+  }, [session, isNewSession, nextSessionNumber, classDetails]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -80,7 +116,6 @@ const SessionDialog = ({
         await createSession({
           ...formData,
           class_id: classId,
-          session_date: formData.session_date || new Date().toISOString().split('T')[0],
         });
       }
       onSuccess();
@@ -190,6 +225,19 @@ const SessionDialog = ({
                 </div>
               )}
             </>
+          )}
+
+          {isNewSession && (
+            <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
+              <div className="text-sm text-blue-800">
+                <p><strong>Auto-calculated details:</strong></p>
+                <p>Date: {new Date(formData.session_date).toLocaleDateString()}</p>
+                <p>Time: {formData.start_time} - {formData.end_time}</p>
+                <p className="text-xs mt-1 text-blue-600">
+                  Based on your class schedule and frequency
+                </p>
+              </div>
+            </div>
           )}
 
           <div>

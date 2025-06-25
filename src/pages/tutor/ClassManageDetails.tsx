@@ -186,6 +186,7 @@ const ClassManageDetails = () => {
         classId={id!}
         isNewSession={isNewSession}
         nextSessionNumber={getNextSessionNumber()}
+        classDetails={classDetails}
         onSuccess={() => {
           refetch();
           setSessionDialogOpen(false);
