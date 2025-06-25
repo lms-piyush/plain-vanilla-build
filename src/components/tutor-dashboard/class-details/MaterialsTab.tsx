@@ -73,7 +73,7 @@ const MaterialsTab = ({
       const { error } = await supabase
         .from('lesson_materials')
         .update({ 
-          download_count: supabase.sql`download_count + 1`
+          download_count: supabase.from('lesson_materials').select('download_count').eq('id', materialId).single().then(result => (result.data?.download_count || 0) + 1)
         })
         .eq('id', materialId);
       

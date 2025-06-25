@@ -25,7 +25,7 @@ const SessionDialog = ({ open, onOpenChange, session, classId, onSuccess }: Sess
     session_date: '',
     start_time: '',
     end_time: '',
-    status: 'upcoming',
+    status: 'upcoming' as 'scheduled' | 'completed' | 'cancelled' | 'upcoming',
     attendance: '',
     notes: '',
   });
@@ -143,7 +143,7 @@ const SessionDialog = ({ open, onOpenChange, session, classId, onSuccess }: Sess
             <Label htmlFor="status">Status</Label>
             <Select 
               value={formData.status} 
-              onValueChange={(value) => setFormData({ ...formData, status: value })}
+              onValueChange={(value: 'scheduled' | 'completed' | 'cancelled' | 'upcoming') => setFormData({ ...formData, status: value })}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Select status" />

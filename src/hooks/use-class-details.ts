@@ -58,12 +58,22 @@ export interface ClassDetails {
     week_number: number;
     title: string;
     description: string | null;
+    session_date: string | null;
+    start_time: string | null;
+    end_time: string | null;
+    status: string | null;
+    attendance: string | null;
+    notes: string | null;
     lesson_materials?: Array<{
       id: string;
       material_name: string;
       material_type: string;
       material_url: string;
       display_order: number;
+      file_size: number | null;
+      upload_date: string | null;
+      download_count: number | null;
+      file_path: string | null;
     }>;
   }>;
 }
@@ -114,12 +124,22 @@ export const useClassDetails = (classId: string) => {
             week_number,
             title,
             description,
+            session_date,
+            start_time,
+            end_time,
+            status,
+            attendance,
+            notes,
             lesson_materials!lesson_materials_lesson_id_fkey (
               id,
               material_name,
               material_type,
               material_url,
-              display_order
+              display_order,
+              file_size,
+              upload_date,
+              download_count,
+              file_path
             )
           )
         `)
