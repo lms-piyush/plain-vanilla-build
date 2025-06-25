@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { uploadCourseMaterial } from "@/services/file-upload-service";
 
 interface MaterialDialogProps {
   open: boolean;
@@ -20,6 +21,7 @@ interface MaterialDialogProps {
 const MaterialDialog = ({ open, onOpenChange, material, classId, sessions, onSuccess }: MaterialDialogProps) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     material_name: '',
     material_type: 'document',
@@ -43,20 +45,43 @@ const MaterialDialog = ({ open, onOpenChange, material, classId, sessions, onSuc
         lesson_id: '',
       });
     }
+    setSelectedFile(null);
   }, [material]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      setFormData({ ...formData, material_name: file.name });
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
     try {
+      let materialUrl = formData.material_url;
+      let filePath = '';
+      let fileSize = 0;
+
+      // Upload file if selected
+      if (selectedFile) {
+        const uploadResult = await uploadCourseMaterial(selectedFile, formData.lesson_id);
+        materialUrl = uploadResult.url;
+        filePath = uploadResult.filePath;
+        fileSize = uploadResult.size;
+      }
+
       if (material) {
         const { error } = await supabase
           .from('lesson_materials')
           .update({
             material_name: formData.material_name,
             material_type: formData.material_type,
-            material_url: formData.material_url,
+            material_url: materialUrl,
+            ...(filePath && { file_path: filePath }),
+            ...(fileSize && { file_size: fileSize }),
           })
           .eq('id', material.id);
 
@@ -72,9 +97,11 @@ const MaterialDialog = ({ open, onOpenChange, material, classId, sessions, onSuc
           .insert({
             material_name: formData.material_name,
             material_type: formData.material_type,
-            material_url: formData.material_url,
+            material_url: materialUrl,
             lesson_id: formData.lesson_id,
             display_order: 0,
+            file_path: filePath,
+            file_size: fileSize,
           });
 
         if (error) throw error;
@@ -100,7 +127,7 @@ const MaterialDialog = ({ open, onOpenChange, material, classId, sessions, onSuc
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{material ? 'Edit Material' : 'Upload New Material'}</DialogTitle>
         </DialogHeader>
@@ -137,13 +164,27 @@ const MaterialDialog = ({ open, onOpenChange, material, classId, sessions, onSuc
           </div>
 
           <div>
-            <Label htmlFor="material_url">Material URL</Label>
+            <Label htmlFor="file_upload">Upload File</Label>
+            <Input
+              id="file_upload"
+              type="file"
+              onChange={handleFileChange}
+              accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.jpg,.jpeg,.png,.gif,.mp4,.mov,.avi"
+            />
+            {selectedFile && (
+              <p className="text-sm text-muted-foreground mt-1">
+                Selected: {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
+              </p>
+            )}
+          </div>
+
+          <div>
+            <Label htmlFor="material_url">Material URL (Optional)</Label>
             <Input
               id="material_url"
               value={formData.material_url}
               onChange={(e) => setFormData({ ...formData, material_url: e.target.value })}
-              placeholder="Enter material URL"
-              required
+              placeholder="Enter material URL (if not uploading file)"
             />
           </div>
 
@@ -153,6 +194,7 @@ const MaterialDialog = ({ open, onOpenChange, material, classId, sessions, onSuc
               <Select 
                 value={formData.lesson_id} 
                 onValueChange={(value) => setFormData({ ...formData, lesson_id: value })}
+                required
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select session" />

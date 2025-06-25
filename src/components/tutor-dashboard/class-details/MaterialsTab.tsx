@@ -5,6 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Download, Edit, Trash2 } from "lucide-react";
 import { ClassDetails } from "@/hooks/use-class-details";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { deleteCourseMaterial } from "@/services/file-upload-service";
 
 interface MaterialsTabProps {
   classDetails: ClassDetails;
@@ -21,6 +24,8 @@ const MaterialsTab = ({
   onEditMaterial,
   onNewMaterial 
 }: MaterialsTabProps) => {
+  const { toast } = useToast();
+
   const getFilteredMaterials = () => {
     if (selectedSessionFilter === 'all') {
       return classDetails.class_syllabus?.flatMap(session => 
@@ -42,27 +47,89 @@ const MaterialsTab = ({
 
   const filteredMaterials = getFilteredMaterials();
 
-  const getFileSize = (materialType: string) => {
-    // Mock file sizes based on type
-    const sizes = {
-      'presentation': '2.4 MB',
-      'document': '560 KB',
-      'video': '45.2 MB',
-      'worksheet': '320 KB',
-      'link': '-'
-    };
-    return sizes[materialType as keyof typeof sizes] || '1.2 MB';
+  const formatFileSize = (sizeInBytes: number | null) => {
+    if (!sizeInBytes) return '-';
+    
+    if (sizeInBytes < 1024) return `${sizeInBytes} B`;
+    if (sizeInBytes < 1024 * 1024) return `${(sizeInBytes / 1024).toFixed(1)} KB`;
+    return `${(sizeInBytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  const getUploadDate = () => {
-    // Mock upload dates
-    const dates = ['May 30, 2023', 'May 31, 2023', 'June 6, 2023', 'June 13, 2023'];
-    return dates[Math.floor(Math.random() * dates.length)];
+  const formatUploadDate = (dateString: string | null) => {
+    if (!dateString) return '-';
+    return new Date(dateString).toLocaleDateString();
   };
 
-  const getDownloadCount = () => {
-    // Mock download counts
-    return Math.floor(Math.random() * 10) + 1;
+  const handleDownload = (material: any) => {
+    if (material.material_url) {
+      window.open(material.material_url, '_blank');
+      // Increment download count
+      incrementDownloadCount(material.id);
+    }
+  };
+
+  const incrementDownloadCount = async (materialId: string) => {
+    try {
+      const { error } = await supabase
+        .from('lesson_materials')
+        .update({ 
+          download_count: supabase.sql`download_count + 1`
+        })
+        .eq('id', materialId);
+      
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error incrementing download count:', error);
+    }
+  };
+
+  const handleDeleteMaterial = async (material: any) => {
+    try {
+      // Delete file from storage if exists
+      if (material.file_path) {
+        await deleteCourseMaterial(material.file_path);
+      }
+      
+      // Delete from database
+      const { error } = await supabase
+        .from('lesson_materials')
+        .delete()
+        .eq('id', material.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Material deleted successfully",
+        description: "The material has been removed.",
+      });
+
+      // Refresh the page or trigger a refetch
+      window.location.reload();
+    } catch (error: any) {
+      console.error('Error deleting material:', error);
+      toast({
+        title: "Error deleting material",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const getTypeVariant = (type: string) => {
+    switch (type) {
+      case 'video':
+        return 'bg-purple-100 text-purple-800';
+      case 'document':
+        return 'bg-blue-100 text-blue-800';
+      case 'presentation':
+        return 'bg-orange-100 text-orange-800';
+      case 'worksheet':
+        return 'bg-green-100 text-green-800';
+      case 'link':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
+    }
   };
 
   return (
@@ -82,12 +149,16 @@ const MaterialsTab = ({
         </Button>
       </CardHeader>
       <CardContent>
-        <div className="mb-4">
-          <div className="text-sm font-medium mb-2">Filter by session:</div>
+        <div className="mb-6">
+          <div className="text-sm font-medium text-gray-700 mb-3">Filter by session:</div>
           <div className="flex flex-wrap gap-2">
             <Badge 
               variant={selectedSessionFilter === 'all' ? 'default' : 'outline'} 
-              className="cursor-pointer"
+              className={`cursor-pointer transition-colors ${
+                selectedSessionFilter === 'all' 
+                  ? 'bg-[#1F4E79] hover:bg-[#1a4369]' 
+                  : 'hover:bg-gray-100'
+              }`}
               onClick={() => onSessionFilterChange('all')}
             >
               All Sessions
@@ -96,91 +167,122 @@ const MaterialsTab = ({
               <Badge 
                 key={session.id}
                 variant={selectedSessionFilter === session.id ? 'default' : 'outline'}
-                className="cursor-pointer"
+                className={`cursor-pointer transition-colors ${
+                  selectedSessionFilter === session.id 
+                    ? 'bg-[#1F4E79] hover:bg-[#1a4369]' 
+                    : 'hover:bg-gray-100'
+                }`}
                 onClick={() => onSessionFilterChange(session.id)}
               >
-                Session {session.week_number}
+                Week {session.week_number}
               </Badge>
             ))}
           </div>
         </div>
         
         {filteredMaterials.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Title</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Size</TableHead>
-                <TableHead>For Session</TableHead>
-                <TableHead>Upload Date</TableHead>
-                <TableHead>Downloads</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredMaterials.map((material) => (
-                <TableRow key={material.id}>
-                  <TableCell className="font-medium">
-                    {material.material_name}
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="capitalize">
-                      {material.material_type}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    {getFileSize(material.material_type)}
-                  </TableCell>
-                  <TableCell>
-                    {selectedSessionFilter === 'all' && (material as any).session_title 
-                      ? `Session ${(material as any).session_number}`
-                      : classDetails.class_syllabus?.find(s => s.lesson_materials?.some(m => m.id === material.id))?.week_number 
-                        ? `Session ${classDetails.class_syllabus?.find(s => s.lesson_materials?.some(m => m.id === material.id))?.week_number}`
-                        : 'Session 1'
-                    }
-                  </TableCell>
-                  <TableCell>
-                    {getUploadDate()}
-                  </TableCell>
-                  <TableCell>
-                    {getDownloadCount()}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-1">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                      >
-                        <Download className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onEditMaterial(material)}
-                        className="h-8 w-8 p-0"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 w-8 p-0 text-red-500 hover:text-red-600"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </TableCell>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-gray-50/50">
+                  <TableHead className="font-medium">Title</TableHead>
+                  <TableHead className="font-medium">Type</TableHead>
+                  <TableHead className="font-medium">Size</TableHead>
+                  <TableHead className="font-medium">For Session</TableHead>
+                  <TableHead className="font-medium">Upload Date</TableHead>
+                  <TableHead className="font-medium">Downloads</TableHead>
+                  <TableHead className="font-medium">Actions</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredMaterials.map((material) => (
+                  <TableRow key={material.id} className="hover:bg-gray-50/50">
+                    <TableCell className="font-medium">
+                      {material.material_name}
+                    </TableCell>
+                    <TableCell>
+                      <Badge 
+                        variant="outline" 
+                        className={`capitalize ${getTypeVariant(material.material_type)}`}
+                      >
+                        {material.material_type}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      {formatFileSize(material.file_size)}
+                    </TableCell>
+                    <TableCell>
+                      {selectedSessionFilter === 'all' && (material as any).session_title 
+                        ? `Week ${(material as any).session_number}`
+                        : classDetails.class_syllabus?.find(s => s.lesson_materials?.some(m => m.id === material.id))?.week_number 
+                          ? `Week ${classDetails.class_syllabus?.find(s => s.lesson_materials?.some(m => m.id === material.id))?.week_number}`
+                          : 'Week 1'
+                      }
+                    </TableCell>
+                    <TableCell>
+                      {formatUploadDate(material.upload_date)}
+                    </TableCell>
+                    <TableCell>
+                      <span className="inline-flex items-center justify-center w-6 h-6 bg-green-100 text-green-800 text-xs font-medium rounded-full">
+                        {material.download_count || 0}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDownload(material)}
+                          className="h-8 w-8 p-0"
+                          title="Download material"
+                        >
+                          <Download className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => onEditMaterial(material)}
+                          className="h-8 w-8 p-0"
+                          title="Edit material"
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteMaterial(material)}
+                          className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                          title="Delete material"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         ) : (
-          <div className="text-center py-8">
-            <p className="text-muted-foreground">
-              {selectedSessionFilter === 'all' ? 'No materials uploaded yet' : 'No materials for this session'}
-            </p>
+          <div className="text-center py-12 bg-gray-50/30 rounded-lg border-2 border-dashed border-gray-200">
+            <div className="max-w-sm mx-auto">
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                {selectedSessionFilter === 'all' ? 'No materials uploaded yet' : 'No materials for this session'}
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                {selectedSessionFilter === 'all' 
+                  ? 'Upload your first teaching material to get started.'
+                  : 'Upload materials for this session to enhance your teaching.'}
+              </p>
+              <Button 
+                variant="outline" 
+                className="bg-white"
+                onClick={onNewMaterial}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                Upload Material
+              </Button>
+            </div>
           </div>
         )}
       </CardContent>

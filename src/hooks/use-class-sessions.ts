@@ -10,9 +10,11 @@ export interface Session {
   session_date: string;
   start_time: string;
   end_time: string;
-  status: 'scheduled' | 'completed' | 'cancelled';
+  status: 'scheduled' | 'completed' | 'cancelled' | 'upcoming';
   week_number: number;
   class_id: string;
+  attendance?: string;
+  notes?: string;
 }
 
 export const useClassSessions = () => {
@@ -28,6 +30,12 @@ export const useClassSessions = () => {
           title: sessionData.title,
           description: sessionData.description,
           week_number: sessionData.week_number,
+          session_date: sessionData.session_date,
+          start_time: sessionData.start_time,
+          end_time: sessionData.end_time,
+          status: sessionData.status,
+          attendance: sessionData.attendance,
+          notes: sessionData.notes,
         })
         .select()
         .single();
@@ -62,6 +70,12 @@ export const useClassSessions = () => {
           title: sessionData.title,
           description: sessionData.description,
           week_number: sessionData.week_number,
+          session_date: sessionData.session_date,
+          start_time: sessionData.start_time,
+          end_time: sessionData.end_time,
+          status: sessionData.status,
+          attendance: sessionData.attendance,
+          notes: sessionData.notes,
         })
         .eq('id', sessionId)
         .select()

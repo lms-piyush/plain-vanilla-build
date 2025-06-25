@@ -93,29 +93,47 @@ export type Database = {
       }
       class_syllabus: {
         Row: {
+          attendance: string | null
           class_id: string
           created_at: string
           description: string | null
+          end_time: string | null
           id: string
           learning_objectives: string[] | null
+          notes: string | null
+          session_date: string | null
+          start_time: string | null
+          status: string | null
           title: string
           week_number: number
         }
         Insert: {
+          attendance?: string | null
           class_id: string
           created_at?: string
           description?: string | null
+          end_time?: string | null
           id?: string
           learning_objectives?: string[] | null
+          notes?: string | null
+          session_date?: string | null
+          start_time?: string | null
+          status?: string | null
           title: string
           week_number: number
         }
         Update: {
+          attendance?: string | null
           class_id?: string
           created_at?: string
           description?: string | null
+          end_time?: string | null
           id?: string
           learning_objectives?: string[] | null
+          notes?: string | null
+          session_date?: string | null
+          start_time?: string | null
+          status?: string | null
           title?: string
           week_number?: number
         }
@@ -236,32 +254,44 @@ export type Database = {
         Row: {
           created_at: string
           display_order: number | null
+          download_count: number | null
+          file_path: string | null
+          file_size: number | null
           id: string
           lesson_id: string
           material_name: string
           material_type: string
           material_url: string
           updated_at: string
+          upload_date: string | null
         }
         Insert: {
           created_at?: string
           display_order?: number | null
+          download_count?: number | null
+          file_path?: string | null
+          file_size?: number | null
           id?: string
           lesson_id: string
           material_name: string
           material_type: string
           material_url: string
           updated_at?: string
+          upload_date?: string | null
         }
         Update: {
           created_at?: string
           display_order?: number | null
+          download_count?: number | null
+          file_path?: string | null
+          file_size?: number | null
           id?: string
           lesson_id?: string
           material_name?: string
           material_type?: string
           material_url?: string
           updated_at?: string
+          upload_date?: string | null
         }
         Relationships: [
           {

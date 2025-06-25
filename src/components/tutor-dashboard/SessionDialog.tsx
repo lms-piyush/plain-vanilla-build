@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useClassSessions } from "@/hooks/use-class-sessions";
 
 interface SessionDialogProps {
@@ -21,6 +22,12 @@ const SessionDialog = ({ open, onOpenChange, session, classId, onSuccess }: Sess
     title: '',
     description: '',
     week_number: 1,
+    session_date: '',
+    start_time: '',
+    end_time: '',
+    status: 'upcoming',
+    attendance: '',
+    notes: '',
   });
 
   useEffect(() => {
@@ -29,12 +36,24 @@ const SessionDialog = ({ open, onOpenChange, session, classId, onSuccess }: Sess
         title: session.title || '',
         description: session.description || '',
         week_number: session.week_number || 1,
+        session_date: session.session_date || '',
+        start_time: session.start_time || '',
+        end_time: session.end_time || '',
+        status: session.status || 'upcoming',
+        attendance: session.attendance || '',
+        notes: session.notes || '',
       });
     } else {
       setFormData({
         title: '',
         description: '',
         week_number: 1,
+        session_date: '',
+        start_time: '',
+        end_time: '',
+        status: 'upcoming',
+        attendance: '',
+        notes: '',
       });
     }
   }, [session]);
@@ -49,10 +68,7 @@ const SessionDialog = ({ open, onOpenChange, session, classId, onSuccess }: Sess
         await createSession({
           ...formData,
           class_id: classId,
-          session_date: new Date().toISOString(),
-          start_time: '10:00',
-          end_time: '11:00',
-          status: 'scheduled' as const,
+          session_date: formData.session_date || new Date().toISOString(),
         });
       }
       onSuccess();
@@ -63,7 +79,7 @@ const SessionDialog = ({ open, onOpenChange, session, classId, onSuccess }: Sess
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{session ? 'Edit Session' : 'Create New Session'}</DialogTitle>
         </DialogHeader>
@@ -93,12 +109,78 @@ const SessionDialog = ({ open, onOpenChange, session, classId, onSuccess }: Sess
           </div>
 
           <div>
-            <Label htmlFor="description">Description (Optional)</Label>
+            <Label htmlFor="session_date">Session Date</Label>
+            <Input
+              id="session_date"
+              type="date"
+              value={formData.session_date}
+              onChange={(e) => setFormData({ ...formData, session_date: e.target.value })}
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="start_time">Start Time</Label>
+              <Input
+                id="start_time"
+                type="time"
+                value={formData.start_time}
+                onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+              />
+            </div>
+            <div>
+              <Label htmlFor="end_time">End Time</Label>
+              <Input
+                id="end_time"
+                type="time"
+                value={formData.end_time}
+                onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+              />
+            </div>
+          </div>
+
+          <div>
+            <Label htmlFor="status">Status</Label>
+            <Select 
+              value={formData.status} 
+              onValueChange={(value) => setFormData({ ...formData, status: value })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="upcoming">Upcoming</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {formData.status === 'completed' && (
+            <div>
+              <Label htmlFor="attendance">Attendance</Label>
+              <Select 
+                value={formData.attendance} 
+                onValueChange={(value) => setFormData({ ...formData, attendance: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select attendance" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="present">Present</SelectItem>
+                  <SelectItem value="absent">Absent</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+
+          <div>
+            <Label htmlFor="notes">Notes</Label>
             <Textarea
-              id="description"
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Enter session description"
+              id="notes"
+              value={formData.notes}
+              onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
+              placeholder="Enter session notes"
               rows={3}
             />
           </div>

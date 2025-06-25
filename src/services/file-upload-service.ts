@@ -7,7 +7,7 @@ export const uploadClassThumbnail = async (file: File, classId?: string): Promis
   const filePath = `class-thumbnails/${fileName}`;
 
   const { data, error } = await supabase.storage
-    .from('uploads') // Changed from 'class-media' to 'uploads' - more standard bucket name
+    .from('uploads')
     .upload(filePath, file);
 
   if (error) {
@@ -37,13 +37,13 @@ export const deleteClassThumbnail = async (thumbnailUrl: string): Promise<void> 
   }
 };
 
-export const uploadCourseMaterial = async (file: File, lessonId?: string): Promise<{ name: string; type: string; url: string }> => {
+export const uploadCourseMaterial = async (file: File, lessonId?: string): Promise<{ name: string; type: string; url: string; filePath: string; size: number }> => {
   const fileExt = file.name.split('.').pop();
   const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-  const filePath = `course-materials/${fileName}`;
+  const filePath = `lesson-materials/${fileName}`;
 
   const { data, error } = await supabase.storage
-    .from('uploads')
+    .from('class-materials')
     .upload(filePath, file);
 
   if (error) {
@@ -52,14 +52,28 @@ export const uploadCourseMaterial = async (file: File, lessonId?: string): Promi
   }
 
   const { data: { publicUrl } } = supabase.storage
-    .from('uploads')
+    .from('class-materials')
     .getPublicUrl(filePath);
 
   return {
     name: file.name,
     type: getFileType(file.type),
-    url: publicUrl
+    url: publicUrl,
+    filePath: filePath,
+    size: file.size
   };
+};
+
+export const deleteCourseMaterial = async (filePath: string): Promise<void> => {
+  if (!filePath) return;
+
+  const { error } = await supabase.storage
+    .from('class-materials')
+    .remove([filePath]);
+
+  if (error) {
+    console.warn('Failed to delete material file:', error.message);
+  }
 };
 
 const getFileType = (mimeType: string): string => {
