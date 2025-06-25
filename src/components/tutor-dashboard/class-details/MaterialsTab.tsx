@@ -70,11 +70,20 @@ const MaterialsTab = ({
 
   const incrementDownloadCount = async (materialId: string) => {
     try {
+      // First get the current download count
+      const { data: currentMaterial, error: fetchError } = await supabase
+        .from('lesson_materials')
+        .select('download_count')
+        .eq('id', materialId)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      // Then update with incremented count
+      const newCount = (currentMaterial?.download_count || 0) + 1;
       const { error } = await supabase
         .from('lesson_materials')
-        .update({ 
-          download_count: supabase.from('lesson_materials').select('download_count').eq('id', materialId).single().then(result => (result.data?.download_count || 0) + 1)
-        })
+        .update({ download_count: newCount })
         .eq('id', materialId);
       
       if (error) throw error;
