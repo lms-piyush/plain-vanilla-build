@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -87,10 +86,12 @@ const ClassManageDetails = () => {
     setMaterialDialogOpen(true);
   };
 
+  // Updated logic to use session-based counting
   const enrolledCount = classDetails.enrolled_students?.length || 0;
-  const completedSessions = classDetails.class_syllabus?.filter(s => s.week_number <= 5).length || 0;
-  const totalSessions = classDetails.class_schedules?.[0]?.total_sessions || classDetails.class_syllabus?.length || 12;
-  const completionRate = Math.round((completedSessions / totalSessions) * 100);
+  const totalSessions = classDetails.class_syllabus?.length || 0;
+  // Mark all sessions except the last one as completed
+  const completedSessions = totalSessions > 0 ? totalSessions - 1 : 0;
+  const completionRate = totalSessions > 0 ? Math.round((completedSessions / totalSessions) * 100) : 0;
 
   return (
     <div className="space-y-6 p-6">

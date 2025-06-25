@@ -2,7 +2,8 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Download, Edit, Trash2, FileText } from "lucide-react";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Plus, Download, Edit, Trash2 } from "lucide-react";
 import { ClassDetails } from "@/hooks/use-class-details";
 
 interface MaterialsTabProps {
@@ -20,22 +21,56 @@ const MaterialsTab = ({
   onEditMaterial,
   onNewMaterial 
 }: MaterialsTabProps) => {
-  const filteredMaterials = selectedSessionFilter === 'all' 
-    ? classDetails.class_syllabus?.flatMap(session => 
+  const getFilteredMaterials = () => {
+    if (selectedSessionFilter === 'all') {
+      return classDetails.class_syllabus?.flatMap(session => 
         session.lesson_materials?.map(material => ({
           ...material,
           session_title: session.title,
-          week_number: session.week_number
+          session_number: session.week_number
         })) || []
-      ) || []
-    : classDetails.class_syllabus?.find(s => s.id === selectedSessionFilter)?.lesson_materials || [];
+      ) || [];
+    } else {
+      const session = classDetails.class_syllabus?.find(s => s.id === selectedSessionFilter);
+      return session?.lesson_materials?.map(material => ({
+        ...material,
+        session_title: session.title,
+        session_number: session.week_number
+      })) || [];
+    }
+  };
+
+  const filteredMaterials = getFilteredMaterials();
+
+  const getFileSize = (materialType: string) => {
+    // Mock file sizes based on type
+    const sizes = {
+      'presentation': '2.4 MB',
+      'document': '560 KB',
+      'video': '45.2 MB',
+      'worksheet': '320 KB',
+      'link': '-'
+    };
+    return sizes[materialType as keyof typeof sizes] || '1.2 MB';
+  };
+
+  const getUploadDate = () => {
+    // Mock upload dates
+    const dates = ['May 30, 2023', 'May 31, 2023', 'June 6, 2023', 'June 13, 2023'];
+    return dates[Math.floor(Math.random() * dates.length)];
+  };
+
+  const getDownloadCount = () => {
+    // Mock download counts
+    return Math.floor(Math.random() * 10) + 1;
+  };
 
   return (
     <Card className="border-[#1F4E79]/10">
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle className="text-lg font-semibold text-[#1F4E79]">Class Materials</CardTitle>
-          <CardDescription>Manage teaching resources</CardDescription>
+          <CardDescription>Manage teaching resources for your 1-on-1 class</CardDescription>
         </div>
         <Button 
           size="sm" 
@@ -64,57 +99,90 @@ const MaterialsTab = ({
                 className="cursor-pointer"
                 onClick={() => onSessionFilterChange(session.id)}
               >
-                Week {session.week_number}
+                Session {session.week_number}
               </Badge>
             ))}
           </div>
         </div>
         
-        <div className="space-y-4">
-          {filteredMaterials.map((material) => (
-            <div key={material.id} className="flex items-center justify-between p-4 border rounded-lg">
-              <div className="flex items-center space-x-3">
-                <FileText className="h-8 w-8 text-[#1F4E79]" />
-                <div>
-                  <p className="font-medium">{material.material_name}</p>
-                  <p className="text-sm text-muted-foreground capitalize">
-                    {material.material_type}
-                    {selectedSessionFilter === 'all' && (material as any).session_title && 
-                      ` • ${(material as any).session_title}`
+        {filteredMaterials.length > 0 ? (
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Title</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Size</TableHead>
+                <TableHead>For Session</TableHead>
+                <TableHead>Upload Date</TableHead>
+                <TableHead>Downloads</TableHead>
+                <TableHead>Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredMaterials.map((material) => (
+                <TableRow key={material.id}>
+                  <TableCell className="font-medium">
+                    {material.material_name}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="capitalize">
+                      {material.material_type}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    {getFileSize(material.material_type)}
+                  </TableCell>
+                  <TableCell>
+                    {selectedSessionFilter === 'all' && (material as any).session_title 
+                      ? `Session ${(material as any).session_number}`
+                      : classDetails.class_syllabus?.find(s => s.lesson_materials?.some(m => m.id === material.id))?.week_number 
+                        ? `Session ${classDetails.class_syllabus?.find(s => s.lesson_materials?.some(m => m.id === material.id))?.week_number}`
+                        : 'Session 1'
                     }
-                  </p>
-                </div>
-              </div>
-              <div className="flex gap-2">
-                <Button variant="outline" size="sm">
-                  <Download className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  onClick={() => onEditMaterial(material)}
-                >
-                  <Edit className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="outline" 
-                  size="sm"
-                  className="text-red-500 hover:text-red-600"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
-          
-          {filteredMaterials.length === 0 && (
-            <div className="text-center py-8">
-              <p className="text-muted-foreground">
-                {selectedSessionFilter === 'all' ? 'No materials uploaded yet' : 'No materials for this session'}
-              </p>
-            </div>
-          )}
-        </div>
+                  </TableCell>
+                  <TableCell>
+                    {getUploadDate()}
+                  </TableCell>
+                  <TableCell>
+                    {getDownloadCount()}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex gap-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                      >
+                        <Download className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => onEditMaterial(material)}
+                        className="h-8 w-8 p-0"
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-8 w-8 p-0 text-red-500 hover:text-red-600"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">
+              {selectedSessionFilter === 'all' ? 'No materials uploaded yet' : 'No materials for this session'}
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );
