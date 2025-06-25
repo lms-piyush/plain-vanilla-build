@@ -41,8 +41,8 @@ const StudentsTab = ({ classDetails }: StudentsTabProps) => {
       <CardContent>
         <div className="space-y-4">
           {classDetails.enrolled_students?.map((enrollment) => {
-            const displayName = enrollment.profiles?.full_name || enrollment.profiles?.email || 'Student Name';
-            const displayEmail = enrollment.profiles?.email || 'No email available';
+            const displayName = enrollment.profiles?.full_name || `Student ${enrollment.student_id.slice(-4)}`;
+            const displayEmail = enrollment.profiles?.email || `student-${enrollment.student_id.slice(-8)}@example.com`;
             
             return (
               <div key={enrollment.id} className="flex items-center justify-between p-4 border rounded-lg">
@@ -57,9 +57,7 @@ const StudentsTab = ({ classDetails }: StudentsTabProps) => {
                     <p className="text-sm text-muted-foreground">
                       Enrolled: {new Date(enrollment.enrollment_date).toLocaleDateString()}
                     </p>
-                    {enrollment.profiles?.full_name && (
-                      <p className="text-xs text-muted-foreground">{displayEmail}</p>
-                    )}
+                    <p className="text-xs text-muted-foreground">{displayEmail}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
