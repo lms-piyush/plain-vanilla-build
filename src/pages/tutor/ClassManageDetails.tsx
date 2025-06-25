@@ -24,6 +24,7 @@ const ClassManageDetails = () => {
   const [selectedSession, setSelectedSession] = useState<any>(null);
   const [selectedMaterial, setSelectedMaterial] = useState<any>(null);
   const [selectedSessionFilter, setSelectedSessionFilter] = useState<string>('all');
+  const [isNewSession, setIsNewSession] = useState(false);
 
   if (isLoading) {
     return (
@@ -59,6 +60,7 @@ const ClassManageDetails = () => {
 
   const handleEditSession = (session: any) => {
     setSelectedSession(session);
+    setIsNewSession(false);
     setSessionDialogOpen(true);
   };
 
@@ -78,6 +80,7 @@ const ClassManageDetails = () => {
 
   const handleNewSession = () => {
     setSelectedSession(null);
+    setIsNewSession(true);
     setSessionDialogOpen(true);
   };
 
@@ -86,7 +89,13 @@ const ClassManageDetails = () => {
     setMaterialDialogOpen(true);
   };
 
-  // Updated logic to use session-based counting
+  const getNextSessionNumber = () => {
+    if (!classDetails.class_syllabus || classDetails.class_syllabus.length === 0) {
+      return 1;
+    }
+    return Math.max(...classDetails.class_syllabus.map(s => s.week_number || 1)) + 1;
+  };
+
   const enrolledCount = classDetails.enrolled_students?.length || 0;
   const totalSessions = classDetails.class_syllabus?.length || 0;
   // Mark all sessions except the last one as completed
@@ -175,6 +184,8 @@ const ClassManageDetails = () => {
         onOpenChange={setSessionDialogOpen}
         session={selectedSession}
         classId={id!}
+        isNewSession={isNewSession}
+        nextSessionNumber={getNextSessionNumber()}
         onSuccess={() => {
           refetch();
           setSessionDialogOpen(false);

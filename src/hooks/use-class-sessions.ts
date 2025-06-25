@@ -11,7 +11,7 @@ export interface Session {
   start_time: string;
   end_time: string;
   status: 'scheduled' | 'completed' | 'cancelled' | 'upcoming';
-  week_number: number;
+  session_number: number;
   class_id: string;
   attendance?: string;
   notes?: string;
@@ -29,7 +29,7 @@ export const useClassSessions = () => {
           class_id: sessionData.class_id,
           title: sessionData.title,
           description: sessionData.description,
-          week_number: sessionData.week_number,
+          week_number: sessionData.session_number, // Map session_number to week_number in DB
           session_date: sessionData.session_date,
           start_time: sessionData.start_time,
           end_time: sessionData.end_time,
@@ -69,7 +69,7 @@ export const useClassSessions = () => {
         .update({
           title: sessionData.title,
           description: sessionData.description,
-          week_number: sessionData.week_number,
+          week_number: sessionData.session_number, // Map session_number to week_number in DB
           session_date: sessionData.session_date,
           start_time: sessionData.start_time,
           end_time: sessionData.end_time,

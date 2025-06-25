@@ -32,7 +32,7 @@ const MaterialsTab = ({
         session.lesson_materials?.map(material => ({
           ...material,
           session_title: session.title,
-          session_number: session.week_number
+          session_number: session.week_number // This maps to session number
         })) || []
       ) || [];
     } else {
@@ -40,7 +40,7 @@ const MaterialsTab = ({
       return session?.lesson_materials?.map(material => ({
         ...material,
         session_title: session.title,
-        session_number: session.week_number
+        session_number: session.week_number // This maps to session number
       })) || [];
     }
   };
@@ -183,7 +183,7 @@ const MaterialsTab = ({
                 }`}
                 onClick={() => onSessionFilterChange(session.id)}
               >
-                Week {session.week_number}
+                Session {session.week_number}
               </Badge>
             ))}
           </div>
@@ -222,10 +222,10 @@ const MaterialsTab = ({
                     </TableCell>
                     <TableCell>
                       {selectedSessionFilter === 'all' && (material as any).session_title 
-                        ? `Week ${(material as any).session_number}`
+                        ? `Session ${(material as any).session_number}`
                         : classDetails.class_syllabus?.find(s => s.lesson_materials?.some(m => m.id === material.id))?.week_number 
-                          ? `Week ${classDetails.class_syllabus?.find(s => s.lesson_materials?.some(m => m.id === material.id))?.week_number}`
-                          : 'Week 1'
+                          ? `Session ${classDetails.class_syllabus?.find(s => s.lesson_materials?.some(m => m.id === material.id))?.week_number}`
+                          : 'Session 1'
                       }
                     </TableCell>
                     <TableCell>

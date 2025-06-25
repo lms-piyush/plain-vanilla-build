@@ -16,20 +16,23 @@ interface SessionsTabProps {
 const SessionsTab = ({ classDetails, onEditSession, onDeleteSession, onNewSession }: SessionsTabProps) => {
   const getSessionStatus = (session: any, index: number, totalSessions: number) => {
     if (session.status) return session.status;
-    // Mark the last session as upcoming, others as completed
-    if (index === totalSessions - 1) {
+    
+    // Check if this is the upcoming session based on frequency calculation
+    const today = new Date();
+    const sessionDate = session.session_date ? new Date(session.session_date) : calculateSessionDate(index);
+    
+    if (sessionDate > today) {
       return 'upcoming';
+    } else if (sessionDate.toDateString() === today.toDateString()) {
+      return 'upcoming'; // Today's session is also upcoming
+    } else {
+      return 'completed';
     }
-    return 'completed';
   };
 
-  const getSessionDate = (session: any, index: number) => {
-    if (session.session_date) {
-      return new Date(session.session_date).toLocaleDateString();
-    }
-
+  const calculateSessionDate = (sessionIndex: number) => {
     if (!classDetails.class_schedules?.[0]) {
-      return new Date().toLocaleDateString();
+      return new Date();
     }
 
     const schedule = classDetails.class_schedules[0];
@@ -38,14 +41,22 @@ const SessionsTab = ({ classDetails, onEditSession, onDeleteSession, onNewSessio
     // Calculate session date based on frequency and index
     const sessionDate = new Date(startDate);
     if (schedule.frequency === 'weekly') {
-      sessionDate.setDate(startDate.getDate() + (index * 7));
+      sessionDate.setDate(startDate.getDate() + (sessionIndex * 7));
     } else if (schedule.frequency === 'daily') {
-      sessionDate.setDate(startDate.getDate() + index);
+      sessionDate.setDate(startDate.getDate() + sessionIndex);
     } else if (schedule.frequency === 'monthly') {
-      sessionDate.setMonth(startDate.getMonth() + index);
+      sessionDate.setMonth(startDate.getMonth() + sessionIndex);
     }
 
-    return sessionDate.toLocaleDateString();
+    return sessionDate;
+  };
+
+  const getSessionDate = (session: any, index: number) => {
+    if (session.session_date) {
+      return new Date(session.session_date).toLocaleDateString();
+    }
+
+    return calculateSessionDate(index).toLocaleDateString();
   };
 
   const getSessionTime = (session: any) => {
@@ -96,6 +107,13 @@ const SessionsTab = ({ classDetails, onEditSession, onDeleteSession, onNewSessio
       default:
         return '';
     }
+  };
+
+  const getNextSessionNumber = () => {
+    if (!classDetails.class_syllabus || classDetails.class_syllabus.length === 0) {
+      return 1;
+    }
+    return Math.max(...classDetails.class_syllabus.map(s => s.week_number || 1)) + 1;
   };
 
   return (

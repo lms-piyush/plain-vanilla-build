@@ -14,14 +14,24 @@ interface SessionDialogProps {
   session?: any;
   classId: string;
   onSuccess: () => void;
+  isNewSession?: boolean;
+  nextSessionNumber?: number;
 }
 
-const SessionDialog = ({ open, onOpenChange, session, classId, onSuccess }: SessionDialogProps) => {
+const SessionDialog = ({ 
+  open, 
+  onOpenChange, 
+  session, 
+  classId, 
+  onSuccess, 
+  isNewSession = false,
+  nextSessionNumber = 1 
+}: SessionDialogProps) => {
   const { createSession, updateSession, isLoading } = useClassSessions();
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    week_number: 1,
+    session_number: 1,
     session_date: '',
     start_time: '',
     end_time: '',
@@ -32,10 +42,11 @@ const SessionDialog = ({ open, onOpenChange, session, classId, onSuccess }: Sess
 
   useEffect(() => {
     if (session) {
+      // Prefill existing session data
       setFormData({
         title: session.title || '',
         description: session.description || '',
-        week_number: session.week_number || 1,
+        session_number: session.week_number || 1, // Map week_number back to session_number
         session_date: session.session_date || '',
         start_time: session.start_time || '',
         end_time: session.end_time || '',
@@ -43,11 +54,12 @@ const SessionDialog = ({ open, onOpenChange, session, classId, onSuccess }: Sess
         attendance: session.attendance || '',
         notes: session.notes || '',
       });
-    } else {
+    } else if (isNewSession) {
+      // For new sessions, only require title and notes
       setFormData({
         title: '',
         description: '',
-        week_number: 1,
+        session_number: nextSessionNumber,
         session_date: '',
         start_time: '',
         end_time: '',
@@ -56,7 +68,7 @@ const SessionDialog = ({ open, onOpenChange, session, classId, onSuccess }: Sess
         notes: '',
       });
     }
-  }, [session]);
+  }, [session, isNewSession, nextSessionNumber]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +80,7 @@ const SessionDialog = ({ open, onOpenChange, session, classId, onSuccess }: Sess
         await createSession({
           ...formData,
           class_id: classId,
-          session_date: formData.session_date || new Date().toISOString(),
+          session_date: formData.session_date || new Date().toISOString().split('T')[0],
         });
       }
       onSuccess();
@@ -81,12 +93,14 @@ const SessionDialog = ({ open, onOpenChange, session, classId, onSuccess }: Sess
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{session ? 'Edit Session' : 'Create New Session'}</DialogTitle>
+          <DialogTitle>
+            {isNewSession ? 'Create New Session' : 'Edit Session'}
+          </DialogTitle>
         </DialogHeader>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="title">Session Title</Label>
+            <Label htmlFor="title">Session Title *</Label>
             <Input
               id="title"
               value={formData.title}
@@ -96,92 +110,97 @@ const SessionDialog = ({ open, onOpenChange, session, classId, onSuccess }: Sess
             />
           </div>
 
-          <div>
-            <Label htmlFor="week_number">Week Number</Label>
-            <Input
-              id="week_number"
-              type="number"
-              min="1"
-              value={formData.week_number}
-              onChange={(e) => setFormData({ ...formData, week_number: parseInt(e.target.value) || 1 })}
-              required
-            />
-          </div>
+          {!isNewSession && (
+            <>
+              <div>
+                <Label htmlFor="session_number">Session Number</Label>
+                <Input
+                  id="session_number"
+                  type="number"
+                  min="1"
+                  value={formData.session_number}
+                  onChange={(e) => setFormData({ ...formData, session_number: parseInt(e.target.value) || 1 })}
+                  required
+                />
+              </div>
 
-          <div>
-            <Label htmlFor="session_date">Session Date</Label>
-            <Input
-              id="session_date"
-              type="date"
-              value={formData.session_date}
-              onChange={(e) => setFormData({ ...formData, session_date: e.target.value })}
-            />
-          </div>
+              <div>
+                <Label htmlFor="session_date">Session Date</Label>
+                <Input
+                  id="session_date"
+                  type="date"
+                  value={formData.session_date}
+                  onChange={(e) => setFormData({ ...formData, session_date: e.target.value })}
+                />
+              </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="start_time">Start Time</Label>
-              <Input
-                id="start_time"
-                type="time"
-                value={formData.start_time}
-                onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label htmlFor="end_time">End Time</Label>
-              <Input
-                id="end_time"
-                type="time"
-                value={formData.end_time}
-                onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
-              />
-            </div>
-          </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="start_time">Start Time</Label>
+                  <Input
+                    id="start_time"
+                    type="time"
+                    value={formData.start_time}
+                    onChange={(e) => setFormData({ ...formData, start_time: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="end_time">End Time</Label>
+                  <Input
+                    id="end_time"
+                    type="time"
+                    value={formData.end_time}
+                    onChange={(e) => setFormData({ ...formData, end_time: e.target.value })}
+                  />
+                </div>
+              </div>
 
-          <div>
-            <Label htmlFor="status">Status</Label>
-            <Select 
-              value={formData.status} 
-              onValueChange={(value: 'scheduled' | 'completed' | 'cancelled' | 'upcoming') => setFormData({ ...formData, status: value })}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="upcoming">Upcoming</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+              <div>
+                <Label htmlFor="status">Status</Label>
+                <Select 
+                  value={formData.status} 
+                  onValueChange={(value: 'scheduled' | 'completed' | 'cancelled' | 'upcoming') => setFormData({ ...formData, status: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="upcoming">Upcoming</SelectItem>
+                    <SelectItem value="completed">Completed</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
 
-          {formData.status === 'completed' && (
-            <div>
-              <Label htmlFor="attendance">Attendance</Label>
-              <Select 
-                value={formData.attendance} 
-                onValueChange={(value) => setFormData({ ...formData, attendance: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select attendance" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="present">Present</SelectItem>
-                  <SelectItem value="absent">Absent</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+              {formData.status === 'completed' && (
+                <div>
+                  <Label htmlFor="attendance">Attendance</Label>
+                  <Select 
+                    value={formData.attendance} 
+                    onValueChange={(value) => setFormData({ ...formData, attendance: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select attendance" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="present">Present</SelectItem>
+                      <SelectItem value="absent">Absent</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
+            </>
           )}
 
           <div>
-            <Label htmlFor="notes">Notes</Label>
+            <Label htmlFor="notes">Notes {isNewSession && '*'}</Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
               placeholder="Enter session notes"
               rows={3}
+              required={isNewSession}
             />
           </div>
 
