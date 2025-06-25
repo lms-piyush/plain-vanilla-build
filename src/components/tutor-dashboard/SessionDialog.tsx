@@ -100,7 +100,7 @@ const SessionDialog = ({
         start_time: startTime,
         end_time: endTime,
         status: 'upcoming',
-        attendance: '',
+        attendance: '', // Keep empty for new sessions
         notes: '',
       });
     }
@@ -110,11 +110,18 @@ const SessionDialog = ({
     e.preventDefault();
     
     try {
+      // Prepare form data with proper handling of empty values
+      const sessionData = {
+        ...formData,
+        // Only include attendance if status is completed and attendance is not empty
+        attendance: (formData.status === 'completed' && formData.attendance) ? formData.attendance : undefined,
+      };
+
       if (session) {
-        await updateSession(session.id, formData);
+        await updateSession(session.id, sessionData);
       } else {
         await createSession({
-          ...formData,
+          ...sessionData,
           class_id: classId,
         });
       }

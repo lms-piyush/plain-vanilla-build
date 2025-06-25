@@ -23,20 +23,24 @@ export const useClassSessions = () => {
   const createSession = async (sessionData: Omit<Session, 'id'>) => {
     setIsLoading(true);
     try {
+      // Prepare the data with proper null handling
+      const insertData = {
+        class_id: sessionData.class_id,
+        title: sessionData.title,
+        description: sessionData.description || null,
+        week_number: sessionData.session_number,
+        session_date: sessionData.session_date || null,
+        start_time: sessionData.start_time || null,
+        end_time: sessionData.end_time || null,
+        status: sessionData.status,
+        // Only set attendance if status is completed and attendance is provided
+        attendance: (sessionData.status === 'completed' && sessionData.attendance) ? sessionData.attendance : null,
+        notes: sessionData.notes || null,
+      };
+
       const { data, error } = await supabase
         .from('class_syllabus')
-        .insert({
-          class_id: sessionData.class_id,
-          title: sessionData.title,
-          description: sessionData.description,
-          week_number: sessionData.session_number, // Map session_number to week_number in DB
-          session_date: sessionData.session_date,
-          start_time: sessionData.start_time,
-          end_time: sessionData.end_time,
-          status: sessionData.status,
-          attendance: sessionData.attendance,
-          notes: sessionData.notes,
-        })
+        .insert(insertData)
         .select()
         .single();
 
@@ -64,19 +68,23 @@ export const useClassSessions = () => {
   const updateSession = async (sessionId: string, sessionData: Partial<Session>) => {
     setIsLoading(true);
     try {
+      // Prepare the data with proper null handling
+      const updateData = {
+        title: sessionData.title,
+        description: sessionData.description || null,
+        week_number: sessionData.session_number,
+        session_date: sessionData.session_date || null,
+        start_time: sessionData.start_time || null,
+        end_time: sessionData.end_time || null,
+        status: sessionData.status,
+        // Only set attendance if status is completed and attendance is provided
+        attendance: (sessionData.status === 'completed' && sessionData.attendance) ? sessionData.attendance : null,
+        notes: sessionData.notes || null,
+      };
+
       const { data, error } = await supabase
         .from('class_syllabus')
-        .update({
-          title: sessionData.title,
-          description: sessionData.description,
-          week_number: sessionData.session_number, // Map session_number to week_number in DB
-          session_date: sessionData.session_date,
-          start_time: sessionData.start_time,
-          end_time: sessionData.end_time,
-          status: sessionData.status,
-          attendance: sessionData.attendance,
-          notes: sessionData.notes,
-        })
+        .update(updateData)
         .eq('id', sessionId)
         .select()
         .single();
