@@ -44,9 +44,19 @@ const LessonsTab = ({ classDetails }: LessonsTabProps) => {
     // Handle join class logic here
   };
 
+  // Sort lessons by created_at in descending order (most recent first)
+  const sortedLessons = classDetails.lessons?.sort((a, b) => {
+    // If both have session_date, use that for comparison
+    if (a.session_date && b.session_date) {
+      return new Date(b.session_date).getTime() - new Date(a.session_date).getTime();
+    }
+    // Fallback to week_number in descending order
+    return b.week_number - a.week_number;
+  }) || [];
+
   return (
     <div className="space-y-4">
-      {classDetails.lessons?.map((lesson) => (
+      {sortedLessons.map((lesson) => (
         <Card key={lesson.id} className="mb-4">
           <CardHeader className="pb-2">
             <CardTitle className="text-base">
@@ -97,20 +107,13 @@ const LessonsTab = ({ classDetails }: LessonsTabProps) => {
                   >
                     Class Started on {formatDate(lesson.session_date)}
                   </Button>
-                ) : isToday(lesson.session_date) ? (
+                ) : (
                   <Button 
                     className="w-full bg-[#8A5BB7] hover:bg-[#8A5BB7]/90 mt-2"
                     onClick={() => handleJoinClass(lesson.id)}
                   >
                     <Video className="h-4 w-4 mr-2" />
                     Join Class Now
-                  </Button>
-                ) : (
-                  <Button 
-                    disabled
-                    className="w-full mt-2"
-                  >
-                    Class Starts on {formatDate(lesson.session_date)}
                   </Button>
                 )}
               </>

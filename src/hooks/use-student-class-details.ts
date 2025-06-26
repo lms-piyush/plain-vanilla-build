@@ -130,15 +130,40 @@ export const useStudentClassDetails = (classId: string) => {
 
       if (classError) throw classError;
 
-      // Fetch tutor information
+      // Fetch tutor information with fallback to email
       const { data: tutorInfo, error: tutorError } = await supabase
         .from('profiles')
         .select('full_name')
         .eq('id', classData.tutor_id)
         .single();
 
+      let tutorName = "Unknown Tutor";
+      
       if (tutorError) {
-        console.error('Error fetching tutor:', tutorError);
+        console.error('Error fetching tutor profile:', tutorError);
+        // Fallback to fetching email from auth.users if profile fetch fails
+        try {
+          const { data: userData, error: userError } = await supabase.auth.admin.getUserById(classData.tutor_id);
+          if (!userError && userData.user?.email) {
+            tutorName = userData.user.email;
+          }
+        } catch (emailError) {
+          console.error('Error fetching tutor email:', emailError);
+        }
+      } else {
+        tutorName = tutorInfo?.full_name || "Unknown Tutor";
+        
+        // If full_name is empty or null, try to get email as fallback
+        if (!tutorInfo?.full_name || tutorInfo.full_name.trim() === '') {
+          try {
+            const { data: userData, error: userError } = await supabase.auth.admin.getUserById(classData.tutor_id);
+            if (!userError && userData.user?.email) {
+              tutorName = userData.user.email;
+            }
+          } catch (emailError) {
+            console.error('Error fetching tutor email as fallback:', emailError);
+          }
+        }
       }
 
       // Check if user is enrolled (only if user is logged in)
@@ -217,7 +242,7 @@ export const useStudentClassDetails = (classId: string) => {
 
       setClassDetails({
         ...classData,
-        tutor_name: tutorInfo?.full_name || "Unknown Tutor",
+        tutor_name: tutorName,
         lessons: finalLessons,
         isEnrolled
       });
