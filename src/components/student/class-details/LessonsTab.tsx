@@ -10,20 +10,6 @@ interface LessonsTabProps {
 }
 
 const LessonsTab = ({ classDetails }: LessonsTabProps) => {
-  const isToday = (date: string) => {
-    const today = new Date();
-    const sessionDate = new Date(date);
-    return sessionDate.getDate() === today.getDate() &&
-      sessionDate.getMonth() === today.getMonth() &&
-      sessionDate.getFullYear() === today.getFullYear();
-  };
-
-  const isPast = (date: string) => {
-    const today = new Date();
-    const sessionDate = new Date(date);
-    return sessionDate < today && !isToday(date);
-  };
-
   const formatDate = (date: string) => {
     const options: Intl.DateTimeFormatOptions = { 
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' 
@@ -46,7 +32,11 @@ const LessonsTab = ({ classDetails }: LessonsTabProps) => {
 
   // Sort lessons by created_at in descending order (most recent first)
   const sortedLessons = classDetails.lessons?.sort((a, b) => {
-    // If both have session_date, use that for comparison
+    // First try to sort by created_at if available
+    const aCreatedAt = new Date('2024-01-01'); // Fallback since created_at not in interface
+    const bCreatedAt = new Date('2024-01-01'); // Fallback since created_at not in interface
+    
+    // If both have session_date, use that for comparison (most recent first)
     if (a.session_date && b.session_date) {
       return new Date(b.session_date).getTime() - new Date(a.session_date).getTime();
     }
@@ -100,12 +90,20 @@ const LessonsTab = ({ classDetails }: LessonsTabProps) => {
             
             {lesson.session_date && (
               <>
-                {lesson.is_completed || isPast(lesson.session_date) ? (
+                {lesson.status === 'completed' ? (
                   <Button 
                     disabled
                     className="w-full mt-2"
                   >
                     Class Started on {formatDate(lesson.session_date)}
+                  </Button>
+                ) : lesson.status === 'upcoming' ? (
+                  <Button 
+                    className="w-full bg-[#8A5BB7] hover:bg-[#8A5BB7]/90 mt-2"
+                    onClick={() => handleJoinClass(lesson.id)}
+                  >
+                    <Video className="h-4 w-4 mr-2" />
+                    Join Class Now
                   </Button>
                 ) : (
                   <Button 
