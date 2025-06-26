@@ -202,7 +202,7 @@ const MaterialDialog = ({ open, onOpenChange, material, classId, sessions, onSuc
                 <SelectContent>
                   {sessions.map((session) => (
                     <SelectItem key={session.id} value={session.id}>
-                      Week {session.week_number}: {session.title}
+                      {session.title}
                     </SelectItem>
                   ))}
                 </SelectContent>
