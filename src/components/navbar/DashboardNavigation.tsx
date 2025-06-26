@@ -21,7 +21,7 @@ const DashboardNavigation = () => {
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-64 bg-white">
           <DropdownMenuItem>
-            <Link to="/student/explore" className="w-full">
+            <Link to="/explore/academic-subjects" className="w-full">
               <div className="flex flex-col">
                 <span className="font-medium">Academic Subjects</span>
                 <span className="text-sm text-gray-500">Math, Science, Language Arts, and more</span>
@@ -29,7 +29,7 @@ const DashboardNavigation = () => {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <Link to="/student/explore" className="w-full">
+            <Link to="/explore/arts-creativity" className="w-full">
               <div className="flex flex-col">
                 <span className="font-medium">Arts & Creativity</span>
                 <span className="text-sm text-gray-500">Music, Drawing, Painting, Drama</span>
@@ -37,7 +37,7 @@ const DashboardNavigation = () => {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <Link to="/student/explore" className="w-full">
+            <Link to="/explore/technology-coding" className="w-full">
               <div className="flex flex-col">
                 <span className="font-medium">Technology & Coding</span>
                 <span className="text-sm text-gray-500">Programming, Game Design, Robotics</span>
@@ -45,7 +45,7 @@ const DashboardNavigation = () => {
             </Link>
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <Link to="/student/explore" className="w-full">
+            <Link to="/explore/life-skills" className="w-full">
               <div className="flex flex-col">
                 <span className="font-medium">Life Skills</span>
                 <span className="text-sm text-gray-500">Public Speaking, Financial Literacy</span>
