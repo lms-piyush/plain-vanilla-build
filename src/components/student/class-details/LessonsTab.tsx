@@ -50,7 +50,7 @@ const LessonsTab = ({ classDetails }: LessonsTabProps) => {
         <Card key={lesson.id} className="mb-4">
           <CardHeader className="pb-2">
             <CardTitle className="text-base">
-              {lesson.week_number}. {lesson.title}
+              {lesson.title}
             </CardTitle>
             <CardDescription className="text-sm">
               {lesson.description}
