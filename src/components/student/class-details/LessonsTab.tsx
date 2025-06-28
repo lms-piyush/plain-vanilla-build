@@ -95,45 +95,41 @@ const LessonsTab = ({ classDetails }: LessonsTabProps) => {
               )}
               
               <div className="flex gap-2">
-                {/* View Address button for offline classes with upcoming status */}
-                {isOfflineClass && lesson.status === 'upcoming' && (
-                  <Button 
-                    variant="outline"
-                    className="flex items-center gap-2"
-                    onClick={() => setAddressModalOpen(true)}
-                  >
-                    <MapPin className="h-4 w-4" />
-                    View Address
-                  </Button>
-                )}
-                
-                {lesson.session_date && (
-                  <>
-                    {lesson.status === 'completed' ? (
-                      <Button 
-                        disabled
-                        className="flex-1"
-                      >
-                        Class Started on {formatDate(lesson.session_date)}
-                      </Button>
-                    ) : lesson.status === 'upcoming' ? (
-                      <Button 
-                        className="flex-1 bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
-                        onClick={() => handleJoinClass(lesson.id)}
-                      >
-                        <Video className="h-4 w-4 mr-2" />
-                        Join Class Now
-                      </Button>
-                    ) : (
-                      <Button 
-                        className="flex-1 bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
-                        onClick={() => handleJoinClass(lesson.id)}
-                      >
-                        <Video className="h-4 w-4 mr-2" />
-                        Join Class Now
-                      </Button>
-                    )}
-                  </>
+                {/* Conditional button display based on class type */}
+                {isOfflineClass ? (
+                  // For offline classes, show only View Address button
+                  lesson.status === 'upcoming' && (
+                    <Button 
+                      variant="outline"
+                      className="flex items-center gap-2"
+                      onClick={() => setAddressModalOpen(true)}
+                    >
+                      <MapPin className="h-4 w-4" />
+                      View Address
+                    </Button>
+                  )
+                ) : (
+                  // For online classes, show only Join Class Now button
+                  lesson.session_date && (
+                    <>
+                      {lesson.status === 'completed' ? (
+                        <Button 
+                          disabled
+                          className="flex-1"
+                        >
+                          Class Started on {formatDate(lesson.session_date)}
+                        </Button>
+                      ) : (
+                        <Button 
+                          className="flex-1 bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
+                          onClick={() => handleJoinClass(lesson.id)}
+                        >
+                          <Video className="h-4 w-4 mr-2" />
+                          Join Class Now
+                        </Button>
+                      )}
+                    </>
+                  )
                 )}
               </div>
 

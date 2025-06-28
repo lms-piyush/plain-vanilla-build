@@ -81,13 +81,6 @@ const SessionsTable = ({
     return session?.lesson_materials?.length || 0;
   };
 
-  const getAttendanceDisplay = (session: any, status: string) => {
-    if (status === 'completed') {
-      return session.attendance || 'Present';
-    }
-    return '-';
-  };
-
   return (
     <div className="rounded-md border">
       <Table>
@@ -97,7 +90,6 @@ const SessionsTable = ({
             <TableHead className="font-medium">Date</TableHead>
             <TableHead className="font-medium">Time</TableHead>
             <TableHead className="font-medium">Status</TableHead>
-            <TableHead className="font-medium">Attendance</TableHead>
             <TableHead className="font-medium">Materials</TableHead>
             <TableHead className="font-medium">Notes</TableHead>
             <TableHead className="font-medium">Actions</TableHead>
@@ -121,9 +113,6 @@ const SessionsTable = ({
                 </TableCell>
                 <TableCell>
                   <SessionStatusBadge status={status} />
-                </TableCell>
-                <TableCell>
-                  {getAttendanceDisplay(session, status)}
                 </TableCell>
                 <TableCell>
                   <span className="inline-flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
