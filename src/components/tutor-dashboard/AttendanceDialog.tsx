@@ -33,6 +33,8 @@ const AttendanceDialog = ({ open, onOpenChange, session, enrolledStudents }: Att
   }, [open, session]);
 
   const fetchAttendance = async () => {
+    if (!session) return;
+    
     try {
       const { data, error } = await supabase
         .from('session_attendance')
@@ -69,6 +71,8 @@ const AttendanceDialog = ({ open, onOpenChange, session, enrolledStudents }: Att
   };
 
   const saveAttendance = async () => {
+    if (!session) return;
+    
     setLoading(true);
     try {
       // Delete existing attendance records for this session
@@ -113,11 +117,15 @@ const AttendanceDialog = ({ open, onOpenChange, session, enrolledStudents }: Att
     return enrollment?.profiles?.full_name || `Student ${studentId.slice(-4)}`;
   };
 
+  if (!session) {
+    return null;
+  }
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Mark Attendance - {session.title}</DialogTitle>
+          <DialogTitle>Mark Attendance - {session.title || 'Session'}</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-4 max-h-96 overflow-y-auto">

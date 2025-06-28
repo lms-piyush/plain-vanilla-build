@@ -77,17 +77,17 @@ const ClassPurchaseSection = ({ classDetails }: ClassPurchaseSectionProps) => {
                   <Button 
                     className="w-full bg-blue-600 hover:bg-blue-700"
                     size="lg"
+                    onClick={() => setAddressModalOpen(true)}
                   >
-                    Enroll Now
+                    <MapPin className="h-4 w-4 mr-2" />
+                    View Address
                   </Button>
                   <Button 
                     variant="outline" 
                     className="w-full"
                     size="lg"
-                    onClick={() => setAddressModalOpen(true)}
                   >
-                    <MapPin className="h-4 w-4 mr-2" />
-                    View Address
+                    Enroll Now
                   </Button>
                 </>
               ) : (
