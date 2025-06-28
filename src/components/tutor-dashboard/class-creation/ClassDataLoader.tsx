@@ -1,4 +1,3 @@
-
 import { useToast } from "@/hooks/use-toast";
 import { useClassCreationStore, DayOfWeek } from "@/hooks/use-class-creation-store";
 import { TutorClass } from "@/hooks/use-tutor-classes";
@@ -56,7 +55,17 @@ export const useClassDataLoader = () => {
           frequency: scheduleData.frequency as any,
           startDate: scheduleData.start_date,
           endDate: scheduleData.end_date,
+          enrollmentDeadline: editingClass.enrollment_deadline,
           totalSessions: scheduleData.total_sessions
+        });
+      } else {
+        // Set enrollment deadline even if no schedule data exists
+        setSchedule({
+          frequency: null,
+          startDate: null,
+          endDate: null,
+          enrollmentDeadline: editingClass.enrollment_deadline,
+          totalSessions: null
         });
       }
 

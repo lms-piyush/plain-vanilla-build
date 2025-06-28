@@ -20,7 +20,12 @@ const ClassCard = ({ classItem, onEdit, onManage, onDelete }: ClassCardProps) =>
 
   return (
     <Card className="h-full flex flex-col hover:shadow-md transition-shadow border-[#1F4E79]/10">
-      <ClassCardHeader classItem={classItem} />
+      <ClassCardHeader 
+        status={classItem.status}
+        deliveryMode={classItem.delivery_mode}
+        classSize={classItem.class_size}
+        thumbnailUrl={classItem.thumbnail_url}
+      />
       <CardContent className="flex-1 flex flex-col p-4">
         <ClassCardContent classItem={classItem} />
         

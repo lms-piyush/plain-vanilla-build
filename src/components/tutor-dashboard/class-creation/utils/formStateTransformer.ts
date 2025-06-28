@@ -17,6 +17,7 @@ export const transformFormState = (formState: ClassCreationState): FormState => 
       frequency: formState.frequency,
       startDate: formState.startDate,
       endDate: formState.endDate,
+      enrollmentDeadline: formState.enrollmentDeadline,
       totalSessions: formState.totalSessions,
     },
     timeSlots: formState.timeSlots,
