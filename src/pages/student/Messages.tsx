@@ -9,6 +9,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useNavigate } from "react-router-dom";
 import { useConversations } from "@/hooks/use-conversations";
 import { useMessages, useSendMessage } from "@/hooks/use-messages";
+import { useConversationManagement } from "@/hooks/use-conversation-management";
+import { useRealtimeMessages } from "@/hooks/use-realtime-messages";
 
 const Messages = () => {
   const navigate = useNavigate();
@@ -22,6 +24,10 @@ const Messages = () => {
   
   const { data: messages = [] } = useMessages(activeConversationId || "");
   const sendMessageMutation = useSendMessage();
+  const { findOrCreateConversation } = useConversationManagement();
+  
+  // Enable realtime for active conversation
+  useRealtimeMessages(activeConversationId || "");
   
   const activeConversation = conversations.find(conv => conv.id === activeConversationId);
   

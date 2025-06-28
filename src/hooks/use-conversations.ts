@@ -1,6 +1,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useConversationManagement } from "./use-conversation-management";
 
 export interface Conversation {
   id: string;
@@ -85,48 +86,18 @@ export const useConversations = () => {
 };
 
 export const useCreateConversation = () => {
-  const queryClient = useQueryClient();
-
+  const { findOrCreateConversation } = useConversationManagement();
+  
   return useMutation({
     mutationFn: async ({ tutorId, classId }: { tutorId: string; classId: string }) => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
-      // Check if conversation already exists
-      const { data: existingConversation } = await supabase
-        .from("conversations")
-        .select("*")
-        .eq("student_id", user.id)
-        .eq("tutor_id", tutorId)
-        .eq("class_id", classId)
-        .single();
-
-      if (existingConversation) {
-        return existingConversation;
-      }
-
-      // Create new conversation
-      const { data: newConversation, error } = await supabase
-        .from("conversations")
-        .insert({
-          student_id: user.id,
-          tutor_id: tutorId,
-          class_id: classId,
-          last_message: "",
-          last_message_at: new Date().toISOString(),
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Error creating conversation:", error);
-        throw error;
-      }
-
-      return newConversation;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["student-conversations"] });
+      return await findOrCreateConversation.mutateAsync({
+        tutorId,
+        studentId: user.id,
+        classId,
+      });
     },
   });
 };
