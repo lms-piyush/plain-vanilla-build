@@ -34,27 +34,48 @@ export const useConversations = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      const { data: conversations, error } = await supabase
+      // First get conversations
+      const { data: conversations, error: conversationsError } = await supabase
         .from("conversations")
-        .select(`
-          *,
-          tutor:profiles!tutor_id (
-            full_name
-          )
-        `)
+        .select("*")
         .eq("student_id", user.id)
         .order("last_message_at", { ascending: false });
 
-      if (error) {
-        console.error("Error fetching conversations:", error);
-        throw error;
+      if (conversationsError) {
+        console.error("Error fetching conversations:", conversationsError);
+        throw conversationsError;
       }
 
+      if (!conversations || conversations.length === 0) {
+        return [];
+      }
+
+      // Get unique tutor IDs
+      const tutorIds = [...new Set(conversations.map(conv => conv.tutor_id))];
+
+      // Fetch tutor profiles
+      const { data: tutorProfiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("id, full_name")
+        .in("id", tutorIds);
+
+      if (profilesError) {
+        console.error("Error fetching tutor profiles:", profilesError);
+        throw profilesError;
+      }
+
+      // Create a map of tutor profiles for easy lookup
+      const tutorProfileMap = new Map(
+        tutorProfiles?.map(profile => [profile.id, profile]) || []
+      );
+
       // Transform the data to match the expected interface
-      const transformedConversations = conversations?.map(conv => ({
+      const transformedConversations = conversations.map(conv => ({
         ...conv,
-        tutor_profile: conv.tutor ? { full_name: conv.tutor.full_name } : undefined
-      })) || [];
+        tutor_profile: tutorProfileMap.get(conv.tutor_id) 
+          ? { full_name: tutorProfileMap.get(conv.tutor_id)!.full_name }
+          : undefined
+      }));
 
       return transformedConversations;
     },
