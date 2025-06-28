@@ -38,7 +38,7 @@ const StepRenderer = ({
     case 4:
       return <LocationStep onNext={onNext} onBack={onBack} />;
     case 5:
-      return <CurriculumStep onNext={onNext} onBack={onBack} />;
+      return <CurriculumStep />;
     case 6:
       return (
         <PreviewStep 

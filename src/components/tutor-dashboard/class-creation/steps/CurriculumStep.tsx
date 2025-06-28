@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,24 +11,25 @@ import { useClassCreationStore } from '@/hooks/use-class-creation-store';
 import { formatTime, parseTime } from '@/utils/time-helpers';
 
 const CurriculumStep = () => {
-  const { curriculum, setCurriculum, classType, schedule, timeSlots } = useClassCreationStore();
+  const { formState, setSyllabus } = useClassCreationStore();
+  const { syllabus, frequency, startDate, timeSlots } = formState;
   const [expandedSession, setExpandedSession] = useState<number | null>(null);
 
   const calculateSessionDate = (sessionIndex: number) => {
-    if (!schedule.startDate || !schedule.frequency || !timeSlots.length) return null;
+    if (!startDate || !frequency || !timeSlots.length) return null;
     
-    const startDate = new Date(schedule.startDate);
-    let sessionDate = new Date(startDate);
+    const startDateObj = new Date(startDate);
+    let sessionDate = new Date(startDateObj);
     
-    switch (schedule.frequency) {
+    switch (frequency) {
       case 'daily':
-        sessionDate.setDate(startDate.getDate() + sessionIndex);
+        sessionDate.setDate(startDateObj.getDate() + sessionIndex);
         break;
       case 'weekly':
-        sessionDate.setDate(startDate.getDate() + (sessionIndex * 7));
+        sessionDate.setDate(startDateObj.getDate() + (sessionIndex * 7));
         break;
       case 'monthly':
-        sessionDate.setMonth(startDate.getMonth() + sessionIndex);
+        sessionDate.setMonth(startDateObj.getMonth() + sessionIndex);
         break;
       default:
         return null;
@@ -37,14 +39,14 @@ const CurriculumStep = () => {
   };
 
   const addSession = () => {
-    const sessionDate = calculateSessionDate(curriculum.length);
+    const sessionDate = calculateSessionDate(syllabus.length);
     const firstTimeSlot = timeSlots[0];
     
     const newSession = {
-      title: `Session ${curriculum.length + 1}`,
+      title: `Session ${syllabus.length + 1}`,
       description: '',
       learningObjectives: [''],
-      weekNumber: curriculum.length + 1,
+      weekNumber: syllabus.length + 1,
       sessionDate: sessionDate ? sessionDate.toISOString().split('T')[0] : '',
       startTime: firstTimeSlot?.startTime || '10:00',
       endTime: firstTimeSlot?.endTime || '11:00',
@@ -52,12 +54,12 @@ const CurriculumStep = () => {
       notes: ''
     };
 
-    setCurriculum([...curriculum, newSession]);
+    setSyllabus([...syllabus, newSession]);
   };
 
   const removeSession = (index: number) => {
-    const newCurriculum = curriculum.filter((_, i) => i !== index);
-    setCurriculum(newCurriculum.map((session, i) => ({
+    const newSyllabus = syllabus.filter((_, i) => i !== index);
+    setSyllabus(newSyllabus.map((session, i) => ({
       ...session,
       title: `Session ${i + 1}`,
       weekNumber: i + 1
@@ -65,33 +67,33 @@ const CurriculumStep = () => {
   };
 
   const updateSession = (index: number, field: string, value: any) => {
-    const newCurriculum = [...curriculum];
-    newCurriculum[index] = { ...newCurriculum[index], [field]: value };
-    setCurriculum(newCurriculum);
+    const newSyllabus = [...syllabus];
+    newSyllabus[index] = { ...newSyllabus[index], [field]: value };
+    setSyllabus(newSyllabus);
   };
 
   const updateLearningObjective = (sessionIndex: number, objIndex: number, value: string) => {
-    const newCurriculum = [...curriculum];
-    const newObjectives = [...newCurriculum[sessionIndex].learningObjectives];
+    const newSyllabus = [...syllabus];
+    const newObjectives = [...newSyllabus[sessionIndex].learningObjectives];
     newObjectives[objIndex] = value;
-    newCurriculum[sessionIndex] = { ...newCurriculum[sessionIndex], learningObjectives: newObjectives };
-    setCurriculum(newCurriculum);
+    newSyllabus[sessionIndex] = { ...newSyllabus[sessionIndex], learningObjectives: newObjectives };
+    setSyllabus(newSyllabus);
   };
 
   const addLearningObjective = (sessionIndex: number) => {
-    const newCurriculum = [...curriculum];
-    newCurriculum[sessionIndex] = {
-      ...newCurriculum[sessionIndex],
-      learningObjectives: [...newCurriculum[sessionIndex].learningObjectives, '']
+    const newSyllabus = [...syllabus];
+    newSyllabus[sessionIndex] = {
+      ...newSyllabus[sessionIndex],
+      learningObjectives: [...newSyllabus[sessionIndex].learningObjectives, '']
     };
-    setCurriculum(newCurriculum);
+    setSyllabus(newSyllabus);
   };
 
   const removeLearningObjective = (sessionIndex: number, objIndex: number) => {
-    const newCurriculum = [...curriculum];
-    const newObjectives = newCurriculum[sessionIndex].learningObjectives.filter((_, i) => i !== objIndex);
-    newCurriculum[sessionIndex] = { ...newCurriculum[sessionIndex], learningObjectives: newObjectives };
-    setCurriculum(newCurriculum);
+    const newSyllabus = [...syllabus];
+    const newObjectives = newSyllabus[sessionIndex].learningObjectives.filter((_, i) => i !== objIndex);
+    newSyllabus[sessionIndex] = { ...newSyllabus[sessionIndex], learningObjectives: newObjectives };
+    setSyllabus(newSyllabus);
   };
 
   return (
@@ -104,7 +106,7 @@ const CurriculumStep = () => {
       </div>
 
       <div className="space-y-4">
-        {curriculum.map((session, sessionIndex) => (
+        {syllabus.map((session, sessionIndex) => (
           <Card key={sessionIndex} className="w-full">
             <CardHeader 
               className="cursor-pointer" 

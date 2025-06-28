@@ -59,7 +59,7 @@ export type FormState = {
   };
   
   // Step 6: Curriculum
-  syllabus: { title: string; description: string }[];
+  syllabus: { title: string; description: string; learningObjectives: string[]; weekNumber: number; sessionDate: string; startTime: string; endTime: string; status: string; notes: string }[];
   materials: { name: string; type: string; url: string; lessonIndex: number }[];
 };
 
@@ -101,6 +101,6 @@ export type ClassCreationState = {
   };
   
   // Step 6: Curriculum
-  syllabus: { title: string; description: string }[];
+  syllabus: { title: string; description: string; learningObjectives: string[]; weekNumber: number; sessionDate: string; startTime: string; endTime: string; status: string; notes: string }[];
   materials: { name: string; type: string; url: string; lessonIndex: number }[];
 };

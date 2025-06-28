@@ -11,7 +11,7 @@ import { useMessageNavigation } from "@/hooks/use-message-navigation";
 const MyClasses = () => {
   const navigate = useNavigate();
   const { handleMessageTutor, isLoading: isMessagingLoading } = useMessageNavigation();
-  const { enrollments, isLoading, error } = useStudentEnrollments();
+  const { data: enrollments, isLoading, error } = useStudentEnrollments();
 
   const getStatusColor = (status: string) => {
     switch (status.toLowerCase()) {
@@ -50,7 +50,7 @@ const MyClasses = () => {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <p className="text-red-600 mb-4">Error loading classes</p>
-          <p className="text-sm text-muted-foreground">{error}</p>
+          <p className="text-sm text-muted-foreground">{error.message}</p>
         </div>
       </div>
     );
@@ -83,7 +83,7 @@ const MyClasses = () => {
       </div>
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {enrollments.map((enrollment) => (
+        {enrollments?.map((enrollment) => (
           <Card key={enrollment.id} className="hover:shadow-md transition-shadow">
             <CardContent className="p-6">
               <div className="flex flex-col h-full">
