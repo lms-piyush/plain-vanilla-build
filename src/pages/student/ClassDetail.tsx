@@ -10,7 +10,7 @@ import ClassTabs from "@/components/student/class-details/ClassTabs";
 const ClassDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   const { classDetails, isLoading, error, refetch } = useStudentClassDetails(id || '');
 
   if (isLoading) {
@@ -31,19 +31,13 @@ const ClassDetail = () => {
       </div>
     );
   }
-  
+
   return (
     <>
       <ClassDetailHeader classDetails={classDetails} />
-      
-      {/* <div className="bg-white rounded-lg overflow-hidden shadow-sm mb-6">
-        <div className="p-6">
-          <ClassPurchaseSection 
-            classDetails={classDetails} 
-          />
-        </div>
-      </div> */}
-      
+
+      <ClassPurchaseSection classDetails={classDetails} />
+
       <ClassTabs classDetails={classDetails} classId={id || ''} />
     </>
   );
