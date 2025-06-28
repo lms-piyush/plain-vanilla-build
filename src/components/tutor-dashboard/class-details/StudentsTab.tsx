@@ -43,7 +43,6 @@ const StudentsTab = ({ classDetails }: StudentsTabProps) => {
           {classDetails.enrolled_students?.map((enrollment) => {
             // Use the full_name from profiles, with fallback to a generic display
             const displayName = enrollment.profiles?.full_name || `Student ${enrollment.student_id.slice(-4)}`;
-            const displayEmail = enrollment.profiles?.email || `student-${enrollment.student_id.slice(-8)}@example.com`;
             
             return (
               <div key={enrollment.id} className="flex items-center justify-between p-4 border rounded-lg">
@@ -58,7 +57,9 @@ const StudentsTab = ({ classDetails }: StudentsTabProps) => {
                     <p className="text-sm text-muted-foreground">
                       Enrolled: {new Date(enrollment.enrollment_date).toLocaleDateString()}
                     </p>
-                    <p className="text-xs text-muted-foreground">{displayEmail}</p>
+                    <p className="text-xs text-muted-foreground">
+                      Role: {enrollment.profiles?.role || 'student'}
+                    </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
