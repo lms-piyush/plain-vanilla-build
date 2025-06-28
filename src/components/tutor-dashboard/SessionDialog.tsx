@@ -38,7 +38,6 @@ const SessionDialog = ({
     start_time: '',
     end_time: '',
     status: 'upcoming' as 'scheduled' | 'completed' | 'cancelled' | 'upcoming',
-    attendance: '',
     notes: '',
   });
 
@@ -86,7 +85,6 @@ const SessionDialog = ({
         start_time: session.start_time || '',
         end_time: session.end_time || '',
         status: session.status || 'upcoming',
-        attendance: session.attendance || '',
         notes: session.notes || '',
       });
     } else if (isNewSession) {
@@ -100,7 +98,6 @@ const SessionDialog = ({
         start_time: startTime,
         end_time: endTime,
         status: 'upcoming',
-        attendance: '', // Keep empty for new sessions
         notes: '',
       });
     }
@@ -110,18 +107,11 @@ const SessionDialog = ({
     e.preventDefault();
     
     try {
-      // Prepare form data with proper handling of empty values
-      const sessionData = {
-        ...formData,
-        // Only include attendance if status is completed and attendance is not empty
-        attendance: (formData.status === 'completed' && formData.attendance) ? formData.attendance : undefined,
-      };
-
       if (session) {
-        await updateSession(session.id, sessionData);
+        await updateSession(session.id, formData);
       } else {
         await createSession({
-          ...sessionData,
+          ...formData,
           class_id: classId,
         });
       }
@@ -213,24 +203,6 @@ const SessionDialog = ({
                   </SelectContent>
                 </Select>
               </div>
-
-              {formData.status === 'completed' && (
-                <div>
-                  <Label htmlFor="attendance">Attendance</Label>
-                  <Select 
-                    value={formData.attendance} 
-                    onValueChange={(value) => setFormData({ ...formData, attendance: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select attendance" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="present">Present</SelectItem>
-                      <SelectItem value="absent">Absent</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
             </>
           )}
 

@@ -2,49 +2,46 @@
 import { supabase } from "@/integrations/supabase/client";
 
 export const fetchClassEnrollments = async (classId: string) => {
-  const { data: enrollmentsData, error: enrollmentsError } = await supabase
-    .from("student_enrollments")
+  const { data: enrollments, error } = await supabase
+    .from('student_enrollments')
     .select(`
-      id,
-      student_id,
-      enrollment_date,
-      status,
-      payment_status
+      *,
+      profiles!student_enrollments_student_id_fkey (
+        full_name,
+        id
+      )
     `)
-    .eq("class_id", classId);
+    .eq('class_id', classId);
 
-  if (enrollmentsError) {
-    console.error("Error fetching enrollments:", enrollmentsError);
-    return [];
+  if (error) {
+    console.error('Error fetching enrollments:', error);
+    throw error;
   }
 
-  if (!enrollmentsData) return [];
-
-  // Fetch profile data and email for each enrolled student
-  const enrolledStudents = [];
-  for (const enrollment of enrollmentsData) {
-    // Fetch profile data
-    const { data: profileData } = await supabase
-      .from("profiles")
-      .select("full_name, role")
-      .eq("id", enrollment.student_id)
-      .single();
-
-    // Create a placeholder email based on the student_id
-    const email = `student-${enrollment.student_id.slice(-8)}@example.com`;
-
-    enrolledStudents.push({
-      ...enrollment,
-      profiles: profileData ? {
-        ...profileData,
-        email: email
-      } : {
-        full_name: `Student ${enrollment.student_id.slice(-4)}`,
-        role: 'student',
-        email: email
+  // For students without profiles, we need to fetch their email from auth
+  const enrichedEnrollments = await Promise.all(
+    (enrollments || []).map(async (enrollment) => {
+      if (!enrollment.profiles?.full_name) {
+        try {
+          // Try to get user email as fallback
+          const { data: userData, error: userError } = await supabase.auth.admin.getUserById(enrollment.student_id);
+          if (!userError && userData.user?.email) {
+            return {
+              ...enrollment,
+              profiles: {
+                ...enrollment.profiles,
+                email: userData.user.email,
+                full_name: enrollment.profiles?.full_name || null
+              }
+            };
+          }
+        } catch (emailError) {
+          console.error('Error fetching user email:', emailError);
+        }
       }
-    });
-  }
+      return enrollment;
+    })
+  );
 
-  return enrolledStudents;
+  return enrichedEnrollments;
 };

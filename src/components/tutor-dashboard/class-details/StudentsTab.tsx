@@ -41,6 +41,7 @@ const StudentsTab = ({ classDetails }: StudentsTabProps) => {
       <CardContent>
         <div className="space-y-4">
           {classDetails.enrolled_students?.map((enrollment) => {
+            // Use the full_name from profiles, with fallback to a generic display
             const displayName = enrollment.profiles?.full_name || `Student ${enrollment.student_id.slice(-4)}`;
             const displayEmail = enrollment.profiles?.email || `student-${enrollment.student_id.slice(-8)}@example.com`;
             
@@ -49,7 +50,7 @@ const StudentsTab = ({ classDetails }: StudentsTabProps) => {
                 <div className="flex items-center space-x-3">
                   <Avatar>
                     <AvatarFallback>
-                      {displayName.charAt(0)}
+                      {displayName.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                   <div>

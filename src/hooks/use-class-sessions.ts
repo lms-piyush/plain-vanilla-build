@@ -13,7 +13,6 @@ export interface Session {
   status: 'scheduled' | 'completed' | 'cancelled' | 'upcoming';
   session_number: number;
   class_id: string;
-  attendance?: string;
   notes?: string;
 }
 
@@ -33,8 +32,6 @@ export const useClassSessions = () => {
         start_time: sessionData.start_time || null,
         end_time: sessionData.end_time || null,
         status: sessionData.status,
-        // Only set attendance if status is completed and attendance is provided
-        attendance: (sessionData.status === 'completed' && sessionData.attendance) ? sessionData.attendance : null,
         notes: sessionData.notes || null,
       };
 
@@ -77,8 +74,6 @@ export const useClassSessions = () => {
         start_time: sessionData.start_time || null,
         end_time: sessionData.end_time || null,
         status: sessionData.status,
-        // Only set attendance if status is completed and attendance is provided
-        attendance: (sessionData.status === 'completed' && sessionData.attendance) ? sessionData.attendance : null,
         notes: sessionData.notes || null,
       };
 
