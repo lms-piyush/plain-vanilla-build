@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { CheckCircle, XCircle } from "lucide-react";
 
 interface AttendanceDialogProps {
   open: boolean;
@@ -70,6 +71,18 @@ const AttendanceDialog = ({ open, onOpenChange, session, enrolledStudents }: Att
     );
   };
 
+  const markAllPresent = () => {
+    setAttendance(prev => 
+      prev.map(record => ({ ...record, status: 'present' as const }))
+    );
+  };
+
+  const markAllAbsent = () => {
+    setAttendance(prev => 
+      prev.map(record => ({ ...record, status: 'absent' as const }))
+    );
+  };
+
   const saveAttendance = async () => {
     if (!session) return;
     
@@ -127,6 +140,26 @@ const AttendanceDialog = ({ open, onOpenChange, session, enrolledStudents }: Att
         <DialogHeader>
           <DialogTitle>Mark Attendance - {session.title || 'Session'}</DialogTitle>
         </DialogHeader>
+        
+        {/* Mark All buttons */}
+        <div className="flex gap-2 mb-4 p-4 bg-gray-50 rounded-lg">
+          <Button
+            variant="outline"
+            onClick={markAllPresent}
+            className="flex items-center gap-2 text-green-600 hover:text-green-700 hover:bg-green-50"
+          >
+            <CheckCircle className="h-4 w-4" />
+            Mark All Present
+          </Button>
+          <Button
+            variant="outline"
+            onClick={markAllAbsent}
+            className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+          >
+            <XCircle className="h-4 w-4" />
+            Mark All Absent
+          </Button>
+        </div>
         
         <div className="space-y-4 max-h-96 overflow-y-auto">
           {attendance.map((record) => {
