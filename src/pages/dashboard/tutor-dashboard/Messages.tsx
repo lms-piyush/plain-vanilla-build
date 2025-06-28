@@ -375,7 +375,7 @@ const Messages = () => {
   const activeConversation = conversations.find(c => c.id === selectedConversation);
 
   return (
-    <TutorDashboardLayout>
+    <>
       <div className="flex h-[calc(100vh-64px)] bg-white rounded-lg shadow-sm overflow-hidden">
         {/* Left sidebar with conversations */}
         <div className="w-[320px] border-r flex flex-col bg-gray-50">
@@ -564,7 +564,7 @@ const Messages = () => {
           </div>
         </div>
       </div>
-    </TutorDashboardLayout>
+    </>
   );
 };
 
