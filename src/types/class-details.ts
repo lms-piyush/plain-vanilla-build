@@ -47,7 +47,7 @@ export interface ClassDetails {
     profiles?: {
       full_name: string;
       role: string;
-      email?: string;
+      id: string;
     };
   }>;
   class_syllabus?: Array<{
