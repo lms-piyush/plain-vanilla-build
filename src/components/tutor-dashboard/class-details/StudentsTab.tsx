@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -10,23 +10,34 @@ import StudentDetailsCard from "./StudentDetailsCard";
 
 interface StudentsTabProps {
   classDetails: ClassDetails;
+  selectedStudent?: any;
+  onStudentDeselect?: () => void;
 }
 
-const StudentsTab = ({ classDetails }: StudentsTabProps) => {
-  const [selectedStudent, setSelectedStudent] = useState<any>(null);
+const StudentsTab = ({ classDetails, selectedStudent, onStudentDeselect }: StudentsTabProps) => {
+  const [currentSelectedStudent, setCurrentSelectedStudent] = useState<any>(null);
+
+  useEffect(() => {
+    if (selectedStudent) {
+      setCurrentSelectedStudent(selectedStudent);
+    }
+  }, [selectedStudent]);
 
   const handleViewDetails = (student: any) => {
-    setSelectedStudent(student);
+    setCurrentSelectedStudent(student);
   };
 
   const handleBackToList = () => {
-    setSelectedStudent(null);
+    setCurrentSelectedStudent(null);
+    if (onStudentDeselect) {
+      onStudentDeselect();
+    }
   };
 
-  if (selectedStudent) {
+  if (currentSelectedStudent) {
     return (
       <StudentDetailsCard 
-        student={selectedStudent} 
+        student={currentSelectedStudent} 
         onClose={handleBackToList}
       />
     );

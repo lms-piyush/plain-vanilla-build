@@ -32,9 +32,12 @@ const ClassTypeStep = ({ onNext }: ClassTypeStepProps) => {
   useEffect(() => {
     const { deliveryMode, classFormat, classSize, durationType } = formState;
     
-    // Special case: For inbound classes, classSize is always "one-on-one"
+    // Special cases where classSize is not required:
+    // 1. For inbound classes, classSize is always "one-on-one"
+    // 2. For recorded classes, classSize is not needed
     const isClassSizeValid = 
       classFormat === "inbound" || 
+      classFormat === "recorded" ||
       (classSize !== null && classSize !== undefined);
     
     setIsValid(
@@ -44,6 +47,13 @@ const ClassTypeStep = ({ onNext }: ClassTypeStepProps) => {
       !!durationType
     );
   }, [formState]);
+
+  // Auto-set class size for recorded classes
+  useEffect(() => {
+    if (formState.classFormat === "recorded") {
+      setClassSize("group"); // Default to group for recorded classes
+    }
+  }, [formState.classFormat, setClassSize]);
   
   // Get available class formats based on delivery mode
   const getClassFormats = () => {
@@ -60,6 +70,11 @@ const ClassTypeStep = ({ onNext }: ClassTypeStepProps) => {
     }
     return [];
   };
+
+  // Check if class size should be shown
+  const shouldShowClassSize = formState.classFormat && 
+    formState.classFormat !== "inbound" && 
+    formState.classFormat !== "recorded";
   
   return (
     <div className="space-y-8">
@@ -127,7 +142,7 @@ const ClassTypeStep = ({ onNext }: ClassTypeStepProps) => {
         </div>
       )}
       
-      {formState.classFormat && formState.classFormat !== "inbound" && (
+      {shouldShowClassSize && (
         <div>
           <h3 className="text-lg font-semibold mb-2">Class Size</h3>
           <p className="text-sm text-muted-foreground mb-4">
@@ -168,7 +183,7 @@ const ClassTypeStep = ({ onNext }: ClassTypeStepProps) => {
         </div>
       )}
       
-      {(formState.classSize || formState.classFormat === "inbound") && (
+      {(formState.classSize || formState.classFormat === "inbound" || formState.classFormat === "recorded") && (
         <div>
           <h3 className="text-lg font-semibold mb-2">Duration Type</h3>
           <p className="text-sm text-muted-foreground mb-4">

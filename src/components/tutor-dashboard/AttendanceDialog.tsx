@@ -15,6 +15,7 @@ interface AttendanceDialogProps {
   onOpenChange: (open: boolean) => void;
   session: any;
   enrolledStudents: any[];
+  onStudentClick?: (student: any) => void;
 }
 
 interface AttendanceRecord {
@@ -22,7 +23,7 @@ interface AttendanceRecord {
   status: 'present' | 'absent';
 }
 
-const AttendanceDialog = ({ open, onOpenChange, session, enrolledStudents }: AttendanceDialogProps) => {
+const AttendanceDialog = ({ open, onOpenChange, session, enrolledStudents, onStudentClick }: AttendanceDialogProps) => {
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -130,6 +131,14 @@ const AttendanceDialog = ({ open, onOpenChange, session, enrolledStudents }: Att
     return enrollment?.profiles?.full_name || `Student ${studentId.slice(-4)}`;
   };
 
+  const handleStudentClick = (studentId: string) => {
+    const enrollment = enrolledStudents.find(e => e.student_id === studentId);
+    if (enrollment && onStudentClick) {
+      onStudentClick(enrollment);
+      onOpenChange(false); // Close the attendance dialog
+    }
+  };
+
   if (!session) {
     return null;
   }
@@ -176,7 +185,14 @@ const AttendanceDialog = ({ open, onOpenChange, session, enrolledStudents }: Att
                         </AvatarFallback>
                       </Avatar>
                       <div>
-                        <p className="font-medium">{studentName}</p>
+                        <Button
+                          variant="ghost"
+                          className="p-0 h-auto font-medium text-left hover:text-blue-600 hover:underline"
+                          onClick={() => handleStudentClick(record.student_id)}
+                        >
+                          {studentName}
+                        </Button>
+                        <p className="text-sm text-muted-foreground">Click to view student details</p>
                       </div>
                     </div>
                     

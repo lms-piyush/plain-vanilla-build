@@ -1,10 +1,10 @@
 
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ClassDetails } from "@/types/class-details";
 import SessionsTab from "./SessionsTab";
 import StudentsTab from "./StudentsTab";
 import MaterialsTab from "./MaterialsTab";
-import ClassSettingsCard from "./ClassSettingsCard";
-import { ClassDetails } from "@/types/class-details";
 
 interface ClassManagementTabsProps {
   classDetails: ClassDetails;
@@ -27,60 +27,46 @@ const ClassManagementTabs = ({
   onEditMaterial,
   onNewMaterial,
 }: ClassManagementTabsProps) => {
-  return (
-    <Tabs defaultValue="sessions" className="w-full">
-      <TabsList className="w-full bg-white border-b border-[#1F4E79]/10 rounded-none p-0 h-auto">
-        <TabsTrigger 
-          value="sessions"
-          className="rounded-none text-sm py-3 px-4 data-[state=active]:text-[#1F4E79] data-[state=active]:border-b-2 data-[state=active]:border-[#1F4E79] font-medium data-[state=active]:shadow-none"
-        >
-          Sessions
-        </TabsTrigger>
-        <TabsTrigger 
-          value="students"
-          className="rounded-none text-sm py-3 px-4 data-[state=active]:text-[#1F4E79] data-[state=active]:border-b-2 data-[state=active]:border-[#1F4E79] font-medium data-[state=active]:shadow-none"
-        >
-          Students
-        </TabsTrigger>
-        <TabsTrigger 
-          value="materials"
-          className="rounded-none text-sm py-3 px-4 data-[state=active]:text-[#1F4E79] data-[state=active]:border-b-2 data-[state=active]:border-[#1F4E79] font-medium data-[state=active]:shadow-none"
-        >
-          Materials
-        </TabsTrigger>
-        <TabsTrigger 
-          value="settings"
-          className="rounded-none text-sm py-3 px-4 data-[state=active]:text-[#1F4E79] data-[state=active]:border-b-2 data-[state=active]:border-[#1F4E79] font-medium data-[state=active]:shadow-none"
-        >
-          Settings
-        </TabsTrigger>
-      </TabsList>
+  const [activeTab, setActiveTab] = useState("sessions");
+  const [selectedStudent, setSelectedStudent] = useState<any>(null);
 
-      <TabsContent value="sessions" className="pt-4">
-        <SessionsTab
+  const handleStudentSelect = (student: any) => {
+    setSelectedStudent(student);
+    setActiveTab("students");
+  };
+
+  return (
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <TabsList className="grid w-full grid-cols-3">
+        <TabsTrigger value="sessions">Sessions</TabsTrigger>
+        <TabsTrigger value="students">Students</TabsTrigger>
+        <TabsTrigger value="materials">Materials</TabsTrigger>
+      </TabsList>
+      
+      <TabsContent value="sessions" className="space-y-4">
+        <SessionsTab 
           classDetails={classDetails}
           onEditSession={onEditSession}
           onDeleteSession={onDeleteSession}
           onNewSession={onNewSession}
+          onStudentSelect={handleStudentSelect}
         />
       </TabsContent>
-
-      <TabsContent value="students" className="pt-4">
-        <StudentsTab classDetails={classDetails} />
+      
+      <TabsContent value="students" className="space-y-4">
+        <StudentsTab 
+          classDetails={classDetails}
+          selectedStudent={selectedStudent}
+          onStudentDeselect={() => setSelectedStudent(null)}
+        />
       </TabsContent>
-
-      <TabsContent value="materials" className="pt-4">
+      
+      <TabsContent value="materials" className="space-y-4">
         <MaterialsTab
           classDetails={classDetails}
-          selectedSessionFilter={selectedSessionFilter}
-          onSessionFilterChange={onSessionFilterChange}
           onEditMaterial={onEditMaterial}
           onNewMaterial={onNewMaterial}
         />
-      </TabsContent>
-
-      <TabsContent value="settings" className="pt-4">
-        <ClassSettingsCard classDetails={classDetails} />
       </TabsContent>
     </Tabs>
   );

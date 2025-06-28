@@ -24,6 +24,9 @@ interface LessonWithMaterials {
   title: string;
   description: string;
   materials: Material[];
+  session_date?: string;
+  start_time?: string;
+  end_time?: string;
 }
 
 interface CurriculumStepProps {
@@ -43,6 +46,46 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
   const [errors, setErrors] = useState({
     syllabus: ""
   });
+
+  // Helper function to calculate session date based on frequency and index
+  const calculateSessionDate = (index: number): string => {
+    if (!formState.startDate || !formState.frequency) {
+      return new Date().toISOString().split('T')[0];
+    }
+
+    const startDate = new Date(formState.startDate);
+    const sessionDate = new Date(startDate);
+
+    switch (formState.frequency) {
+      case 'daily':
+        sessionDate.setDate(startDate.getDate() + index);
+        break;
+      case 'weekly':
+        sessionDate.setDate(startDate.getDate() + (index * 7));
+        break;
+      case 'monthly':
+        sessionDate.setMonth(startDate.getMonth() + index);
+        break;
+      default:
+        sessionDate.setDate(startDate.getDate() + (index * 7)); // Default to weekly
+    }
+
+    return sessionDate.toISOString().split('T')[0];
+  };
+
+  // Helper function to get default time slot
+  const getDefaultTimeSlot = () => {
+    if (formState.timeSlots && formState.timeSlots.length > 0) {
+      return {
+        start_time: formState.timeSlots[0].startTime,
+        end_time: formState.timeSlots[0].endTime
+      };
+    }
+    return {
+      start_time: '09:00',
+      end_time: '10:00'
+    };
+  };
   
   const validateForm = () => {
     const newErrors = {
@@ -80,9 +123,19 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
   };
   
   const handleAddLesson = () => {
+    const newIndex = lessons.length;
+    const defaultTime = getDefaultTimeSlot();
+    
     setLessons([
       ...lessons,
-      { title: `Lesson ${lessons.length + 1}`, description: "", materials: [] }
+      { 
+        title: `Lesson ${lessons.length + 1}`, 
+        description: "", 
+        materials: [],
+        session_date: calculateSessionDate(newIndex),
+        start_time: defaultTime.start_time,
+        end_time: defaultTime.end_time
+      }
     ]);
   };
   
@@ -90,7 +143,7 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
     setLessons(lessons.filter((_, i) => i !== index));
   };
   
-  const handleLessonChange = (index: number, field: 'title' | 'description', value: string) => {
+  const handleLessonChange = (index: number, field: keyof LessonWithMaterials, value: string) => {
     setLessons(
       lessons.map((lesson, i) => 
         i === index ? { ...lesson, [field]: value } : lesson
@@ -199,6 +252,11 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
                       <div className="flex flex-col items-start">
                         <span className="font-medium text-sm text-gray-600">Lesson {lessonIndex + 1}</span>
                         <span className="font-semibold">{lesson.title || `Lesson ${lessonIndex + 1}`}</span>
+                        {lesson.session_date && (
+                          <span className="text-xs text-gray-500">
+                            {new Date(lesson.session_date).toLocaleDateString()} • {lesson.start_time} - {lesson.end_time}
+                          </span>
+                        )}
                       </div>
                       {lesson.materials.length > 0 && (
                         <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
@@ -247,6 +305,48 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
                             onChange={(e) => handleLessonChange(lessonIndex, "description", e.target.value)}
                             placeholder="What will students learn in this lesson?"
                             className="min-h-[80px] resize-none"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Session Schedule */}
+                      <div className="grid md:grid-cols-3 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor={`session-date-${lessonIndex}`} className="text-sm font-medium">
+                            Session Date
+                          </Label>
+                          <Input
+                            id={`session-date-${lessonIndex}`}
+                            type="date"
+                            value={lesson.session_date || calculateSessionDate(lessonIndex)}
+                            onChange={(e) => handleLessonChange(lessonIndex, "session_date", e.target.value)}
+                            className="w-full"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor={`start-time-${lessonIndex}`} className="text-sm font-medium">
+                            Start Time
+                          </Label>
+                          <Input
+                            id={`start-time-${lessonIndex}`}
+                            type="time"
+                            value={lesson.start_time || getDefaultTimeSlot().start_time}
+                            onChange={(e) => handleLessonChange(lessonIndex, "start_time", e.target.value)}
+                            className="w-full"
+                          />
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label htmlFor={`end-time-${lessonIndex}`} className="text-sm font-medium">
+                            End Time
+                          </Label>
+                          <Input
+                            id={`end-time-${lessonIndex}`}
+                            type="time"
+                            value={lesson.end_time || getDefaultTimeSlot().end_time}
+                            onChange={(e) => handleLessonChange(lessonIndex, "end_time", e.target.value)}
+                            className="w-full"
                           />
                         </div>
                       </div>
@@ -336,11 +436,11 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
         <div className="bg-blue-50 p-4 rounded-md border border-blue-200">
           <h4 className="font-medium text-[#1F4E79] mb-2">Curriculum Tips</h4>
           <ul className="text-sm space-y-2 list-disc list-inside text-gray-700">
-            <li>Break down your content into clear, manageable lessons</li>
-            <li>Include learning objectives for each lesson</li>
+            <li>Session dates are auto-calculated based on your class frequency</li>
+            <li>Start and end times are pre-filled from your time slots</li>
+            <li>You can manually adjust dates and times for each lesson as needed</li>
             <li>Add materials directly to each lesson for better organization</li>
             <li>Support files: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, PNG, JPG, MP4</li>
-            <li>Each lesson can have multiple materials - keep them relevant and focused</li>
           </ul>
         </div>
       </div>

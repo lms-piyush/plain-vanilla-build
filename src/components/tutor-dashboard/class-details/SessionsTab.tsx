@@ -12,15 +12,22 @@ interface SessionsTabProps {
   onEditSession: (session: any) => void;
   onDeleteSession: (sessionId: string) => void;
   onNewSession: () => void;
+  onStudentSelect?: (student: any) => void;
 }
 
-const SessionsTab = ({ classDetails, onEditSession, onDeleteSession, onNewSession }: SessionsTabProps) => {
+const SessionsTab = ({ classDetails, onEditSession, onDeleteSession, onNewSession, onStudentSelect }: SessionsTabProps) => {
   const [attendanceDialogOpen, setAttendanceDialogOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState<any>(null);
 
   const handleAttendanceClick = (session: any) => {
     setSelectedSession(session);
     setAttendanceDialogOpen(true);
+  };
+
+  const handleStudentClick = (student: any) => {
+    if (onStudentSelect) {
+      onStudentSelect(student);
+    }
   };
 
   // Sort sessions by session_date in ascending order (earliest first)
@@ -75,6 +82,7 @@ const SessionsTab = ({ classDetails, onEditSession, onDeleteSession, onNewSessio
         onOpenChange={setAttendanceDialogOpen}
         session={selectedSession}
         enrolledStudents={classDetails.enrolled_students || []}
+        onStudentClick={handleStudentClick}
       />
     </>
   );

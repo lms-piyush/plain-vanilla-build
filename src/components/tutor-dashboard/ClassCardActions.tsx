@@ -1,38 +1,114 @@
 
-import React from 'react';
-import { Eye, Edit, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { MoreHorizontal, Edit, Trash2, Settings } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { TutorClass } from '@/hooks/use-tutor-classes';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ClassCardActionsProps {
   classItem: TutorClass;
   onEdit: (classItem: TutorClass) => void;
   onManage: (classItem: TutorClass) => void;
-  onDeleteClick: () => void;
+  onDelete: (classItem: TutorClass) => void;
 }
 
-const ClassCardActions = ({ classItem, onEdit, onManage, onDeleteClick }: ClassCardActionsProps) => {
+const ClassCardActions = ({ classItem, onEdit, onManage, onDelete }: ClassCardActionsProps) => {
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  const isActive = classItem.status === 'active';
+
+  const handleEdit = () => {
+    if (!isActive) {
+      onEdit(classItem);
+    }
+  };
+
+  const handleDelete = () => {
+    onDelete(classItem);
+    setShowDeleteDialog(false);
+  };
+
   return (
-    <div className="flex gap-2">
-      <button 
-        onClick={() => onManage(classItem)}
-        className="flex-1 bg-primary text-white px-3 py-2 rounded-md text-sm hover:bg-primary/90 transition-colors flex items-center justify-center"
-      >
-        <Eye className="h-4 w-4 mr-1" />
-        Manage
-      </button>
-      <button 
-        onClick={() => onEdit(classItem)}
-        className="px-3 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50 transition-colors flex items-center justify-center"
-      >
-        <Edit className="h-4 w-4" />
-      </button>
-      <button 
-        onClick={onDeleteClick}
-        className="px-3 py-2 border border-red-300 text-red-600 rounded-md text-sm hover:bg-red-50 transition-colors flex items-center justify-center"
-      >
-        <Trash2 className="h-4 w-4" />
-      </button>
-    </div>
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="w-full">
+                  <DropdownMenuItem 
+                    onClick={handleEdit}
+                    disabled={isActive}
+                    className={isActive ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}
+                  >
+                    <Edit className="mr-2 h-4 w-4" />
+                    Edit
+                  </DropdownMenuItem>
+                </div>
+              </TooltipTrigger>
+              {isActive && (
+                <TooltipContent>
+                  <p>Class is active and cannot be edited</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+          
+          <DropdownMenuItem onClick={() => onManage(classItem)}>
+            <Settings className="mr-2 h-4 w-4" />
+            Manage
+          </DropdownMenuItem>
+          
+          <DropdownMenuItem 
+            onClick={() => setShowDeleteDialog(true)}
+            className="text-red-600"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the class
+              "{classItem.title}" and all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </>
   );
 };
 
