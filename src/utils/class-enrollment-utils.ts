@@ -4,13 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const fetchClassEnrollments = async (classId: string) => {
   const { data: enrollments, error } = await supabase
     .from('student_enrollments')
-    .select(`
-      *,
-      profiles!student_enrollments_student_id_fkey (
-        full_name,
-        id
-      )
-    `)
+    .select('*')
     .eq('class_id', classId);
 
   if (error) {
@@ -18,27 +12,31 @@ export const fetchClassEnrollments = async (classId: string) => {
     throw error;
   }
 
-  // For students without profiles, we need to fetch their email from auth
+  // Fetch profiles separately for each enrollment
   const enrichedEnrollments = await Promise.all(
     (enrollments || []).map(async (enrollment) => {
-      if (!enrollment.profiles?.full_name) {
-        try {
-          // Try to get user email as fallback
-          const { data: userData, error: userError } = await supabase.auth.admin.getUserById(enrollment.student_id);
-          if (!userError && userData.user?.email) {
-            return {
-              ...enrollment,
-              profiles: {
-                id: enrollment.student_id,
-                full_name: userData.user.email, // Use email as fallback for full_name
-              }
-            };
+      // Try to get the profile data
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('full_name, id')
+        .eq('id', enrollment.student_id)
+        .single();
+
+      if (!profileError && profile) {
+        return {
+          ...enrollment,
+          profiles: profile
+        };
+      } else {
+        // Fallback to using student_id as display name
+        return {
+          ...enrollment,
+          profiles: {
+            id: enrollment.student_id,
+            full_name: `Student ${enrollment.student_id.slice(-4)}`, // Use last 4 chars of ID
           }
-        } catch (emailError) {
-          console.error('Error fetching user email:', emailError);
-        }
+        };
       }
-      return enrollment;
     })
   );
 
