@@ -18,6 +18,7 @@ export const initialState: ClassCreationState = {
   frequency: null,
   startDate: null,
   endDate: null,
+  enrollmentDeadline: null,
   totalSessions: null,
   timeSlots: [],
   

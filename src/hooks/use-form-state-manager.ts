@@ -31,11 +31,12 @@ export const useFormStateManager = () => {
       });
     }
     
-    if (newState.frequency || newState.startDate || newState.endDate || newState.totalSessions || newState.timeSlots) {
+    if (newState.frequency || newState.startDate || newState.endDate || newState.enrollmentDeadline || newState.totalSessions || newState.timeSlots) {
       setSchedule({
         frequency: newState.frequency || formState.frequency,
         startDate: newState.startDate || formState.startDate,
         endDate: newState.endDate || formState.endDate,
+        enrollmentDeadline: newState.enrollmentDeadline || formState.enrollmentDeadline,
         totalSessions: newState.totalSessions || formState.totalSessions
       });
     }

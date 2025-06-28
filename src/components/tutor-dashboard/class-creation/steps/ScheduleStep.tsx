@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { 
   useClassCreationStore, 
@@ -46,6 +45,7 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   const [frequency, setFrequency] = useState<Frequency | null>(formState.frequency || null);
   const [startDate, setStartDate] = useState(formState.startDate || "");
   const [endDate, setEndDate] = useState(formState.endDate || "");
+  const [enrollmentDeadline, setEnrollmentDeadline] = useState(formState.enrollmentDeadline || "");
   
   // Initialize state from existing formState.timeSlots
   const [dailyTimeSlots, setDailyTimeSlots] = useState<DailyTimeSlot[]>(() => {
@@ -84,6 +84,7 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
     frequency: "",
     startDate: "",
     endDate: "",
+    enrollmentDeadline: "",
     timeSlots: ""
   });
   
@@ -102,8 +103,14 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
       frequency: formState.durationType === "recurring" && !frequency ? "Frequency is required for recurring classes" : "",
       startDate: !startDate ? "Start date is required" : "",
       endDate: "",
+      enrollmentDeadline: !enrollmentDeadline ? "Enrollment deadline is required" : "",
       timeSlots: ""
     };
+    
+    // Validate enrollment deadline
+    if (enrollmentDeadline && startDate && new Date(enrollmentDeadline) >= new Date(startDate)) {
+      newErrors.enrollmentDeadline = "Enrollment deadline must be before the start date";
+    }
     
     // Validate date range if end date is provided
     if (startDate && endDate && new Date(endDate) <= new Date(startDate)) {
@@ -145,6 +152,7 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
         frequency: formState.durationType === "recurring" ? frequency : null,
         startDate,
         endDate: endDate || null,
+        enrollmentDeadline,
         totalSessions: null
       });
       
@@ -282,10 +290,13 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
           <DateRangeSelector
             startDate={startDate}
             endDate={endDate}
+            enrollmentDeadline={enrollmentDeadline}
             onStartDateChange={setStartDate}
             onEndDateChange={setEndDate}
+            onEnrollmentDeadlineChange={setEnrollmentDeadline}
             startDateError={errors.startDate}
             endDateError={errors.endDate}
+            enrollmentDeadlineError={errors.enrollmentDeadline}
           />
         </div>
         

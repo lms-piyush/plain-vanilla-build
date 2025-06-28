@@ -195,6 +195,7 @@ export type Database = {
           delivery_mode: Database["public"]["Enums"]["delivery_mode"]
           description: string | null
           duration_type: Database["public"]["Enums"]["duration_type"]
+          enrollment_deadline: string | null
           id: string
           max_students: number | null
           price: number | null
@@ -214,6 +215,7 @@ export type Database = {
           delivery_mode: Database["public"]["Enums"]["delivery_mode"]
           description?: string | null
           duration_type: Database["public"]["Enums"]["duration_type"]
+          enrollment_deadline?: string | null
           id?: string
           max_students?: number | null
           price?: number | null
@@ -233,6 +235,7 @@ export type Database = {
           delivery_mode?: Database["public"]["Enums"]["delivery_mode"]
           description?: string | null
           duration_type?: Database["public"]["Enums"]["duration_type"]
+          enrollment_deadline?: string | null
           id?: string
           max_students?: number | null
           price?: number | null

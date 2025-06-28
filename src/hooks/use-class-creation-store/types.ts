@@ -33,6 +33,7 @@ export type FormState = {
     frequency: Frequency | null;
     startDate: string | null;
     endDate: string | null;
+    enrollmentDeadline: string | null;
     totalSessions: number | null;
   };
   timeSlots: TimeSlot[];
@@ -79,6 +80,7 @@ export type ClassCreationState = {
   frequency: Frequency | null;
   startDate: string | null;
   endDate: string | null;
+  enrollmentDeadline: string | null;
   totalSessions: number | null;
   timeSlots: TimeSlot[];
   

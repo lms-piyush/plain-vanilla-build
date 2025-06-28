@@ -19,6 +19,7 @@ export const createClass = async (formState: FormState, status: 'draft' | 'activ
       max_students: formState.pricing.maxStudents,
       auto_renewal: formState.pricing.autoRenewal,
       thumbnail_url: formState.basicDetails.thumbnailUrl,
+      enrollment_deadline: formState.schedule.enrollmentDeadline,
       tutor_id: userId
     })
     .select()
@@ -45,6 +46,7 @@ export const updateClass = async (formState: FormState, status: 'draft' | 'activ
       max_students: formState.pricing.maxStudents,
       auto_renewal: formState.pricing.autoRenewal,
       thumbnail_url: formState.basicDetails.thumbnailUrl,
+      enrollment_deadline: formState.schedule.enrollmentDeadline,
       updated_at: new Date().toISOString()
     })
     .eq('id', classId)
