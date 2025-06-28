@@ -29,9 +29,8 @@ export const fetchClassEnrollments = async (classId: string) => {
             return {
               ...enrollment,
               profiles: {
-                ...enrollment.profiles,
-                email: userData.user.email,
-                full_name: enrollment.profiles?.full_name || null
+                id: enrollment.student_id,
+                full_name: userData.user.email, // Use email as fallback for full_name
               }
             };
           }
