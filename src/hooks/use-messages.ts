@@ -34,7 +34,7 @@ export const useConversations = (studentId: string) => {
         .from("conversations")
         .select(`
           *,
-          profiles!conversations_tutor_id_fkey(full_name),
+          tutor:profiles!conversations_tutor_id_fkey(full_name),
           classes(title)
         `)
         .eq("student_id", studentId)
@@ -49,7 +49,7 @@ export const useConversations = (studentId: string) => {
 
       const transformedData = (data || []).map(conv => ({
         ...conv,
-        tutor_name: (conv as any).profiles?.full_name || "Unknown Tutor",
+        tutor_name: (conv as any).tutor?.full_name || "Unknown Tutor",
         class_title: (conv as any).classes?.title || "Unknown Class"
       }));
 
