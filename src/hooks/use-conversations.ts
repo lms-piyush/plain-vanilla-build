@@ -38,7 +38,7 @@ export const useConversations = () => {
         .from("conversations")
         .select(`
           *,
-          tutor_profile:profiles!conversations_tutor_id_fkey (
+          profiles!conversations_tutor_id_fkey (
             full_name
           )
         `)
@@ -50,7 +50,13 @@ export const useConversations = () => {
         throw error;
       }
 
-      return conversations || [];
+      // Transform the data to match the expected interface
+      const transformedConversations = conversations?.map(conv => ({
+        ...conv,
+        tutor_profile: conv.profiles ? { full_name: conv.profiles.full_name } : undefined
+      })) || [];
+
+      return transformedConversations;
     },
     staleTime: 30 * 1000,
     refetchOnWindowFocus: true,
