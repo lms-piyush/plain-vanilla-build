@@ -38,7 +38,7 @@ export const useConversations = () => {
         .from("conversations")
         .select(`
           *,
-          profiles!conversations_tutor_id_fkey (
+          tutor:profiles!tutor_id (
             full_name
           )
         `)
@@ -53,7 +53,7 @@ export const useConversations = () => {
       // Transform the data to match the expected interface
       const transformedConversations = conversations?.map(conv => ({
         ...conv,
-        tutor_profile: conv.profiles ? { full_name: conv.profiles.full_name } : undefined
+        tutor_profile: conv.tutor ? { full_name: conv.tutor.full_name } : undefined
       })) || [];
 
       return transformedConversations;
