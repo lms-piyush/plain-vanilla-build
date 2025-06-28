@@ -1,29 +1,19 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
   Dialog, 
   DialogContent
 } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
-import ClassTypeStep from "./steps/ClassTypeStep";
-import DetailsStep from "./steps/DetailsStep";
-import ScheduleStep from "./steps/ScheduleStep";
-import PricingStep from "./steps/PricingStep";
-import LocationStep from "./steps/LocationStep";
-import CurriculumStep from "./steps/CurriculumStep";
-import PreviewStep from "./steps/PreviewStep";
-import { useClassCreationStore, FormState, DayOfWeek } from "@/hooks/use-class-creation-store";
+import { useClassCreationStore, FormState } from "@/hooks/use-class-creation-store";
 import { autoFillClassCreation } from "@/testing/class-creation-auto-fill";
 import ClassTypeSelector from "./ClassTypeSelector";
 import { LectureType } from "@/types/lecture-types";
 import { useFormStateManager } from "@/hooks/use-form-state-manager";
 import { saveClass } from "@/services/class-creation-service";
 import ClassCreationHeader from "./ClassCreationHeader";
-import DialogActions from "./DialogActions";
 import { TutorClass } from "@/hooks/use-tutor-classes";
-import { supabase } from "@/integrations/supabase/client";
-import ClassDataLoader from "./ClassDataLoader";
 import StepRenderer from "./StepRenderer";
 import { useClassEditingLogic } from "./hooks/useClassEditingLogic";
 
@@ -56,42 +46,46 @@ const CreateClassDialog = ({ open, onOpenChange, onClassCreated, editingClass }:
   // Use custom hook for editing logic
   const { loadClassData } = useClassEditingLogic();
 
-  // Load existing class data when editing
-  useEffect(() => {
+  // Load existing class data when editing - use useCallback to prevent infinite re-renders
+  const handleLoadClassData = useCallback(() => {
     if (editingClass && open) {
       loadClassData(editingClass);
     }
-  }, [editingClass, open, loadClassData]);
+  }, [editingClass?.id, open, loadClassData]); // Only depend on class ID, not the entire object
 
-  const handleNext = () => {
+  useEffect(() => {
+    handleLoadClassData();
+  }, [handleLoadClassData]);
+
+  const handleNext = useCallback(() => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(currentStep + 1);
     }
-  };
+  }, [currentStep]);
 
-  const handleBack = () => {
+  const handleBack = useCallback(() => {
     if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
-  };
+  }, [currentStep]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     onOpenChange(false);
     // Reset form after dialog closes
     setTimeout(() => {
       setCurrentStep(0);
       reset();
     }, 300);
-  };
+  }, [onOpenChange, reset]);
 
-  const handleJumpToStep = (step: number) => {
+  const handleJumpToStep = useCallback((step: number) => {
     setCurrentStep(step);
-  };
+  }, []);
 
-  const handleSaveAsDraft = async () => {
+  const handleSaveAsDraft = useCallback(async () => {
     setIsPublishing(true);
     try {
-      const { formState, setDeliveryMode, setClassFormat, setClassSize, setDurationType, setBasicDetails, setSchedule, setPricing, setLocation, setSyllabus } = useClassCreationStore.getState();
+      const { formState } = useClassCreationStore.getState();
       
       const transformedFormState: FormState = {
         deliveryMode: formState.deliveryMode,
@@ -142,9 +136,9 @@ const CreateClassDialog = ({ open, onOpenChange, onClassCreated, editingClass }:
     } finally {
       setIsPublishing(false);
     }
-  };
+  }, [editingClass?.id, handleClose, onClassCreated, toast]);
 
-  const handlePublish = async () => {
+  const handlePublish = useCallback(async () => {
     setIsPublishing(true);
     try {
       const { formState } = useClassCreationStore.getState();
@@ -198,15 +192,15 @@ const CreateClassDialog = ({ open, onOpenChange, onClassCreated, editingClass }:
     } finally {
       setIsPublishing(false);
     }
-  };
+  }, [editingClass?.id, handleClose, onClassCreated, toast]);
 
-  const handleSelectClassType = async (selectedType: LectureType) => {
+  const handleSelectClassType = useCallback(async (selectedType: LectureType) => {
     toast({
       title: "Test Mode Activated",
       description: `Auto-filling ${selectedType} class creation form...`,
     });
     await autoFillClassCreation(selectedType, setCurrentStep, updateFormState);
-  };
+  }, [toast, updateFormState]);
 
   return (
     <>

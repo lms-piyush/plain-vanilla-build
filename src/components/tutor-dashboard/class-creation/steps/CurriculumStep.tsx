@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useClassCreationStore } from "@/hooks/use-class-creation-store";
 import { Button } from "@/components/ui/button";
@@ -27,6 +26,7 @@ interface LessonWithMaterials {
   session_date?: string;
   start_time?: string;
   end_time?: string;
+  week_number?: number;
 }
 
 interface CurriculumStepProps {
@@ -37,11 +37,30 @@ interface CurriculumStepProps {
 const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
   const { formState, setSyllabus, addMaterial } = useClassCreationStore();
   
-  const [lessons, setLessons] = useState<LessonWithMaterials[]>(
-    formState.syllabus.length > 0 
-      ? formState.syllabus.map(lesson => ({ ...lesson, materials: [] }))
-      : [{ title: "Introduction", description: "", materials: [] }]
-  );
+  // Initialize lessons with proper session dates and times
+  const initializeLessons = () => {
+    if (formState.syllabus.length > 0) {
+      return formState.syllabus.map((lesson, index) => ({ 
+        ...lesson, 
+        materials: [],
+        session_date: calculateSessionDate(index),
+        start_time: getDefaultTimeSlot().start_time,
+        end_time: getDefaultTimeSlot().end_time,
+        week_number: index + 1
+      }));
+    }
+    return [{ 
+      title: "Introduction", 
+      description: "", 
+      materials: [],
+      session_date: calculateSessionDate(0),
+      start_time: getDefaultTimeSlot().start_time,
+      end_time: getDefaultTimeSlot().end_time,
+      week_number: 1
+    }];
+  };
+  
+  const [lessons, setLessons] = useState<LessonWithMaterials[]>(initializeLessons);
   
   const [errors, setErrors] = useState({
     syllabus: ""
@@ -96,17 +115,28 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
       newErrors.syllabus = "All lesson titles are required";
     }
     
+    if (lessons.some(lesson => !lesson.session_date)) {
+      newErrors.syllabus = "All lessons must have a session date";
+    }
+    
     setErrors(newErrors);
     return !Object.values(newErrors).some(error => error);
   };
   
   const handleNext = () => {
     if (validateForm()) {
-      // Convert lessons back to syllabus format for store
-      setSyllabus(lessons.map(lesson => ({
+      // Convert lessons to syllabus format with session details for database storage
+      const syllabusWithSchedule = lessons.map((lesson, index) => ({
         title: lesson.title,
-        description: lesson.description
-      })));
+        description: lesson.description,
+        session_date: lesson.session_date,
+        start_time: lesson.start_time,
+        end_time: lesson.end_time,
+        week_number: lesson.week_number || index + 1
+      }));
+      
+      // Store the enhanced syllabus data
+      setSyllabus(syllabusWithSchedule);
       
       // Add all materials to the store with their lesson associations
       lessons.forEach((lesson, lessonIndex) => {
@@ -126,17 +156,17 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
     const newIndex = lessons.length;
     const defaultTime = getDefaultTimeSlot();
     
-    setLessons([
-      ...lessons,
-      { 
-        title: `Lesson ${lessons.length + 1}`, 
-        description: "", 
-        materials: [],
-        session_date: calculateSessionDate(newIndex),
-        start_time: defaultTime.start_time,
-        end_time: defaultTime.end_time
-      }
-    ]);
+    const newLesson: LessonWithMaterials = { 
+      title: `Lesson ${lessons.length + 1}`, 
+      description: "", 
+      materials: [],
+      session_date: calculateSessionDate(newIndex),
+      start_time: defaultTime.start_time,
+      end_time: defaultTime.end_time,
+      week_number: newIndex + 1
+    };
+    
+    setLessons([...lessons, newLesson]);
   };
   
   const handleRemoveLesson = (index: number) => {
@@ -250,7 +280,7 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
                     <div className="flex items-center gap-3">
                       <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
                       <div className="flex flex-col items-start">
-                        <span className="font-medium text-sm text-gray-600">Lesson {lessonIndex + 1}</span>
+                        <span className="font-medium text-sm text-gray-600">Week {lesson.week_number}</span>
                         <span className="font-semibold">{lesson.title || `Lesson ${lessonIndex + 1}`}</span>
                         {lesson.session_date && (
                           <span className="text-xs text-gray-500">
@@ -313,7 +343,7 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
                       <div className="grid md:grid-cols-3 gap-4">
                         <div className="space-y-2">
                           <Label htmlFor={`session-date-${lessonIndex}`} className="text-sm font-medium">
-                            Session Date
+                            Session Date <span className="text-red-500">*</span>
                           </Label>
                           <Input
                             id={`session-date-${lessonIndex}`}
@@ -321,6 +351,7 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
                             value={lesson.session_date || calculateSessionDate(lessonIndex)}
                             onChange={(e) => handleLessonChange(lessonIndex, "session_date", e.target.value)}
                             className="w-full"
+                            required
                           />
                         </div>
                         
@@ -436,9 +467,10 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
         <div className="bg-blue-50 p-4 rounded-md border border-blue-200">
           <h4 className="font-medium text-[#1F4E79] mb-2">Curriculum Tips</h4>
           <ul className="text-sm space-y-2 list-disc list-inside text-gray-700">
-            <li>Session dates are auto-calculated based on your class frequency</li>
-            <li>Start and end times are pre-filled from your time slots</li>
+            <li>Session dates are auto-calculated based on your class frequency and start date</li>
+            <li>Start and end times are pre-filled from your time slots configuration</li>
             <li>You can manually adjust dates and times for each lesson as needed</li>
+            <li>Session dates and times will be stored and used for scheduling</li>
             <li>Add materials directly to each lesson for better organization</li>
             <li>Support files: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, PNG, JPG, MP4</li>
           </ul>
