@@ -38,7 +38,7 @@ export const useConversations = () => {
         .from("conversations")
         .select(`
           *,
-          tutor_profile:profiles!tutor_id (
+          tutor_profile:profiles!conversations_tutor_id_fkey (
             full_name
           )
         `)
