@@ -40,7 +40,6 @@ const ClassDetail = () => {
         <div className="p-6">
           <ClassPurchaseSection 
             classDetails={classDetails} 
-            onEnrollmentChange={refetch}
           />
         </div>
       </div>
