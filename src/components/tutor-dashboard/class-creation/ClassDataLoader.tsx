@@ -1,3 +1,4 @@
+
 import { useToast } from "@/hooks/use-toast";
 import { useClassCreationStore, DayOfWeek } from "@/hooks/use-class-creation-store";
 import { TutorClass } from "@/hooks/use-tutor-classes";
@@ -105,7 +106,7 @@ export const useClassDataLoader = () => {
         });
       }
 
-      // Load syllabus data
+      // Load syllabus data with proper structure
       const { data: syllabusData } = await supabase
         .from('class_syllabus')
         .select('*')
@@ -115,7 +116,14 @@ export const useClassDataLoader = () => {
       if (syllabusData && syllabusData.length > 0) {
         const syllabus = syllabusData.map(item => ({
           title: item.title,
-          description: item.description || ''
+          description: item.description || '',
+          learningObjectives: item.learning_objectives || [],
+          weekNumber: item.week_number,
+          sessionDate: item.session_date || '',
+          startTime: item.start_time || '',
+          endTime: item.end_time || '',
+          status: item.status || 'upcoming',
+          notes: item.notes || ''
         }));
         setSyllabus(syllabus);
 

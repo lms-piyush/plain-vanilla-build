@@ -135,7 +135,7 @@ const MyClasses = () => {
                     {enrollment.class?.price && (
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Star className="h-4 w-4 mr-2" />
-                        <span>${enrollment.class.price} {enrollment.class.currency || 'USD'}</span>
+                        <span>${enrollment.class.price} USD</span>
                       </div>
                     )}
                   </div>
