@@ -36,7 +36,7 @@ const ClassDetail = () => {
     <>
       <ClassDetailHeader classDetails={classDetails} />
 
-      <ClassPurchaseSection classDetails={classDetails} />
+      <ClassPurchaseSection classDetails={classDetails} onEnrollmentChange={refetch} />
 
       <ClassTabs classDetails={classDetails} classId={id || ''} />
     </>
