@@ -36,13 +36,13 @@ const ClassDetail = () => {
     <>
       <ClassDetailHeader classDetails={classDetails} />
       
-      <div className="bg-white rounded-lg overflow-hidden shadow-sm mb-6">
+      {/* <div className="bg-white rounded-lg overflow-hidden shadow-sm mb-6">
         <div className="p-6">
           <ClassPurchaseSection 
             classDetails={classDetails} 
           />
         </div>
-      </div>
+      </div> */}
       
       <ClassTabs classDetails={classDetails} classId={id || ''} />
     </>

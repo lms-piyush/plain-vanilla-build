@@ -98,7 +98,7 @@ const LessonsTab = ({ classDetails }: LessonsTabProps) => {
                 {/* Conditional button display based on class type */}
                 {isOfflineClass ? (
                   // For offline classes, show only View Address button
-                  lesson.status === 'upcoming' && (
+                  lesson.status === 'upcoming' ? (
                     <Button 
                       variant="outline"
                       className="flex items-center gap-2"
@@ -106,6 +106,13 @@ const LessonsTab = ({ classDetails }: LessonsTabProps) => {
                     >
                       <MapPin className="h-4 w-4" />
                       View Address
+                    </Button>
+                  ) : lesson.session_date && (
+                    <Button 
+                      disabled
+                      className="flex-1"
+                    >
+                      Class Started on {formatDate(lesson.session_date)}
                     </Button>
                   )
                 ) : (
