@@ -1,9 +1,12 @@
+
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Edit, Trash2, Eye } from "lucide-react";
+import { Plus, Edit, Trash2, Eye, Users } from "lucide-react";
 import { ClassDetails } from "@/types/class-details";
+import AttendanceDialog from "../AttendanceDialog";
 
 interface SessionsTabProps {
   classDetails: ClassDetails;
@@ -13,6 +16,9 @@ interface SessionsTabProps {
 }
 
 const SessionsTab = ({ classDetails, onEditSession, onDeleteSession, onNewSession }: SessionsTabProps) => {
+  const [attendanceDialogOpen, setAttendanceDialogOpen] = useState(false);
+  const [selectedSession, setSelectedSession] = useState<any>(null);
+
   const getSessionStatus = (session: any, index: number, totalSessions: number) => {
     if (session.status) return session.status;
     
@@ -115,132 +121,162 @@ const SessionsTab = ({ classDetails, onEditSession, onDeleteSession, onNewSessio
     return Math.max(...classDetails.class_syllabus.map(s => s.week_number || 1)) + 1;
   };
 
+  const handleAttendanceClick = (session: any) => {
+    setSelectedSession(session);
+    setAttendanceDialogOpen(true);
+  };
+
+  // Sort sessions by session_date in ascending order (earliest first)
+  const sortedSessions = classDetails.class_syllabus ? [...classDetails.class_syllabus].sort((a, b) => {
+    const dateA = a.session_date ? new Date(a.session_date) : calculateSessionDate(a.week_number - 1);
+    const dateB = b.session_date ? new Date(b.session_date) : calculateSessionDate(b.week_number - 1);
+    return dateA.getTime() - dateB.getTime();
+  }) : [];
+
   return (
-    <Card className="border-[#1F4E79]/10">
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle className="text-lg font-semibold text-[#1F4E79]">Sessions</CardTitle>
-          <CardDescription>Manage your 1-on-1 class sessions</CardDescription>
-        </div>
-        <Button 
-          size="sm" 
-          className="text-xs bg-[#1F4E79] hover:bg-[#1a4369]"
-          onClick={onNewSession}
-        >
-          <Plus className="mr-1 h-3.5 w-3.5" />
-          New Session
-        </Button>
-      </CardHeader>
-      <CardContent>
-        {classDetails.class_syllabus && classDetails.class_syllabus.length > 0 ? (
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-gray-50/50">
-                  <TableHead className="font-medium">Session Title</TableHead>
-                  <TableHead className="font-medium">Date</TableHead>
-                  <TableHead className="font-medium">Time</TableHead>
-                  <TableHead className="font-medium">Status</TableHead>
-                  <TableHead className="font-medium">Attendance</TableHead>
-                  <TableHead className="font-medium">Materials</TableHead>
-                  <TableHead className="font-medium">Notes</TableHead>
-                  <TableHead className="font-medium">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {classDetails.class_syllabus.map((session, index) => {
-                  const status = getSessionStatus(session, index, classDetails.class_syllabus!.length);
-                  const materialsCount = getMaterialsCount(session.id);
-                  
-                  return (
-                    <TableRow key={session.id} className="hover:bg-gray-50/50">
-                      <TableCell className="font-medium">
-                        {session.title}
-                      </TableCell>
-                      <TableCell>
-                        {getSessionDate(session, index)}
-                      </TableCell>
-                      <TableCell>
-                        {getSessionTime(session)}
-                      </TableCell>
-                      <TableCell>
-                        <Badge 
-                          variant={getStatusBadgeVariant(status)}
-                          className={`capitalize ${getStatusBadgeClass(status)}`}
-                        >
-                          {status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {getAttendanceDisplay(session, status)}
-                      </TableCell>
-                      <TableCell>
-                        <span className="inline-flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                          {materialsCount}
-                        </span>
-                      </TableCell>
-                      <TableCell className="max-w-[200px] truncate">
-                        {session.notes || (status === 'completed' 
-                          ? session.description || 'Good progress with session content...'
-                          : '-'
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex gap-1">
-                          {status === 'upcoming' && (
+    <>
+      <Card className="border-[#1F4E79]/10">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-lg font-semibold text-[#1F4E79]">Sessions</CardTitle>
+            <CardDescription>Manage your 1-on-1 class sessions</CardDescription>
+          </div>
+          <Button 
+            size="sm" 
+            className="text-xs bg-[#1F4E79] hover:bg-[#1a4369]"
+            onClick={onNewSession}
+          >
+            <Plus className="mr-1 h-3.5 w-3.5" />
+            New Session
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {sortedSessions && sortedSessions.length > 0 ? (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow className="bg-gray-50/50">
+                    <TableHead className="font-medium">Session Title</TableHead>
+                    <TableHead className="font-medium">Date</TableHead>
+                    <TableHead className="font-medium">Time</TableHead>
+                    <TableHead className="font-medium">Status</TableHead>
+                    <TableHead className="font-medium">Attendance</TableHead>
+                    <TableHead className="font-medium">Materials</TableHead>
+                    <TableHead className="font-medium">Notes</TableHead>
+                    <TableHead className="font-medium">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {sortedSessions.map((session, index) => {
+                    const status = getSessionStatus(session, index, sortedSessions.length);
+                    const materialsCount = getMaterialsCount(session.id);
+                    
+                    return (
+                      <TableRow key={session.id} className="hover:bg-gray-50/50">
+                        <TableCell className="font-medium">
+                          {session.title}
+                        </TableCell>
+                        <TableCell>
+                          {getSessionDate(session, index)}
+                        </TableCell>
+                        <TableCell>
+                          {getSessionTime(session)}
+                        </TableCell>
+                        <TableCell>
+                          <Badge 
+                            variant={getStatusBadgeVariant(status)}
+                            className={`capitalize ${getStatusBadgeClass(status)}`}
+                          >
+                            {status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {getAttendanceDisplay(session, status)}
+                        </TableCell>
+                        <TableCell>
+                          <span className="inline-flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
+                            {materialsCount}
+                          </span>
+                        </TableCell>
+                        <TableCell className="max-w-[200px] truncate">
+                          {session.notes || (status === 'completed' 
+                            ? session.description || 'Good progress with session content...'
+                            : '-'
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            {status === 'upcoming' && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 w-8 p-0"
+                                title="View session"
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            )}
                             <Button
                               variant="outline"
                               size="sm"
+                              onClick={() => handleAttendanceClick(session)}
                               className="h-8 w-8 p-0"
-                              title="View session"
+                              title="Mark attendance"
                             >
-                              <Eye className="h-4 w-4" />
+                              <Users className="h-4 w-4" />
                             </Button>
-                          )}
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => onEditSession(session)}
-                            className="h-8 w-8 p-0"
-                            title="Edit session"
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => onDeleteSession(session.id)}
-                            className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
-                            title="Delete session"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-              </TableBody>
-            </Table>
-          </div>
-        ) : (
-          <div className="text-center py-12 bg-gray-50/30 rounded-lg border-2 border-dashed border-gray-200">
-            <div className="max-w-sm mx-auto">
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No sessions created yet</h3>
-              <p className="text-muted-foreground mb-4">Get started by creating your first session for this class.</p>
-              <Button 
-                variant="outline" 
-                className="bg-white"
-                onClick={onNewSession}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                Create First Session
-              </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onEditSession(session)}
+                              className="h-8 w-8 p-0"
+                              title="Edit session"
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => onDeleteSession(session.id)}
+                              className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                              title="Delete session"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
             </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          ) : (
+            <div className="text-center py-12 bg-gray-50/30 rounded-lg border-2 border-dashed border-gray-200">
+              <div className="max-w-sm mx-auto">
+                <h3 className="text-lg font-medium text-gray-900 mb-2">No sessions created yet</h3>
+                <p className="text-muted-foreground mb-4">Get started by creating your first session for this class.</p>
+                <Button 
+                  variant="outline" 
+                  className="bg-white"
+                  onClick={onNewSession}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create First Session
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <AttendanceDialog
+        open={attendanceDialogOpen}
+        onOpenChange={setAttendanceDialogOpen}
+        session={selectedSession}
+        enrolledStudents={classDetails.enrolled_students || []}
+      />
+    </>
   );
 };
 
