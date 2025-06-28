@@ -43,7 +43,7 @@ export const useAllClasses = ({ page = 1, pageSize = 9 }: UseAllClassesOptions =
         .from("classes")
         .select(`
           *,
-          profiles!classes_tutor_id_fkey (
+          profiles (
             full_name
           )
         `, { count: 'exact' })
@@ -63,11 +63,10 @@ export const useAllClasses = ({ page = 1, pageSize = 9 }: UseAllClassesOptions =
       console.log("Raw classes data:", classes);
       console.log("Total count:", count);
 
-      // Transform the data to include tutor_name and handle missing currency
+      // Transform the data to include tutor_name
       const transformedClasses: TutorClass[] = classes?.map(cls => ({
         ...cls,
-        tutor_name: (cls as any).profiles?.full_name || "Unknown Tutor",
-        currency: cls.currency || "USD" // Default to USD if currency is null
+        tutor_name: cls.profiles?.full_name || "Unknown Tutor"
       })) || [];
 
       console.log("Transformed classes:", transformedClasses);
@@ -77,8 +76,8 @@ export const useAllClasses = ({ page = 1, pageSize = 9 }: UseAllClassesOptions =
         totalCount: count || 0
       };
     },
-    staleTime: 5 * 1000,
-    gcTime: 15 * 1000,
+    staleTime: 5 * 1000, // Reduced to 5 seconds for better refresh
+    gcTime: 15 * 1000, // Reduced garbage collection time
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });

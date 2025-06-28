@@ -1,175 +1,195 @@
 
-import React, { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Clock, Calendar, User, MessageSquare, Star, ChevronRight } from "lucide-react";
-import { useStudentEnrollments } from "@/hooks/use-student-enrollments";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { useMessageNavigation } from "@/hooks/use-message-navigation";
+import { Button } from "@/components/ui/button";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
+import { useStudentEnrollments } from "@/hooks/use-student-enrollments";
+import { useFilterEffects } from "@/hooks/use-filter-effects";
+import { convertEnrollmentToClassCard } from "@/utils/enrollment-converter";
+import ClassCard from "@/components/student/ClassCard";
+import FilterSheet from "@/components/student/FilterSheet";
 
 const MyClasses = () => {
   const navigate = useNavigate();
-  const { handleMessageTutor, isLoading: isMessagingLoading } = useMessageNavigation();
-  const { data: enrollments, isLoading, error } = useStudentEnrollments();
+  const [activeTab, setActiveTab] = useState("all");
+  const [filterOpen, setFilterOpen] = useState(false);
+  
+  // Filter states
+  const [classMode, setClassMode] = useState<"online" | "offline">("online");
+  const [classFormat, setClassFormat] = useState<"live" | "recorded" | "inbound" | "outbound">("live");
+  const [classSize, setClassSize] = useState<"group" | "1-on-1">("group");
+  const [classDuration, setClassDuration] = useState<"finite" | "infinite">("finite");
+  const [paymentModel, setPaymentModel] = useState<"one-time" | "subscription">("one-time");
+  
+  // Fetch enrolled classes from database
+  const { data: enrollments = [], isLoading, error, refetch } = useStudentEnrollments();
 
-  const getStatusColor = (status: string) => {
-    switch (status.toLowerCase()) {
-      case 'active':
-        return 'bg-green-100 text-green-800';
-      case 'completed':
-        return 'bg-blue-100 text-blue-800';
-      case 'pending':
-        return 'bg-yellow-100 text-yellow-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  // Filter effects
+  useFilterEffects({
+    classMode,
+    classFormat,
+    classDuration,
+    setClassFormat,
+    setClassSize,
+    setPaymentModel
+  });
+
+  // Force refetch when component mounts
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+  
+  // Convert enrollments to class cards
+  const classes = enrollments.map(convertEnrollmentToClassCard);
+  
+  console.log("My Classes - Total enrollments:", enrollments.length);
+  console.log("My Classes - Converted classes:", classes.length);
+  
+  const filteredClasses = classes.filter(cls => {
+    // Filter by tab first
+    if (activeTab === "active") {
+      return cls.status === "Active" || cls.status === "Enrolled";
+    } else if (activeTab === "completed") {
+      return cls.status === "Completed";
     }
-  };
+    // For "all" tab, include all classes
+    return true;
+  }).filter(cls => {
+    // Apply additional filters only if filter drawer has been opened
+    if (!filterOpen) return true;
+    
+    // Apply mode filter
+    if (classMode === "online" && cls.type !== "Online") return false;
+    if (classMode === "offline" && cls.type !== "Offline") return false;
+    
+    // Apply format filter
+    if (classMode === "online") {
+      if (classFormat === "live" && cls.format !== "Live") return false;
+      if (classFormat === "recorded" && cls.format !== "Recorded") return false;
+    } else {
+      if (classFormat === "inbound" && cls.format !== "Inbound") return false;
+      if (classFormat === "outbound" && cls.format !== "Outbound") return false;
+    }
+    
+    // Apply size filter
+    if (classSize === "group" && cls.classSize !== "Group") return false;
+    if (classSize === "1-on-1" && cls.classSize !== "1-on-1") return false;
+    
+    // Apply duration filter
+    if (classDuration === "finite" && cls.payment === "Subscription") return false;
+    if (classDuration === "infinite" && cls.payment !== "Subscription") return false;
+    
+    return true;
+  });
 
-  const handleViewClass = (classId: string) => {
-    navigate(`/student/class/${classId}`);
-  };
-
-  const handleMessageTutorClick = (tutorId: string, classId: string) => {
-    handleMessageTutor(tutorId, classId);
-  };
+  console.log("My Classes - Filtered classes:", filteredClasses.length);
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-          <p className="text-muted-foreground">Loading your classes...</p>
-        </div>
+      <div className="text-center py-12">
+        <h1 className="text-2xl font-bold mb-6">My Classes</h1>
+        <p>Loading your enrolled classes...</p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <p className="text-red-600 mb-4">Error loading classes</p>
-          <p className="text-sm text-muted-foreground">{error.message}</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (!enrollments || enrollments.length === 0) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] text-center">
-        <div className="bg-gray-100 rounded-full p-6 mb-4">
-          <User className="h-12 w-12 text-gray-400" />
-        </div>
-        <h3 className="text-xl font-semibold mb-2">No Classes Yet</h3>
-        <p className="text-muted-foreground mb-6 max-w-md">
-          You haven't enrolled in any classes yet. Explore our available classes to start your learning journey.
-        </p>
-        <Button onClick={() => navigate('/student/explore')}>
-          Explore Classes
+      <div className="text-center py-12">
+        <h1 className="text-2xl font-bold mb-6">My Classes</h1>
+        <p className="text-red-500 mb-4">Error loading classes: {error.message}</p>
+        <Button 
+          onClick={() => refetch()}
+          className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
+        >
+          Try Again
         </Button>
       </div>
     );
   }
-
+  
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold mb-2">My Classes</h1>
-        <p className="text-muted-foreground">
-          Manage your enrolled classes and track your progress
-        </p>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {enrollments?.map((enrollment) => (
-          <Card key={enrollment.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex flex-col h-full">
-                {/* Class Image */}
-                <div className="aspect-video bg-gradient-to-r from-purple-400 to-pink-400 rounded-lg mb-4 flex items-center justify-center">
-                  {enrollment.class?.thumbnail_url ? (
-                    <img 
-                      src={enrollment.class.thumbnail_url} 
-                      alt={enrollment.class.title}
-                      className="w-full h-full object-cover rounded-lg"
-                    />
-                  ) : (
-                    <div className="text-white text-center">
-                      <div className="text-2xl font-bold mb-1">
-                        {enrollment.class?.title?.charAt(0) || 'C'}
-                      </div>
-                      <div className="text-sm opacity-80">Class</div>
-                    </div>
+    <>
+      <h1 className="text-2xl font-bold mb-6">My Classes</h1>
+      
+      <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
+        <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
+          <div className="flex justify-between items-center">
+            <TabsList>
+              <TabsTrigger value="all">All ({classes.length})</TabsTrigger>
+              <TabsTrigger value="active">
+                Active Courses ({classes.filter(c => c.status === "Active" || c.status === "Enrolled").length})
+              </TabsTrigger>
+              <TabsTrigger value="completed">
+                Completed ({classes.filter(c => c.status === "Completed").length})
+              </TabsTrigger>
+            </TabsList>
+            
+            <FilterSheet
+              filterOpen={filterOpen}
+              setFilterOpen={setFilterOpen}
+              classMode={classMode}
+              setClassMode={setClassMode}
+              classFormat={classFormat}
+              setClassFormat={setClassFormat}
+              classSize={classSize}
+              setClassSize={setClassSize}
+              classDuration={classDuration}
+              setClassDuration={setClassDuration}
+              paymentModel={paymentModel}
+              setPaymentModel={setPaymentModel}
+            />
+          </div>
+          
+          <TabsContent value={activeTab} className="mt-6">
+            <div className="space-y-4">
+              {filteredClasses.length > 0 ? (
+                filteredClasses.map((cls) => (
+                  <ClassCard
+                    key={cls.id}
+                    {...cls}
+                    onClick={() => navigate(`/student/classes/${cls.id}`)}
+                    onTutorClick={() => navigate(`/student/tutor/${cls.tutorId}`)}
+                    onMessageTutor={() => navigate(`/messages?tutor=${cls.tutorId}`)}
+                  />
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-500 mb-4">
+                    {enrollments.length === 0 
+                      ? "You haven't enrolled in any classes yet." 
+                      : "No classes found matching your filters."
+                    }
+                  </p>
+                  {enrollments.length === 0 && (
+                    <Button 
+                      onClick={() => navigate('/student/explore')}
+                      className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
+                    >
+                      Explore Classes
+                    </Button>
+                  )}
+                  {enrollments.length > 0 && filteredClasses.length === 0 && (
+                    <Button 
+                      onClick={() => setFilterOpen(false)}
+                      variant="outline"
+                      className="mr-2"
+                    >
+                      Clear Filters
+                    </Button>
                   )}
                 </div>
-
-                {/* Class Info */}
-                <div className="flex-grow">
-                  <div className="flex items-start justify-between mb-2">
-                    <h3 className="font-semibold text-lg leading-tight">
-                      {enrollment.class?.title || 'Unknown Class'}
-                    </h3>
-                    <Badge className={getStatusColor(enrollment.status)}>
-                      {enrollment.status}
-                    </Badge>
-                  </div>
-
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
-                    {enrollment.class?.description || 'No description available'}
-                  </p>
-
-                  {/* Class Details */}
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <User className="h-4 w-4 mr-2" />
-                      <span>Tutor: {enrollment.class?.tutor_name || 'Unknown'}</span>
-                    </div>
-                    
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      <span>Enrolled: {new Date(enrollment.enrollment_date).toLocaleDateString()}</span>
-                    </div>
-
-                    {enrollment.class?.price && (
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Star className="h-4 w-4 mr-2" />
-                        <span>${enrollment.class.price} USD</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Action Buttons */}
-                <div className="flex gap-2 mt-auto">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleViewClass(enrollment.class_id)}
-                    className="flex-1"
-                  >
-                    <ChevronRight className="h-4 w-4 mr-1" />
-                    View Class
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleMessageTutorClick(enrollment.class?.tutor_id || '', enrollment.class_id)}
-                    disabled={isMessagingLoading}
-                    className="flex-1"
-                  >
-                    <MessageSquare className="h-4 w-4 mr-1" />
-                    Message
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              )}
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
-    </div>
+    </>
   );
 };
 

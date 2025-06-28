@@ -256,47 +256,6 @@ export type Database = {
           },
         ]
       }
-      conversations: {
-        Row: {
-          class_id: string
-          created_at: string
-          id: string
-          last_message: string | null
-          last_message_at: string
-          student_id: string
-          tutor_id: string
-          updated_at: string
-        }
-        Insert: {
-          class_id: string
-          created_at?: string
-          id?: string
-          last_message?: string | null
-          last_message_at?: string
-          student_id: string
-          tutor_id: string
-          updated_at?: string
-        }
-        Update: {
-          class_id?: string
-          created_at?: string
-          id?: string
-          last_message?: string | null
-          last_message_at?: string
-          student_id?: string
-          tutor_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "conversations_class_id_fkey"
-            columns: ["class_id"]
-            isOneToOne: false
-            referencedRelation: "classes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       lesson_materials: {
         Row: {
           created_at: string
@@ -353,47 +312,6 @@ export type Database = {
             columns: ["lesson_id"]
             isOneToOne: false
             referencedRelation: "class_syllabus"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      messages: {
-        Row: {
-          content: string
-          conversation_id: string
-          created_at: string
-          id: string
-          is_read: boolean
-          recipient_id: string
-          sender_id: string
-          updated_at: string
-        }
-        Insert: {
-          content: string
-          conversation_id: string
-          created_at?: string
-          id?: string
-          is_read?: boolean
-          recipient_id: string
-          sender_id: string
-          updated_at?: string
-        }
-        Update: {
-          content?: string
-          conversation_id?: string
-          created_at?: string
-          id?: string
-          is_read?: boolean
-          recipient_id?: string
-          sender_id?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "messages_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: false
-            referencedRelation: "conversations"
             referencedColumns: ["id"]
           },
         ]
