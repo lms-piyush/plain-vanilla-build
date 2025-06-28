@@ -11,6 +11,9 @@ export interface Conversation {
   last_message_at: string;
   created_at: string;
   updated_at: string;
+  tutor_profile?: {
+    full_name: string;
+  };
 }
 
 export interface Message {
@@ -35,7 +38,7 @@ export const useConversations = () => {
         .from("conversations")
         .select(`
           *,
-          profiles!conversations_tutor_id_fkey (
+          tutor_profile:profiles!tutor_id (
             full_name
           )
         `)

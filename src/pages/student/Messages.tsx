@@ -51,7 +51,7 @@ const Messages = () => {
   };
   
   const filteredConversations = conversations.filter(conv => 
-    conv.profiles?.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
+    conv.tutor_profile?.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
   const formatMessageTime = (dateString: string) => {
@@ -104,7 +104,7 @@ const Messages = () => {
                       }}>
                         <AvatarImage src="" />
                         <AvatarFallback className="bg-[#8A5BB7] text-white">
-                          {conversation.profiles?.full_name?.charAt(0) || 'T'}
+                          {conversation.tutor_profile?.full_name?.charAt(0) || 'T'}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
@@ -116,7 +116,7 @@ const Messages = () => {
                               handleViewTutorProfile(conversation.tutor_id);
                             }}
                           >
-                            {conversation.profiles?.full_name || 'Unknown Tutor'}
+                            {conversation.tutor_profile?.full_name || 'Unknown Tutor'}
                           </h3>
                           <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
                             {formatMessageTime(conversation.last_message_at)}
@@ -150,7 +150,7 @@ const Messages = () => {
                     >
                       <AvatarImage src="" />
                       <AvatarFallback className="bg-[#8A5BB7] text-white">
-                        {activeConversation.profiles?.full_name?.charAt(0) || 'T'}
+                        {activeConversation.tutor_profile?.full_name?.charAt(0) || 'T'}
                       </AvatarFallback>
                     </Avatar>
                     <div>
@@ -158,7 +158,7 @@ const Messages = () => {
                         className="font-medium cursor-pointer hover:underline"
                         onClick={() => handleViewTutorProfile(activeConversation.tutor_id)}
                       >
-                        {activeConversation.profiles?.full_name || 'Unknown Tutor'}
+                        {activeConversation.tutor_profile?.full_name || 'Unknown Tutor'}
                       </h2>
                       <p className="text-xs text-muted-foreground">Class Discussion</p>
                     </div>
@@ -183,7 +183,7 @@ const Messages = () => {
                               <Avatar className="h-8 w-8 cursor-pointer" onClick={() => handleViewTutorProfile(activeConversation.tutor_id)}>
                                 <AvatarImage src="" />
                                 <AvatarFallback className="bg-[#8A5BB7] text-white text-xs">
-                                  {activeConversation.profiles?.full_name?.charAt(0) || 'T'}
+                                  {activeConversation.tutor_profile?.full_name?.charAt(0) || 'T'}
                                 </AvatarFallback>
                               </Avatar>
                             )}
