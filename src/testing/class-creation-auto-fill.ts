@@ -3,7 +3,55 @@ import { ClassCreationState } from "@/hooks/use-class-creation-store";
 import { LectureType } from "@/types/lecture-types";
 import { classTypeConfigs } from "./configs";
 import { delay, scrollToTop, generateTestData } from "./utils";
-import { defaultTimeSlots, defaultSyllabus, defaultMaterials } from "./curriculum-data";
+import { defaultTimeSlots, defaultMaterials } from "./curriculum-data";
+
+// Default syllabus with proper structure
+const defaultSyllabus = [
+  {
+    title: "Introduction to Course",
+    description: "Course overview and objectives",
+    learningObjectives: ["Understand course structure", "Set learning goals"],
+    weekNumber: 1,
+    sessionDate: "2024-01-15",
+    startTime: "10:00",
+    endTime: "11:00",
+    status: "upcoming",
+    notes: "Bring notebook"
+  },
+  {
+    title: "Core Concepts",
+    description: "Fundamental concepts and principles",
+    learningObjectives: ["Master basic concepts", "Apply principles"],
+    weekNumber: 2,
+    sessionDate: "2024-01-22",
+    startTime: "10:00",
+    endTime: "11:00",
+    status: "upcoming",
+    notes: "Review materials"
+  },
+  {
+    title: "Practical Applications",
+    description: "Hands-on practice and exercises",
+    learningObjectives: ["Practice skills", "Build confidence"],
+    weekNumber: 3,
+    sessionDate: "2024-01-29",
+    startTime: "10:00",
+    endTime: "11:00",
+    status: "upcoming",
+    notes: "Interactive session"
+  },
+  {
+    title: "Advanced Topics",
+    description: "Deep dive into advanced concepts",
+    learningObjectives: ["Understand advanced topics", "Critical thinking"],
+    weekNumber: 4,
+    sessionDate: "2024-02-05",
+    startTime: "10:00",
+    endTime: "11:00",
+    status: "upcoming",
+    notes: "Prepare questions"
+  }
+];
 
 // Auto-fill data for the class creation form with faster typing effects
 export const autoFillClassCreation = async (
@@ -124,15 +172,13 @@ export const autoFillClassCreation = async (
   
   // Step 6: Curriculum
   console.log("Step 6: Filling Curriculum");
-  // Add syllabus items quickly
+  // Add syllabus items quickly with proper structure
   await delay(100);
   updateFormState({ syllabus: [defaultSyllabus[0]] });
   await delay(100);
   updateFormState({ syllabus: defaultSyllabus.slice(0, 2) });
   await delay(100);
   updateFormState({ syllabus: defaultSyllabus.slice(0, 3) });
-  await delay(100);
-  updateFormState({ syllabus: defaultSyllabus.slice(0, 4) });
   await delay(100);
   updateFormState({ syllabus: defaultSyllabus });
   
