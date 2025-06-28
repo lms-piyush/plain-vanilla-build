@@ -155,7 +155,7 @@ const MyClasses = () => {
                     {...cls}
                     onClick={() => navigate(`/student/classes/${cls.id}`)}
                     onTutorClick={() => navigate(`/student/tutor/${cls.tutorId}`)}
-                    onMessageTutor={() => navigate(`/messages?tutor=${cls.tutorId}`)}
+                    onMessageTutor={() => {}} // This is now handled inside ClassCard
                   />
                 ))
               ) : (

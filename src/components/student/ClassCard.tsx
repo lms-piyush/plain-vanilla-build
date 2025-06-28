@@ -16,6 +16,8 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { useCreateConversation } from "@/hooks/use-conversations";
+import { toast } from "@/components/ui/use-toast";
 
 interface ClassCardProps {
   id: string;
@@ -37,6 +39,7 @@ interface ClassCardProps {
 }
 
 const ClassCard = ({
+  id,
   title,
   tutor,
   tutorId,
@@ -51,11 +54,32 @@ const ClassCard = ({
   classSize,
   onClick,
   onTutorClick,
-  onMessageTutor,
 }: ClassCardProps) => {
+  const navigate = useNavigate();
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
   const [reviewRating, setReviewRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
+  
+  const createConversationMutation = useCreateConversation();
+
+  const handleMessageTutor = async () => {
+    try {
+      const conversation = await createConversationMutation.mutateAsync({
+        tutorId: tutorId,
+        classId: id,
+      });
+
+      // Navigate to messages with the conversation ID
+      navigate(`/student/messages?conversation=${conversation.id}`);
+    } catch (error: any) {
+      console.error("Error creating conversation:", error);
+      toast({
+        title: "Error",
+        description: "Failed to start conversation. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <Card className="overflow-hidden hover:shadow-md transition-shadow h-full">
@@ -118,11 +142,12 @@ const ClassCard = ({
                 variant="outline"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onMessageTutor();
+                  handleMessageTutor();
                 }}
+                disabled={createConversationMutation.isPending}
               >
                 <MessageCircle className="h-4 w-4 mr-1" />
-                Message
+                {createConversationMutation.isPending ? "..." : "Message"}
               </Button>
               {status === "Completed" ? (
                 <Button 

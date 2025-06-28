@@ -1,218 +1,74 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Search, Send, MessageSquare } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useNavigate } from "react-router-dom";
-
-interface Message {
-  id: string;
-  text: string;
-  sender: 'user' | 'tutor';
-  timestamp: Date;
-}
-
-interface Conversation {
-  id: string;
-  tutorName: string;
-  courseName: string;
-  lastMessage: string;
-  unread: boolean;
-  lastMessageTime: string;
-  messages: Message[];
-  avatarUrl?: string;
-  tutorId: string;
-}
+import { useConversations } from "@/hooks/use-conversations";
+import { useMessages, useSendMessage } from "@/hooks/use-messages";
 
 const Messages = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const conversationIdFromUrl = searchParams.get('conversation');
   
-  const [conversations, setConversations] = useState<Conversation[]>([
-    {
-      id: "1",
-      tutorName: "Dr. Alex Johnson",
-      courseName: "Advanced Mathematics",
-      lastMessage: "When is the next assignment due?",
-      unread: true,
-      lastMessageTime: "10:32 AM",
-      avatarUrl: undefined,
-      tutorId: "tutor1",
-      messages: [
-        {
-          id: "m1",
-          text: "Hello! I have a question about the calculus problem set.",
-          sender: "user",
-          timestamp: new Date(2025, 4, 20, 10, 15)
-        },
-        {
-          id: "m2",
-          text: "Of course, what specific question are you stuck on?",
-          sender: "tutor",
-          timestamp: new Date(2025, 4, 20, 10, 17)
-        },
-        {
-          id: "m3",
-          text: "I'm having trouble with the integration problems on page 42.",
-          sender: "user",
-          timestamp: new Date(2025, 4, 20, 10, 20)
-        },
-        {
-          id: "m4",
-          text: "Let me help you with that. For integration problems, remember to use the substitution method when you have a function and its derivative.",
-          sender: "tutor",
-          timestamp: new Date(2025, 4, 20, 10, 25)
-        },
-        {
-          id: "m5",
-          text: "Thanks, that helps. When is the next assignment due?",
-          sender: "user",
-          timestamp: new Date(2025, 4, 20, 10, 32)
-        }
-      ]
-    },
-    {
-      id: "2",
-      tutorName: "Prof. Sarah Williams",
-      courseName: "Physics Fundamentals",
-      lastMessage: "Your lab report has been graded. Great job!",
-      unread: false,
-      lastMessageTime: "Yesterday",
-      avatarUrl: undefined,
-      tutorId: "tutor2",
-      messages: [
-        {
-          id: "m1",
-          text: "I've submitted my lab report for review.",
-          sender: "user",
-          timestamp: new Date(2025, 4, 19, 15, 10)
-        },
-        {
-          id: "m2",
-          text: "I'll take a look at it soon.",
-          sender: "tutor",
-          timestamp: new Date(2025, 4, 19, 16, 20)
-        },
-        {
-          id: "m3",
-          text: "Your lab report has been graded. Great job!",
-          sender: "tutor",
-          timestamp: new Date(2025, 4, 19, 18, 45)
-        }
-      ]
-    },
-    {
-      id: "3",
-      tutorName: "Michael Chen",
-      courseName: "Introduction to Computer Science",
-      lastMessage: "The debugging technique we discussed should help with your project.",
-      unread: false,
-      lastMessageTime: "2 days ago",
-      avatarUrl: undefined,
-      tutorId: "tutor3",
-      messages: [
-        {
-          id: "m1",
-          text: "I'm getting a strange error in my code. Can you help?",
-          sender: "user",
-          timestamp: new Date(2025, 4, 18, 11, 25)
-        },
-        {
-          id: "m2",
-          text: "Can you share the error message you're getting?",
-          sender: "tutor",
-          timestamp: new Date(2025, 4, 18, 11, 40)
-        },
-        {
-          id: "m3",
-          text: "It says 'TypeError: Cannot read property 'length' of undefined'",
-          sender: "user",
-          timestamp: new Date(2025, 4, 18, 11, 45)
-        },
-        {
-          id: "m4",
-          text: "That typically means you're trying to access a property on an undefined variable. Try adding a conditional check before accessing the property.",
-          sender: "tutor",
-          timestamp: new Date(2025, 4, 18, 12, 10)
-        },
-        {
-          id: "m5",
-          text: "The debugging technique we discussed should help with your project.",
-          sender: "tutor",
-          timestamp: new Date(2025, 4, 18, 12, 15)
-        }
-      ]
-    },
-  ]);
-  
-  const [activeConversation, setActiveConversation] = useState<Conversation>(conversations[0]);
+  const { data: conversations = [], isLoading } = useConversations();
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(conversationIdFromUrl);
   const [newMessage, setNewMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
   
-  const handleSendMessage = () => {
-    if (newMessage.trim() === "") return;
+  const { data: messages = [] } = useMessages(activeConversationId || "");
+  const sendMessageMutation = useSendMessage();
+  
+  const activeConversation = conversations.find(conv => conv.id === activeConversationId);
+  
+  // Set active conversation from URL parameter
+  useEffect(() => {
+    if (conversationIdFromUrl && conversations.length > 0) {
+      setActiveConversationId(conversationIdFromUrl);
+    } else if (conversations.length > 0 && !activeConversationId) {
+      setActiveConversationId(conversations[0].id);
+    }
+  }, [conversationIdFromUrl, conversations, activeConversationId]);
+  
+  const handleSendMessage = async () => {
+    if (newMessage.trim() === "" || !activeConversation) return;
     
-    const newMessageObj: Message = {
-      id: Date.now().toString(),
-      text: newMessage,
-      sender: 'user',
-      timestamp: new Date(),
-    };
-    
-    const updatedConversation = {
-      ...activeConversation,
-      lastMessage: newMessage,
-      lastMessageTime: "Just now",
-      messages: [...activeConversation.messages, newMessageObj]
-    };
-    
-    setActiveConversation(updatedConversation);
-    
-    const updatedConversations = conversations.map(conv => 
-      conv.id === activeConversation.id ? updatedConversation : conv
-    );
-    
-    setConversations(updatedConversations);
-    setNewMessage("");
-    
-    // Simulate tutor response after a delay
-    setTimeout(() => {
-      const tutorResponse: Message = {
-        id: Date.now().toString(),
-        text: "Thanks for your message. I'll get back to you soon!",
-        sender: 'tutor',
-        timestamp: new Date(),
-      };
+    try {
+      await sendMessageMutation.mutateAsync({
+        conversationId: activeConversation.id,
+        content: newMessage,
+        recipientId: activeConversation.tutor_id,
+      });
       
-      const conversationWithResponse = {
-        ...updatedConversation,
-        lastMessage: tutorResponse.text,
-        lastMessageTime: "Just now",
-        messages: [...updatedConversation.messages, tutorResponse]
-      };
-      
-      setActiveConversation(conversationWithResponse);
-      
-      const finalConversations = conversations.map(conv => 
-        conv.id === activeConversation.id ? conversationWithResponse : conv
-      );
-      
-      setConversations(finalConversations);
-    }, 2000);
+      setNewMessage("");
+    } catch (error) {
+      console.error("Error sending message:", error);
+    }
   };
   
   const filteredConversations = conversations.filter(conv => 
-    conv.tutorName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    conv.courseName.toLowerCase().includes(searchQuery.toLowerCase())
+    conv.profiles?.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
   
-  const formatMessageTime = (date: Date) => {
-    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  const formatMessageTime = (dateString: string) => {
+    return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   };
   
   const handleViewTutorProfile = (tutorId: string) => {
-    navigate(`/tutor/${tutorId}`);
+    navigate(`/student/tutor/${tutorId}`);
   };
+  
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#8A5BB7]"></div>
+      </div>
+    );
+  }
   
   return (
     <>
@@ -239,16 +95,16 @@ const Messages = () => {
                   filteredConversations.map(conversation => (
                     <div 
                       key={conversation.id}
-                      className={`flex items-start gap-3 p-4 border-b cursor-pointer hover:bg-[#E5D0FF] ${activeConversation.id === conversation.id ? 'bg-[#E5D0FF]' : ''}`}
-                      onClick={() => setActiveConversation(conversation)}
+                      className={`flex items-start gap-3 p-4 border-b cursor-pointer hover:bg-[#E5D0FF] ${activeConversationId === conversation.id ? 'bg-[#E5D0FF]' : ''}`}
+                      onClick={() => setActiveConversationId(conversation.id)}
                     >
                       <Avatar className="cursor-pointer" onClick={(e) => {
                         e.stopPropagation();
-                        handleViewTutorProfile(conversation.tutorId);
+                        handleViewTutorProfile(conversation.tutor_id);
                       }}>
-                        <AvatarImage src={conversation.avatarUrl} />
+                        <AvatarImage src="" />
                         <AvatarFallback className="bg-[#8A5BB7] text-white">
-                          {conversation.tutorName.charAt(0)}
+                          {conversation.profiles?.full_name?.charAt(0) || 'T'}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1 min-w-0">
@@ -257,19 +113,18 @@ const Messages = () => {
                             className="font-medium text-sm truncate cursor-pointer hover:underline"
                             onClick={(e) => {
                               e.stopPropagation();
-                              handleViewTutorProfile(conversation.tutorId);
+                              handleViewTutorProfile(conversation.tutor_id);
                             }}
                           >
-                            {conversation.tutorName}
+                            {conversation.profiles?.full_name || 'Unknown Tutor'}
                           </h3>
-                          <span className="text-xs text-gray-500 whitespace-nowrap ml-2">{conversation.lastMessageTime}</span>
+                          <span className="text-xs text-gray-500 whitespace-nowrap ml-2">
+                            {formatMessageTime(conversation.last_message_at)}
+                          </span>
                         </div>
-                        <p className="text-xs text-muted-foreground truncate">{conversation.courseName}</p>
-                        <p className="text-sm truncate">{conversation.lastMessage}</p>
+                        <p className="text-xs text-muted-foreground truncate">Class Discussion</p>
+                        <p className="text-sm truncate">{conversation.last_message || "Start a conversation..."}</p>
                       </div>
-                      {conversation.unread && (
-                        <div className="h-2 w-2 bg-[#8A5BB7] rounded-full self-center"></div>
-                      )}
                     </div>
                   ))
                 ) : (
@@ -291,21 +146,21 @@ const Messages = () => {
                   <div className="flex items-center gap-3">
                     <Avatar 
                       className="cursor-pointer"
-                      onClick={() => handleViewTutorProfile(activeConversation.tutorId)}
+                      onClick={() => handleViewTutorProfile(activeConversation.tutor_id)}
                     >
-                      <AvatarImage src={activeConversation.avatarUrl} />
+                      <AvatarImage src="" />
                       <AvatarFallback className="bg-[#8A5BB7] text-white">
-                        {activeConversation.tutorName.charAt(0)}
+                        {activeConversation.profiles?.full_name?.charAt(0) || 'T'}
                       </AvatarFallback>
                     </Avatar>
                     <div>
                       <h2 
                         className="font-medium cursor-pointer hover:underline"
-                        onClick={() => handleViewTutorProfile(activeConversation.tutorId)}
+                        onClick={() => handleViewTutorProfile(activeConversation.tutor_id)}
                       >
-                        {activeConversation.tutorName}
+                        {activeConversation.profiles?.full_name || 'Unknown Tutor'}
                       </h2>
-                      <p className="text-xs text-muted-foreground">{activeConversation.courseName}</p>
+                      <p className="text-xs text-muted-foreground">Class Discussion</p>
                     </div>
                   </div>
                 </div>
@@ -313,44 +168,50 @@ const Messages = () => {
                 {/* Messages */}
                 <ScrollArea className="flex-1">
                   <div className="p-4 flex flex-col gap-4">
-                    {activeConversation.messages.map(message => (
-                      <div 
-                        key={message.id}
-                        className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-                      >
-                        <div className={`flex ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'} items-start gap-2 max-w-[80%]`}>
-                          {message.sender === 'tutor' && (
-                            <Avatar className="h-8 w-8 cursor-pointer" onClick={() => handleViewTutorProfile(activeConversation.tutorId)}>
-                              <AvatarImage src={activeConversation.avatarUrl} />
-                              <AvatarFallback className="bg-[#8A5BB7] text-white text-xs">
-                                {activeConversation.tutorName.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                          )}
-                          
-                          <div className="flex flex-col">
-                            <div className={`p-3 rounded-lg text-sm ${
-                              message.sender === 'user' 
-                                ? 'bg-[#8A5BB7] text-white rounded-tr-none' 
-                                : 'bg-gray-100 text-gray-900 rounded-tl-none'
-                            }`}>
-                              {message.text}
-                            </div>
-                            <span className={`text-xs text-gray-500 mt-1 ${message.sender === 'user' ? 'text-right mr-2' : 'ml-2'}`}>
-                              {formatMessageTime(message.timestamp)}
-                            </span>
-                          </div>
-                          
-                          {message.sender === 'user' && (
-                            <Avatar className="h-8 w-8">
-                              <AvatarFallback className="bg-purple-200 text-[#8A5BB7] text-xs">
-                                ME
-                              </AvatarFallback>
-                            </Avatar>
-                          )}
-                        </div>
+                    {messages.length === 0 ? (
+                      <div className="flex items-center justify-center h-full text-gray-500">
+                        <p>Start the conversation by sending a message!</p>
                       </div>
-                    ))}
+                    ) : (
+                      messages.map(message => (
+                        <div 
+                          key={message.id}
+                          className={`flex ${message.sender_id === activeConversation.student_id ? 'justify-end' : 'justify-start'}`}
+                        >
+                          <div className={`flex ${message.sender_id === activeConversation.student_id ? 'flex-row-reverse' : 'flex-row'} items-start gap-2 max-w-[80%]`}>
+                            {message.sender_id === activeConversation.tutor_id && (
+                              <Avatar className="h-8 w-8 cursor-pointer" onClick={() => handleViewTutorProfile(activeConversation.tutor_id)}>
+                                <AvatarImage src="" />
+                                <AvatarFallback className="bg-[#8A5BB7] text-white text-xs">
+                                  {activeConversation.profiles?.full_name?.charAt(0) || 'T'}
+                                </AvatarFallback>
+                              </Avatar>
+                            )}
+                            
+                            <div className="flex flex-col">
+                              <div className={`p-3 rounded-lg text-sm ${
+                                message.sender_id === activeConversation.student_id
+                                  ? 'bg-[#8A5BB7] text-white rounded-tr-none' 
+                                  : 'bg-gray-100 text-gray-900 rounded-tl-none'
+                              }`}>
+                                {message.content}
+                              </div>
+                              <span className={`text-xs text-gray-500 mt-1 ${message.sender_id === activeConversation.student_id ? 'text-right mr-2' : 'ml-2'}`}>
+                                {formatMessageTime(message.created_at)}
+                              </span>
+                            </div>
+                            
+                            {message.sender_id === activeConversation.student_id && (
+                              <Avatar className="h-8 w-8">
+                                <AvatarFallback className="bg-purple-200 text-[#8A5BB7] text-xs">
+                                  ME
+                                </AvatarFallback>
+                              </Avatar>
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </ScrollArea>
                 
@@ -366,13 +227,17 @@ const Messages = () => {
                         if (e.key === 'Enter') handleSendMessage();
                       }}
                       className="flex-1 focus:border-[#8A5BB7] hover:bg-[#E5D0FF]"
+                      disabled={sendMessageMutation.isPending}
                     />
                     <Button 
                       onClick={handleSendMessage}
                       className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
+                      disabled={sendMessageMutation.isPending}
                     >
                       <Send className="h-4 w-4" />
-                      <span className="ml-2 hidden sm:inline">Send</span>
+                      <span className="ml-2 hidden sm:inline">
+                        {sendMessageMutation.isPending ? "..." : "Send"}
+                      </span>
                     </Button>
                   </div>
                 </div>
