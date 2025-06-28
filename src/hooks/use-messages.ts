@@ -28,8 +28,6 @@ export const useConversations = (studentId: string) => {
   return useQuery({
     queryKey: ["conversations", studentId],
     queryFn: async () => {
-      console.log("Fetching conversations for student:", studentId);
-      
       const { data, error } = await supabase
         .from("conversations")
         .select(`
@@ -40,21 +38,13 @@ export const useConversations = (studentId: string) => {
         .eq("student_id", studentId)
         .order("last_message_at", { ascending: false });
 
-      if (error) {
-        console.error("Error fetching conversations:", error);
-        throw error;
-      }
+      if (error) throw error;
 
-      console.log("Raw conversations data:", data);
-
-      const transformedData = (data || []).map(conv => ({
+      return data.map(conv => ({
         ...conv,
-        tutor_name: (conv as any).profiles?.full_name || "Unknown Tutor",
-        class_title: (conv as any).classes?.title || "Unknown Class"
+        tutor_name: conv.profiles?.full_name || "Unknown Tutor",
+        class_title: conv.classes?.title || "Unknown Class"
       }));
-
-      console.log("Transformed conversations:", transformedData);
-      return transformedData;
     },
     enabled: !!studentId,
   });
@@ -64,21 +54,14 @@ export const useMessages = (conversationId: string) => {
   return useQuery({
     queryKey: ["messages", conversationId],
     queryFn: async () => {
-      console.log("Fetching messages for conversation:", conversationId);
-      
       const { data, error } = await supabase
         .from("messages")
         .select("*")
         .eq("conversation_id", conversationId)
         .order("created_at", { ascending: true });
 
-      if (error) {
-        console.error("Error fetching messages:", error);
-        throw error;
-      }
-      
-      console.log("Messages data:", data);
-      return data || [];
+      if (error) throw error;
+      return data;
     },
     enabled: !!conversationId,
   });
@@ -99,8 +82,6 @@ export const useSendMessage = () => {
       recipientId: string;
       content: string;
     }) => {
-      console.log("Sending message:", { conversationId, senderId, recipientId, content });
-      
       const { data, error } = await supabase
         .from("messages")
         .insert({
@@ -112,23 +93,16 @@ export const useSendMessage = () => {
         .select()
         .single();
 
-      if (error) {
-        console.error("Error sending message:", error);
-        throw error;
-      }
+      if (error) throw error;
 
       // Update conversation's last message
-      const { error: updateError } = await supabase
+      await supabase
         .from("conversations")
         .update({
           last_message: content,
           last_message_at: new Date().toISOString(),
         })
         .eq("id", conversationId);
-
-      if (updateError) {
-        console.error("Error updating conversation:", updateError);
-      }
 
       return data;
     },
@@ -152,24 +126,16 @@ export const useCreateConversation = () => {
       tutorId: string;
       classId: string;
     }) => {
-      console.log("Creating conversation:", { studentId, tutorId, classId });
-      
       // Check if conversation already exists
-      const { data: existing, error: checkError } = await supabase
+      const { data: existing } = await supabase
         .from("conversations")
         .select("id")
         .eq("student_id", studentId)
         .eq("tutor_id", tutorId)
         .eq("class_id", classId)
-        .maybeSingle();
-
-      if (checkError) {
-        console.error("Error checking existing conversation:", checkError);
-        throw checkError;
-      }
+        .single();
 
       if (existing) {
-        console.log("Found existing conversation:", existing);
         return existing;
       }
 
@@ -186,12 +152,7 @@ export const useCreateConversation = () => {
         .select()
         .single();
 
-      if (error) {
-        console.error("Error creating conversation:", error);
-        throw error;
-      }
-      
-      console.log("Created new conversation:", data);
+      if (error) throw error;
       return data;
     },
     onSuccess: (_, variables) => {
