@@ -64,6 +64,8 @@ const ClassManagementTabs = ({
       <TabsContent value="materials" className="space-y-4">
         <MaterialsTab
           classDetails={classDetails}
+          selectedSessionFilter={selectedSessionFilter}
+          onSessionFilterChange={onSessionFilterChange}
           onEditMaterial={onEditMaterial}
           onNewMaterial={onNewMaterial}
         />

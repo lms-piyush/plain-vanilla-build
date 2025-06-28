@@ -25,10 +25,10 @@ interface ClassCardActionsProps {
   classItem: TutorClass;
   onEdit: (classItem: TutorClass) => void;
   onManage: (classItem: TutorClass) => void;
-  onDelete: (classItem: TutorClass) => void;
+  onDeleteClick?: () => void;
 }
 
-const ClassCardActions = ({ classItem, onEdit, onManage, onDelete }: ClassCardActionsProps) => {
+const ClassCardActions = ({ classItem, onEdit, onManage, onDeleteClick }: ClassCardActionsProps) => {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   const isActive = classItem.status === 'active';
@@ -40,8 +40,14 @@ const ClassCardActions = ({ classItem, onEdit, onManage, onDelete }: ClassCardAc
   };
 
   const handleDelete = () => {
-    onDelete(classItem);
+    if (onDeleteClick) {
+      onDeleteClick();
+    }
     setShowDeleteDialog(false);
+  };
+
+  const handleDeleteClick = () => {
+    setShowDeleteDialog(true);
   };
 
   return (
@@ -82,7 +88,7 @@ const ClassCardActions = ({ classItem, onEdit, onManage, onDelete }: ClassCardAc
           </DropdownMenuItem>
           
           <DropdownMenuItem 
-            onClick={() => setShowDeleteDialog(true)}
+            onClick={handleDeleteClick}
             className="text-red-600"
           >
             <Trash2 className="mr-2 h-4 w-4" />
