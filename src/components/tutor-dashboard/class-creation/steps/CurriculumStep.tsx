@@ -1,497 +1,255 @@
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Plus, Trash2, Clock, Calendar } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { useClassCreationStore } from '@/hooks/use-class-creation-store';
+import { formatTime, parseTime } from '@/utils/time-helpers';
 
-import { useState } from "react";
-import { useClassCreationStore } from "@/hooks/use-class-creation-store";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Plus, Trash2, GripVertical, FileUp, Link2 } from "lucide-react";
-import { 
-  Collapsible, 
-  CollapsibleContent, 
-  CollapsibleTrigger 
-} from "@/components/ui/collapsible";
-import { uploadCourseMaterial } from "@/services/file-upload-service";
-import { toast } from "@/components/ui/sonner";
+const CurriculumStep = () => {
+  const { curriculum, setCurriculum, classType, schedule, timeSlots } = useClassCreationStore();
+  const [expandedSession, setExpandedSession] = useState<number | null>(null);
 
-interface Material {
-  name: string;
-  type: string;
-  url: string;
-}
-
-interface LessonWithMaterials {
-  title: string;
-  description: string;
-  materials: Material[];
-  session_date?: string;
-  start_time?: string;
-  end_time?: string;
-  week_number?: number;
-}
-
-interface CurriculumStepProps {
-  onNext: () => void;
-  onBack: () => void;
-}
-
-const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
-  const { formState, setSyllabus, addMaterial } = useClassCreationStore();
-
-  // Helper function to calculate session date based on frequency and index
-  const calculateSessionDate = (index: number): string => {
-    if (!formState.startDate || !formState.frequency) {
-      return new Date().toISOString().split('T')[0];
-    }
-
-    const startDate = new Date(formState.startDate);
-    const sessionDate = new Date(startDate);
-
-    switch (formState.frequency) {
+  const calculateSessionDate = (sessionIndex: number) => {
+    if (!schedule.startDate || !schedule.frequency || !timeSlots.length) return null;
+    
+    const startDate = new Date(schedule.startDate);
+    let sessionDate = new Date(startDate);
+    
+    switch (schedule.frequency) {
       case 'daily':
-        sessionDate.setDate(startDate.getDate() + index);
+        sessionDate.setDate(startDate.getDate() + sessionIndex);
         break;
       case 'weekly':
-        sessionDate.setDate(startDate.getDate() + (index * 7));
+        sessionDate.setDate(startDate.getDate() + (sessionIndex * 7));
         break;
       case 'monthly':
-        sessionDate.setMonth(startDate.getMonth() + index);
+        sessionDate.setMonth(startDate.getMonth() + sessionIndex);
         break;
       default:
-        sessionDate.setDate(startDate.getDate() + (index * 7)); // Default to weekly
+        return null;
     }
+    
+    return sessionDate;
+  };
 
-    return sessionDate.toISOString().split('T')[0];
+  const addSession = () => {
+    const sessionDate = calculateSessionDate(curriculum.length);
+    const firstTimeSlot = timeSlots[0];
+    
+    const newSession = {
+      title: `Session ${curriculum.length + 1}`,
+      description: '',
+      learningObjectives: [''],
+      weekNumber: curriculum.length + 1,
+      sessionDate: sessionDate ? sessionDate.toISOString().split('T')[0] : '',
+      startTime: firstTimeSlot?.startTime || '10:00',
+      endTime: firstTimeSlot?.endTime || '11:00',
+      status: 'upcoming' as const,
+      notes: ''
+    };
+
+    setCurriculum([...curriculum, newSession]);
   };
 
-  // Helper function to get default time slot
-  const getDefaultTimeSlot = () => {
-    if (formState.timeSlots && formState.timeSlots.length > 0) {
-      return {
-        start_time: formState.timeSlots[0].startTime,
-        end_time: formState.timeSlots[0].endTime
-      };
-    }
-    return {
-      start_time: '09:00',
-      end_time: '10:00'
-    };
+  const removeSession = (index: number) => {
+    const newCurriculum = curriculum.filter((_, i) => i !== index);
+    setCurriculum(newCurriculum.map((session, i) => ({
+      ...session,
+      title: `Session ${i + 1}`,
+      weekNumber: i + 1
+    })));
   };
-  
-  // Initialize lessons with proper session dates and times
-  const initializeLessons = (): LessonWithMaterials[] => {
-    if (formState.syllabus.length > 0) {
-      return formState.syllabus.map((lesson, index) => ({ 
-        ...lesson, 
-        materials: [],
-        session_date: calculateSessionDate(index),
-        start_time: getDefaultTimeSlot().start_time,
-        end_time: getDefaultTimeSlot().end_time,
-        week_number: index + 1
-      }));
-    }
-    return [{ 
-      title: "Introduction", 
-      description: "", 
-      materials: [],
-      session_date: calculateSessionDate(0),
-      start_time: getDefaultTimeSlot().start_time,
-      end_time: getDefaultTimeSlot().end_time,
-      week_number: 1
-    }];
-  };
-  
-  const [lessons, setLessons] = useState<LessonWithMaterials[]>(initializeLessons);
-  
-  const [errors, setErrors] = useState({
-    syllabus: ""
-  });
-  
-  const validateForm = () => {
-    const newErrors = {
-      syllabus: ""
-    };
-    
-    if (lessons.some(lesson => !lesson.title.trim())) {
-      newErrors.syllabus = "All lesson titles are required";
-    }
-    
-    if (lessons.some(lesson => !lesson.session_date)) {
-      newErrors.syllabus = "All lessons must have a session date";
-    }
-    
-    setErrors(newErrors);
-    return !Object.values(newErrors).some(error => error);
-  };
-  
-  const handleNext = () => {
-    if (validateForm()) {
-      // Convert lessons to syllabus format with session details for database storage
-      const syllabusWithSchedule = lessons.map((lesson, index) => ({
-        title: lesson.title,
-        description: lesson.description,
-        session_date: lesson.session_date,
-        start_time: lesson.start_time,
-        end_time: lesson.end_time,
-        week_number: lesson.week_number || index + 1
-      }));
-      
-      // Store the enhanced syllabus data
-      setSyllabus(syllabusWithSchedule);
-      
-      // Add all materials to the store with their lesson associations
-      lessons.forEach((lesson, lessonIndex) => {
-        lesson.materials.forEach(material => {
-          addMaterial({
-            ...material,
-            lessonIndex
-          });
-        });
-      });
-      
-      onNext();
-    }
-  };
-  
-  const handleAddLesson = () => {
-    const newIndex = lessons.length;
-    const defaultTime = getDefaultTimeSlot();
-    
-    const newLesson: LessonWithMaterials = { 
-      title: `Lesson ${lessons.length + 1}`, 
-      description: "", 
-      materials: [],
-      session_date: calculateSessionDate(newIndex),
-      start_time: defaultTime.start_time,
-      end_time: defaultTime.end_time,
-      week_number: newIndex + 1
-    };
-    
-    setLessons([...lessons, newLesson]);
-  };
-  
-  const handleRemoveLesson = (index: number) => {
-    setLessons(lessons.filter((_, i) => i !== index));
-  };
-  
-  const handleLessonChange = (index: number, field: keyof LessonWithMaterials, value: string) => {
-    setLessons(
-      lessons.map((lesson, i) => 
-        i === index ? { ...lesson, [field]: value } : lesson
-      )
-    );
-  };
-  
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>, lessonIndex: number) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
 
-    try {
-      const uploadedMaterial = await uploadCourseMaterial(file);
-      
-      setLessons(lessons.map((lesson, i) => 
-        i === lessonIndex 
-          ? { ...lesson, materials: [...lesson.materials, uploadedMaterial] }
-          : lesson
-      ));
-      
-      toast.success('Material uploaded successfully');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to upload material');
-    }
-    
-    // Reset file input
-    e.target.value = '';
+  const updateSession = (index: number, field: string, value: any) => {
+    const newCurriculum = [...curriculum];
+    newCurriculum[index] = { ...newCurriculum[index], [field]: value };
+    setCurriculum(newCurriculum);
   };
-  
-  const handleAddUrl = (lessonIndex: number) => {
-    const url = prompt("Enter URL:");
-    if (url && isValidUrl(url)) {
-      const newMaterial: Material = {
-        name: url.split("/").pop() || "External Resource",
-        type: "link",
-        url: url
-      };
-      
-      setLessons(lessons.map((lesson, i) => 
-        i === lessonIndex 
-          ? { ...lesson, materials: [...lesson.materials, newMaterial] }
-          : lesson
-      ));
-    } else if (url) {
-      toast.error("Please enter a valid URL");
-    }
+
+  const updateLearningObjective = (sessionIndex: number, objIndex: number, value: string) => {
+    const newCurriculum = [...curriculum];
+    const newObjectives = [...newCurriculum[sessionIndex].learningObjectives];
+    newObjectives[objIndex] = value;
+    newCurriculum[sessionIndex] = { ...newCurriculum[sessionIndex], learningObjectives: newObjectives };
+    setCurriculum(newCurriculum);
   };
-  
-  const handleRemoveMaterial = (lessonIndex: number, materialIndex: number) => {
-    setLessons(lessons.map((lesson, i) => 
-      i === lessonIndex 
-        ? { ...lesson, materials: lesson.materials.filter((_, mi) => mi !== materialIndex) }
-        : lesson
-    ));
+
+  const addLearningObjective = (sessionIndex: number) => {
+    const newCurriculum = [...curriculum];
+    newCurriculum[sessionIndex] = {
+      ...newCurriculum[sessionIndex],
+      learningObjectives: [...newCurriculum[sessionIndex].learningObjectives, '']
+    };
+    setCurriculum(newCurriculum);
   };
-  
-  const isValidUrl = (string: string) => {
-    try {
-      new URL(string);
-      return true;
-    } catch (_) {
-      return false;
-    }
+
+  const removeLearningObjective = (sessionIndex: number, objIndex: number) => {
+    const newCurriculum = [...curriculum];
+    const newObjectives = newCurriculum[sessionIndex].learningObjectives.filter((_, i) => i !== objIndex);
+    newCurriculum[sessionIndex] = { ...newCurriculum[sessionIndex], learningObjectives: newObjectives };
+    setCurriculum(newCurriculum);
   };
-  
-  const getMaterialIcon = (type: string) => {
-    switch (type) {
-      case 'image': return '🖼️';
-      case 'video': return '🎥';
-      case 'audio': return '🎵';
-      case 'pdf': return '📄';
-      case 'link': return '🔗';
-      default: return '📎';
-    }
-  };
-  
+
   return (
     <div className="space-y-6">
-      <div className="space-y-6">
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold">Course Syllabus</h3>
-            <Button 
-              type="button" 
-              variant="outline" 
-              size="sm" 
-              onClick={handleAddLesson}
-              className="flex items-center gap-1"
-            >
-              <Plus className="h-4 w-4" />
-              Add Lesson
-            </Button>
-          </div>
-          
-          {errors.syllabus && (
-            <p className="text-red-500 text-sm mb-4">{errors.syllabus}</p>
-          )}
-          
-          <div className="space-y-4 max-h-[600px] overflow-y-auto pr-2">
-            {lessons.map((lesson, lessonIndex) => (
-              <div key={lessonIndex} className="border rounded-lg overflow-hidden bg-white shadow-sm">
-                <Collapsible defaultOpen={lessonIndex === 0}>
-                  <CollapsibleTrigger className="flex items-center justify-between w-full p-4 bg-gray-50 text-left hover:bg-gray-100 border-b">
-                    <div className="flex items-center gap-3">
-                      <GripVertical className="h-4 w-4 text-muted-foreground cursor-move" />
-                      <div className="flex flex-col items-start">
-                        <span className="font-medium text-sm text-gray-600">Week {lesson.week_number}</span>
-                        <span className="font-semibold">{lesson.title || `Lesson ${lessonIndex + 1}`}</span>
-                        {lesson.session_date && (
-                          <span className="text-xs text-gray-500">
-                            {new Date(lesson.session_date).toLocaleDateString()} • {lesson.start_time} - {lesson.end_time}
-                          </span>
-                        )}
-                      </div>
-                      {lesson.materials.length > 0 && (
-                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
-                          {lesson.materials.length} material{lesson.materials.length !== 1 ? 's' : ''}
-                        </span>
-                      )}
-                    </div>
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="sm" 
-                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleRemoveLesson(lessonIndex);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </CollapsibleTrigger>
-                  
-                  <CollapsibleContent className="p-6 bg-white">
-                    <div className="space-y-6">
-                      {/* Lesson Details */}
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor={`lesson-title-${lessonIndex}`} className="text-sm font-medium">
-                            Lesson Title <span className="text-red-500">*</span>
-                          </Label>
-                          <Input
-                            id={`lesson-title-${lessonIndex}`}
-                            value={lesson.title}
-                            onChange={(e) => handleLessonChange(lessonIndex, "title", e.target.value)}
-                            placeholder="Enter lesson title"
-                            className="w-full"
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor={`lesson-description-${lessonIndex}`} className="text-sm font-medium">
-                            Description
-                          </Label>
-                          <Textarea
-                            id={`lesson-description-${lessonIndex}`}
-                            value={lesson.description}
-                            onChange={(e) => handleLessonChange(lessonIndex, "description", e.target.value)}
-                            placeholder="What will students learn in this lesson?"
-                            className="min-h-[80px] resize-none"
-                          />
-                        </div>
-                      </div>
+      <div>
+        <h3 className="text-lg font-medium mb-2">Class Curriculum</h3>
+        <p className="text-sm text-muted-foreground mb-4">
+          Create your class curriculum by adding sessions. Each session will be automatically scheduled based on your class frequency.
+        </p>
+      </div>
 
-                      {/* Session Schedule */}
-                      <div className="grid md:grid-cols-3 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor={`session-date-${lessonIndex}`} className="text-sm font-medium">
-                            Session Date <span className="text-red-500">*</span>
-                          </Label>
-                          <Input
-                            id={`session-date-${lessonIndex}`}
-                            type="date"
-                            value={lesson.session_date || calculateSessionDate(lessonIndex)}
-                            onChange={(e) => handleLessonChange(lessonIndex, "session_date", e.target.value)}
-                            className="w-full"
-                            required
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor={`start-time-${lessonIndex}`} className="text-sm font-medium">
-                            Start Time
-                          </Label>
-                          <Input
-                            id={`start-time-${lessonIndex}`}
-                            type="time"
-                            value={lesson.start_time || getDefaultTimeSlot().start_time}
-                            onChange={(e) => handleLessonChange(lessonIndex, "start_time", e.target.value)}
-                            className="w-full"
-                          />
-                        </div>
-                        
-                        <div className="space-y-2">
-                          <Label htmlFor={`end-time-${lessonIndex}`} className="text-sm font-medium">
-                            End Time
-                          </Label>
-                          <Input
-                            id={`end-time-${lessonIndex}`}
-                            type="time"
-                            value={lesson.end_time || getDefaultTimeSlot().end_time}
-                            onChange={(e) => handleLessonChange(lessonIndex, "end_time", e.target.value)}
-                            className="w-full"
-                          />
-                        </div>
-                      </div>
-                      
-                      {/* Materials Section */}
-                      <div className="border-t pt-4">
-                        <div className="flex items-center justify-between mb-4">
-                          <h4 className="font-medium text-sm">Lesson Materials</h4>
-                          <div className="flex gap-2">
-                            <div className="relative">
-                              <Input
-                                id={`file-upload-${lessonIndex}`}
-                                type="file"
-                                className="hidden"
-                                onChange={(e) => handleFileUpload(e, lessonIndex)}
-                                accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.png,.jpg,.jpeg,.mp4,.mp3"
-                              />
-                              <Label 
-                                htmlFor={`file-upload-${lessonIndex}`} 
-                                className="flex items-center gap-2 px-3 py-2 bg-blue-500 text-white rounded text-xs cursor-pointer hover:bg-blue-600 transition-colors"
-                              >
-                                <FileUp className="h-3 w-3" />
-                                Upload File
-                              </Label>
-                            </div>
-                            
-                            <Button 
-                              type="button" 
-                              variant="outline" 
-                              size="sm"
-                              className="text-xs px-3 py-2 h-auto"
-                              onClick={() => handleAddUrl(lessonIndex)}
-                            >
-                              <Link2 className="h-3 w-3 mr-1" />
-                              Add Link
-                            </Button>
-                          </div>
-                        </div>
-                        
-                        {/* Materials List */}
-                        {lesson.materials.length > 0 ? (
-                          <div className="space-y-2">
-                            {lesson.materials.map((material, materialIndex) => (
-                              <div key={materialIndex} className="flex items-center justify-between p-3 bg-gray-50 rounded-md border">
-                                <div className="flex items-center gap-3">
-                                  <span className="text-lg">{getMaterialIcon(material.type)}</span>
-                                  <div className="flex flex-col">
-                                    <span className="text-sm font-medium truncate max-w-[200px]">
-                                      {material.name}
-                                    </span>
-                                    <span className="text-xs text-gray-500 capitalize">
-                                      {material.type}
-                                    </span>
-                                  </div>
-                                </div>
-                                <Button 
-                                  type="button" 
-                                  variant="ghost" 
-                                  size="sm" 
-                                  className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                                  onClick={() => handleRemoveMaterial(lessonIndex, materialIndex)}
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="text-center py-8 bg-gray-50 rounded-md border-2 border-dashed border-gray-200">
-                            <p className="text-muted-foreground text-sm">
-                              No materials added yet for this lesson
-                            </p>
-                            <p className="text-xs text-gray-400 mt-1">
-                              Upload files or add links to enhance the learning experience
-                            </p>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
+      <div className="space-y-4">
+        {curriculum.map((session, sessionIndex) => (
+          <Card key={sessionIndex} className="w-full">
+            <CardHeader 
+              className="cursor-pointer" 
+              onClick={() => setExpandedSession(expandedSession === sessionIndex ? null : sessionIndex)}
+            >
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <CardTitle className="text-base">{session.title}</CardTitle>
+                  <Badge variant="outline">Week {session.weekNumber}</Badge>
+                  {session.sessionDate && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      <Calendar className="h-3 w-3" />
+                      {new Date(session.sessionDate).toLocaleDateString()}
+                    </Badge>
+                  )}
+                  {session.startTime && session.endTime && (
+                    <Badge variant="secondary" className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {session.startTime} - {session.endTime}
+                    </Badge>
+                  )}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      removeSession(sessionIndex);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-        
-        <div className="bg-blue-50 p-4 rounded-md border border-blue-200">
-          <h4 className="font-medium text-[#1F4E79] mb-2">Curriculum Tips</h4>
-          <ul className="text-sm space-y-2 list-disc list-inside text-gray-700">
-            <li>Session dates are auto-calculated based on your class frequency and start date</li>
-            <li>Start and end times are pre-filled from your time slots configuration</li>
-            <li>You can manually adjust dates and times for each lesson as needed</li>
-            <li>Session dates and times will be stored and used for scheduling</li>
-            <li>Add materials directly to each lesson for better organization</li>
-            <li>Support files: PDF, DOC, DOCX, PPT, PPTX, XLS, XLSX, PNG, JPG, MP4</li>
-          </ul>
-        </div>
+            </CardHeader>
+            
+            {expandedSession === sessionIndex && (
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor={`session-title-${sessionIndex}`}>Session Title</Label>
+                    <Input
+                      id={`session-title-${sessionIndex}`}
+                      value={session.title}
+                      onChange={(e) => updateSession(sessionIndex, 'title', e.target.value)}
+                      placeholder="Session title"
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor={`session-date-${sessionIndex}`}>Session Date</Label>
+                    <Input
+                      id={`session-date-${sessionIndex}`}
+                      type="date"
+                      value={session.sessionDate}
+                      onChange={(e) => updateSession(sessionIndex, 'sessionDate', e.target.value)}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor={`start-time-${sessionIndex}`}>Start Time</Label>
+                    <Input
+                      id={`start-time-${sessionIndex}`}
+                      type="time"
+                      value={session.startTime}
+                      onChange={(e) => updateSession(sessionIndex, 'startTime', e.target.value)}
+                    />
+                  </div>
+                  
+                  <div>
+                    <Label htmlFor={`end-time-${sessionIndex}`}>End Time</Label>
+                    <Input
+                      id={`end-time-${sessionIndex}`}
+                      type="time"
+                      value={session.endTime}
+                      onChange={(e) => updateSession(sessionIndex, 'endTime', e.target.value)}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor={`session-description-${sessionIndex}`}>Description</Label>
+                  <Textarea
+                    id={`session-description-${sessionIndex}`}
+                    value={session.description}
+                    onChange={(e) => updateSession(sessionIndex, 'description', e.target.value)}
+                    placeholder="Session description"
+                    rows={3}
+                  />
+                </div>
+
+                <div>
+                  <Label>Learning Objectives</Label>
+                  <div className="space-y-2 mt-2">
+                    {session.learningObjectives.map((objective, objIndex) => (
+                      <div key={objIndex} className="flex items-center gap-2">
+                        <Input
+                          value={objective}
+                          onChange={(e) => updateLearningObjective(sessionIndex, objIndex, e.target.value)}
+                          placeholder={`Learning objective ${objIndex + 1}`}
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => removeLearningObjective(sessionIndex, objIndex)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => addLearningObjective(sessionIndex)}
+                    >
+                      <Plus className="h-4 w-4 mr-2" />
+                      Add Learning Objective
+                    </Button>
+                  </div>
+                </div>
+
+                <div>
+                  <Label htmlFor={`session-notes-${sessionIndex}`}>Additional Notes</Label>
+                  <Textarea
+                    id={`session-notes-${sessionIndex}`}
+                    value={session.notes}
+                    onChange={(e) => updateSession(sessionIndex, 'notes', e.target.value)}
+                    placeholder="Additional notes for this session"
+                    rows={2}
+                  />
+                </div>
+              </CardContent>
+            )}
+          </Card>
+        ))}
       </div>
-      
-      <div className="flex justify-between pt-4">
-        <Button 
-          variant="outline" 
-          onClick={onBack}
-        >
-          Back
-        </Button>
-        <Button 
-          onClick={handleNext}
-          className="bg-[#1F4E79] hover:bg-[#1a4369]"
-        >
-          Continue to Preview
-        </Button>
-      </div>
+
+      <Button type="button" onClick={addSession} className="w-full">
+        <Plus className="h-4 w-4 mr-2" />
+        Add New Session
+      </Button>
     </div>
   );
 };
