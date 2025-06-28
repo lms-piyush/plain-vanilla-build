@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useClassCreationStore } from "@/hooks/use-class-creation-store";
 import { Button } from "@/components/ui/button";
@@ -37,35 +38,6 @@ interface CurriculumStepProps {
 const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
   const { formState, setSyllabus, addMaterial } = useClassCreationStore();
   
-  // Initialize lessons with proper session dates and times
-  const initializeLessons = () => {
-    if (formState.syllabus.length > 0) {
-      return formState.syllabus.map((lesson, index) => ({ 
-        ...lesson, 
-        materials: [],
-        session_date: calculateSessionDate(index),
-        start_time: getDefaultTimeSlot().start_time,
-        end_time: getDefaultTimeSlot().end_time,
-        week_number: index + 1
-      }));
-    }
-    return [{ 
-      title: "Introduction", 
-      description: "", 
-      materials: [],
-      session_date: calculateSessionDate(0),
-      start_time: getDefaultTimeSlot().start_time,
-      end_time: getDefaultTimeSlot().end_time,
-      week_number: 1
-    }];
-  };
-  
-  const [lessons, setLessons] = useState<LessonWithMaterials[]>(initializeLessons);
-  
-  const [errors, setErrors] = useState({
-    syllabus: ""
-  });
-
   // Helper function to calculate session date based on frequency and index
   const calculateSessionDate = (index: number): string => {
     if (!formState.startDate || !formState.frequency) {
@@ -105,6 +77,35 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
       end_time: '10:00'
     };
   };
+  
+  // Initialize lessons with proper session dates and times
+  const initializeLessons = (): LessonWithMaterials[] => {
+    if (formState.syllabus.length > 0) {
+      return formState.syllabus.map((lesson, index) => ({ 
+        ...lesson, 
+        materials: [],
+        session_date: calculateSessionDate(index),
+        start_time: getDefaultTimeSlot().start_time,
+        end_time: getDefaultTimeSlot().end_time,
+        week_number: index + 1
+      }));
+    }
+    return [{ 
+      title: "Introduction", 
+      description: "", 
+      materials: [],
+      session_date: calculateSessionDate(0),
+      start_time: getDefaultTimeSlot().start_time,
+      end_time: getDefaultTimeSlot().end_time,
+      week_number: 1
+    }];
+  };
+  
+  const [lessons, setLessons] = useState<LessonWithMaterials[]>(initializeLessons);
+  
+  const [errors, setErrors] = useState({
+    syllabus: ""
+  });
   
   const validateForm = () => {
     const newErrors = {
