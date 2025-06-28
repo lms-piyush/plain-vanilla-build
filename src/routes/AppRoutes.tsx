@@ -165,8 +165,8 @@ const AppRoutes = () => {
         />
         <Route 
           path="/tutor/messages" 
-          // element={<ProtectedRoute allowedRoles={["tutor"]}><TutorMessages /></ProtectedRoute>} 
-          element={<ProtectedRoute allowedRoles={["tutor"]}> <Messages /></ProtectedRoute>} 
+          element={<ProtectedRoute allowedRoles={["tutor"]}><TutorMessages /></ProtectedRoute>} 
+          // element={<ProtectedRoute allowedRoles={["tutor"]}> <Messages /></ProtectedRoute>} 
         />
         <Route 
           path="/tutor/feedback" 

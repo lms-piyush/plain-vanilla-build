@@ -117,10 +117,10 @@ const Messages = () => {
                         <div className="flex justify-between items-baseline">
                           <h3 
                             className="font-medium text-sm truncate cursor-pointer hover:underline"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleViewTutorProfile(conversation.tutor_id);
-                            }}
+                            // onClick={(e) => {
+                            //   e.stopPropagation();
+                            //   handleViewTutorProfile(conversation.tutor_id);
+                            // }}
                           >
                             {conversation.tutor_profile?.full_name || 'Unknown Tutor'}
                           </h3>
