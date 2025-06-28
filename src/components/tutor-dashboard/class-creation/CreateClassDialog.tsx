@@ -14,7 +14,7 @@ import LocationStep from "./steps/LocationStep";
 import CurriculumStep from "./steps/CurriculumStep";
 import PreviewStep from "./steps/PreviewStep";
 import { useClassCreationStore, FormState, DayOfWeek } from "@/hooks/use-class-creation-store";
-import { autoFillClassCreation } from "@/testing/autoFill";
+import { autoFillClassCreation } from "@/testing/class-creation-auto-fill";
 import ClassTypeSelector from "./ClassTypeSelector";
 import { LectureType } from "@/types/lecture-types";
 import { useFormStateManager } from "@/hooks/use-form-state-manager";
