@@ -46,16 +46,12 @@ const CreateClassDialog = ({ open, onOpenChange, onClassCreated, editingClass }:
   // Use custom hook for editing logic
   const { loadClassData } = useClassEditingLogic();
 
-  // Load existing class data when editing - use useCallback to prevent infinite re-renders
-  const handleLoadClassData = useCallback(() => {
+  // Load existing class data when editing
+  useEffect(() => {
     if (editingClass && open) {
       loadClassData(editingClass);
     }
-  }, [editingClass?.id, open, loadClassData]); // Only depend on class ID, not the entire object
-
-  useEffect(() => {
-    handleLoadClassData();
-  }, [handleLoadClassData]);
+  }, [editingClass?.id, open, loadClassData]);
 
   const handleNext = useCallback(() => {
     if (currentStep < steps.length - 1) {
@@ -82,43 +78,46 @@ const CreateClassDialog = ({ open, onOpenChange, onClassCreated, editingClass }:
     setCurrentStep(step);
   }, []);
 
+  const transformFormState = useCallback((formState: any): FormState => {
+    return {
+      deliveryMode: formState.deliveryMode,
+      classFormat: formState.classFormat,
+      classSize: formState.classSize,
+      durationType: formState.durationType,
+      basicDetails: {
+        title: formState.title,
+        subject: formState.subject,
+        description: formState.description,
+        thumbnailUrl: formState.thumbnailUrl,
+      },
+      schedule: {
+        frequency: formState.frequency,
+        startDate: formState.startDate,
+        endDate: formState.endDate,
+        enrollmentDeadline: formState.enrollmentDeadline,
+        totalSessions: formState.totalSessions,
+      },
+      timeSlots: formState.timeSlots,
+      pricing: {
+        price: formState.price,
+        currency: formState.currency,
+        maxStudents: formState.maxStudents,
+        autoRenewal: formState.autoRenewal,
+      },
+      location: {
+        meetingLink: formState.meetingLink,
+        address: formState.address,
+      },
+      syllabus: formState.syllabus,
+      materials: formState.materials,
+    };
+  }, []);
+
   const handleSaveAsDraft = useCallback(async () => {
     setIsPublishing(true);
     try {
       const { formState } = useClassCreationStore.getState();
-      
-      const transformedFormState: FormState = {
-        deliveryMode: formState.deliveryMode,
-        classFormat: formState.classFormat,
-        classSize: formState.classSize,
-        durationType: formState.durationType,
-        basicDetails: {
-          title: formState.title,
-          subject: formState.subject,
-          description: formState.description,
-          thumbnailUrl: formState.thumbnailUrl,
-        },
-        schedule: {
-          frequency: formState.frequency,
-          startDate: formState.startDate,
-          endDate: formState.endDate,
-          enrollmentDeadline: formState.enrollmentDeadline,
-          totalSessions: formState.totalSessions,
-        },
-        timeSlots: formState.timeSlots,
-        pricing: {
-          price: formState.price,
-          currency: formState.currency,
-          maxStudents: formState.maxStudents,
-          autoRenewal: formState.autoRenewal,
-        },
-        location: {
-          meetingLink: formState.meetingLink,
-          address: formState.address,
-        },
-        syllabus: formState.syllabus,
-        materials: formState.materials,
-      };
+      const transformedFormState = transformFormState(formState);
 
       await saveClass(transformedFormState, 'draft', editingClass?.id);
       toast({
@@ -136,45 +135,13 @@ const CreateClassDialog = ({ open, onOpenChange, onClassCreated, editingClass }:
     } finally {
       setIsPublishing(false);
     }
-  }, [editingClass?.id, handleClose, onClassCreated, toast]);
+  }, [editingClass?.id, handleClose, onClassCreated, toast, transformFormState]);
 
   const handlePublish = useCallback(async () => {
     setIsPublishing(true);
     try {
       const { formState } = useClassCreationStore.getState();
-      
-      const transformedFormState: FormState = {
-        deliveryMode: formState.deliveryMode,
-        classFormat: formState.classFormat,
-        classSize: formState.classSize,
-        durationType: formState.durationType,
-        basicDetails: {
-          title: formState.title,
-          subject: formState.subject,
-          description: formState.description,
-          thumbnailUrl: formState.thumbnailUrl,
-        },
-        schedule: {
-          frequency: formState.frequency,
-          startDate: formState.startDate,
-          endDate: formState.endDate,
-          enrollmentDeadline: formState.enrollmentDeadline,
-          totalSessions: formState.totalSessions,
-        },
-        timeSlots: formState.timeSlots,
-        pricing: {
-          price: formState.price,
-          currency: formState.currency,
-          maxStudents: formState.maxStudents,
-          autoRenewal: formState.autoRenewal,
-        },
-        location: {
-          meetingLink: formState.meetingLink,
-          address: formState.address,
-        },
-        syllabus: formState.syllabus,
-        materials: formState.materials,
-      };
+      const transformedFormState = transformFormState(formState);
 
       await saveClass(transformedFormState, 'active', editingClass?.id);
       toast({
@@ -192,7 +159,7 @@ const CreateClassDialog = ({ open, onOpenChange, onClassCreated, editingClass }:
     } finally {
       setIsPublishing(false);
     }
-  }, [editingClass?.id, handleClose, onClassCreated, toast]);
+  }, [editingClass?.id, handleClose, onClassCreated, toast, transformFormState]);
 
   const handleSelectClassType = useCallback(async (selectedType: LectureType) => {
     toast({
