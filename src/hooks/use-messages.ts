@@ -1,13 +1,10 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Message } from "./use-conversations";
 
 export const useMessages = (conversationId: string) => {
-  const queryClient = useQueryClient();
-
-  const query = useQuery({
+  return useQuery({
     queryKey: ["messages", conversationId],
     queryFn: async () => {
       if (!conversationId) return [];
@@ -28,36 +25,6 @@ export const useMessages = (conversationId: string) => {
     enabled: !!conversationId,
     staleTime: 10 * 1000,
   });
-
-  // Set up realtime subscription for new messages
-  useEffect(() => {
-    if (!conversationId) return;
-
-    const channel = supabase
-      .channel(`messages:${conversationId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'INSERT',
-          schema: 'public',
-          table: 'messages',
-          filter: `conversation_id=eq.${conversationId}`
-        },
-        (payload) => {
-          console.log('New message received:', payload);
-          queryClient.setQueryData(['messages', conversationId], (oldMessages: Message[] = []) => {
-            return [...oldMessages, payload.new as Message];
-          });
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [conversationId, queryClient]);
-
-  return query;
 };
 
 export const useSendMessage = () => {
@@ -112,6 +79,7 @@ export const useSendMessage = () => {
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["messages", variables.conversationId] });
       queryClient.invalidateQueries({ queryKey: ["student-conversations"] });
+      queryClient.invalidateQueries({ queryKey: ["tutor-conversations"] });
     },
   });
 };
