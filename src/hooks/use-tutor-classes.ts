@@ -18,6 +18,7 @@ export interface TutorClass {
   max_students: number | null;
   auto_renewal: boolean | null;
   thumbnail_url: string | null;
+  enrollment_deadline: string | null;
   tutor_id: string;
   created_at: string;
   updated_at: string;

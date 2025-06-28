@@ -17,6 +17,7 @@ export interface TutorClass {
   class_size: 'group' | 'one-on-one';
   duration_type: 'recurring' | 'fixed';
   auto_renewal: boolean | null;
+  enrollment_deadline: string | null;
   tutor_id: string;
   tutor_name: string;
   created_at: string;
