@@ -1,4 +1,5 @@
 
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -6,10 +7,13 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { MessageSquare, Calendar, Edit } from "lucide-react";
+import { useConversationManagement } from "@/hooks/use-conversation-management";
+import { useToast } from "@/hooks/use-toast";
 
 interface StudentDetailsCardProps {
   student: {
     id: string;
+    student_id: string;
     profiles?: {
       full_name?: string;
       email?: string;
@@ -18,10 +22,15 @@ interface StudentDetailsCardProps {
     status: string;
     payment_status: string;
   };
+  classId: string;
+  tutorId: string;
   onClose: () => void;
 }
 
-const StudentDetailsCard = ({ student, onClose }: StudentDetailsCardProps) => {
+const StudentDetailsCard = ({ student, classId, tutorId, onClose }: StudentDetailsCardProps) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { findOrCreateConversation } = useConversationManagement();
   const studentName = student.profiles?.full_name || student.profiles?.email || 'Student Name';
   const studentEmail = student.profiles?.email || 'No email available';
   
@@ -40,6 +49,26 @@ const StudentDetailsCard = ({ student, onClose }: StudentDetailsCardProps) => {
     notes: "Alex is very engaged and asks excellent questions. Shows particular interest in game development."
   };
 
+  const handleMessageStudent = async () => {
+    try {
+      const conversation = await findOrCreateConversation.mutateAsync({
+        tutorId: tutorId,
+        studentId: student.student_id,
+        classId: classId,
+      });
+
+      // Redirect to messages with the conversation ID
+      navigate(`/tutor/messages?conversation=${conversation.id}`);
+    } catch (error) {
+      console.error("Error creating/finding conversation:", error);
+      toast({
+        title: "Error",
+        description: "Failed to start conversation. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <Card className="border-[#1F4E79]/10">
       <CardHeader className="pb-2 px-4 pt-4 flex flex-row items-center justify-between">
@@ -48,7 +77,13 @@ const StudentDetailsCard = ({ student, onClose }: StudentDetailsCardProps) => {
           <CardDescription>Detailed information about the student</CardDescription>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="text-xs border-[#1F4E79] text-[#1F4E79] hover:bg-[#F5F7FA]">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="text-xs border-[#1F4E79] text-[#1F4E79] hover:bg-[#F5F7FA]"
+            onClick={handleMessageStudent}
+            disabled={findOrCreateConversation.isPending}
+          >
             <MessageSquare className="mr-1 h-3.5 w-3.5" />
             Message Student
           </Button>

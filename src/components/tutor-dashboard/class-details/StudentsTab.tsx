@@ -1,11 +1,14 @@
 
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { MessageSquare, Eye } from "lucide-react";
 import { ClassDetails } from "@/types/class-details";
+import { useConversationManagement } from "@/hooks/use-conversation-management";
+import { useToast } from "@/hooks/use-toast";
 import StudentDetailsCard from "./StudentDetailsCard";
 
 interface StudentsTabProps {
@@ -15,6 +18,9 @@ interface StudentsTabProps {
 }
 
 const StudentsTab = ({ classDetails, selectedStudent, onStudentDeselect }: StudentsTabProps) => {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { findOrCreateConversation } = useConversationManagement();
   const [currentSelectedStudent, setCurrentSelectedStudent] = useState<any>(null);
 
   useEffect(() => {
@@ -34,10 +40,32 @@ const StudentsTab = ({ classDetails, selectedStudent, onStudentDeselect }: Stude
     }
   };
 
+  const handleMessageStudent = async (studentId: string) => {
+    try {
+      const conversation = await findOrCreateConversation.mutateAsync({
+        tutorId: classDetails.tutor_id,
+        studentId: studentId,
+        classId: classDetails.id,
+      });
+
+      // Redirect to messages with the conversation ID
+      navigate(`/tutor/messages?conversation=${conversation.id}`);
+    } catch (error) {
+      console.error("Error creating/finding conversation:", error);
+      toast({
+        title: "Error",
+        description: "Failed to start conversation. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (currentSelectedStudent) {
     return (
       <StudentDetailsCard 
         student={currentSelectedStudent} 
+        classId={classDetails.id}
+        tutorId={classDetails.tutor_id}
         onClose={handleBackToList}
       />
     );
@@ -88,7 +116,12 @@ const StudentsTab = ({ classDetails, selectedStudent, onStudentDeselect }: Stude
                     <Eye className="h-4 w-4 mr-1" />
                     View Details
                   </Button>
-                  <Button variant="outline" size="sm">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => handleMessageStudent(enrollment.student_id)}
+                    disabled={findOrCreateConversation.isPending}
+                  >
                     <MessageSquare className="h-4 w-4" />
                   </Button>
                 </div>
