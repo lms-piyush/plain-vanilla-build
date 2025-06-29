@@ -68,7 +68,7 @@ const DateRangeSelector = ({
         </div>
 
         <div className="md:col-span-2">
-          <Label htmlFor="end-date">End Date (Optional)</Label>
+          <Label htmlFor="end-date">End Date *</Label>
           <Input
             id="end-date"
             type="date"

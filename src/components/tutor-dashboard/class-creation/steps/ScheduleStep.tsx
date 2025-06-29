@@ -102,7 +102,7 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
     const newErrors = {
       frequency: formState.durationType === "recurring" && !frequency ? "Frequency is required for recurring classes" : "",
       startDate: !startDate ? "Start date is required" : "",
-      endDate: "",
+      endDate: !endDate ? "End date is required" : "",
       enrollmentDeadline: !enrollmentDeadline ? "Enrollment deadline is required" : "",
       timeSlots: ""
     };

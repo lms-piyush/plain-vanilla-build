@@ -48,6 +48,7 @@ export const useAllClasses = ({ page = 1, pageSize = 9 }: UseAllClassesOptions =
           )
         `, { count: 'exact' })
         .eq("status", "active")
+        .gt("enrollment_deadline", new Date().toISOString()) 
         .order("created_at", { ascending: false });
 
       // Apply pagination only if pageSize is reasonable (not fetching all)
