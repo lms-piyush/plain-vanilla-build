@@ -53,6 +53,36 @@ export type Database = {
           },
         ]
       }
+      class_reviews: {
+        Row: {
+          class_id: string
+          created_at: string
+          id: string
+          rating: number
+          review_text: string | null
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          id?: string
+          rating: number
+          review_text?: string | null
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          id?: string
+          rating?: number
+          review_text?: string | null
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       class_schedules: {
         Row: {
           class_id: string
