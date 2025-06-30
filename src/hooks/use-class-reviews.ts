@@ -13,7 +13,7 @@ export interface ClassReview {
   created_at: string;
   profiles?: {
     full_name: string;
-  };
+  } | null;
 }
 
 export interface ReviewStats {
@@ -42,20 +42,52 @@ export const useClassReviews = (classId: string) => {
       const startIndex = (page - 1) * REVIEWS_PER_PAGE;
       const endIndex = startIndex + REVIEWS_PER_PAGE - 1;
 
-      // Fetch reviews with pagination
+      // Fetch reviews with explicit join to profiles table
       const { data: reviewsData, error: reviewsError } = await supabase
         .from("class_reviews")
         .select(`
-          *,
-          profiles!class_reviews_student_id_fkey (
-            full_name
-          )
+          id,
+          class_id,
+          student_id,
+          rating,
+          review_text,
+          created_at,
+          profiles!inner(full_name)
         `)
         .eq("class_id", classId)
         .order("created_at", { ascending: false })
         .range(startIndex, endIndex);
 
-      if (reviewsError) throw reviewsError;
+      if (reviewsError) {
+        console.error("Reviews query error:", reviewsError);
+        // If the join fails, fetch reviews without profile data
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from("class_reviews")
+          .select("*")
+          .eq("class_id", classId)
+          .order("created_at", { ascending: false })
+          .range(startIndex, endIndex);
+
+        if (fallbackError) throw fallbackError;
+        
+        const reviewsWithFallback = fallbackData?.map(review => ({
+          ...review,
+          profiles: null
+        })) || [];
+
+        if (reset || page === 1) {
+          setReviews(reviewsWithFallback);
+        } else {
+          setReviews(prev => [...prev, ...reviewsWithFallback]);
+        }
+      } else {
+        // Successfully got reviews with profile data
+        if (reset || page === 1) {
+          setReviews(reviewsData || []);
+        } else {
+          setReviews(prev => [...prev, ...(reviewsData || [])]);
+        }
+      }
 
       // Fetch review statistics
       const { data: statsData, error: statsError } = await supabase
@@ -72,14 +104,6 @@ export const useClassReviews = (classId: string) => {
         : 0;
 
       setReviewStats({ averageRating, totalReviews });
-
-      // Update reviews list
-      if (reset || page === 1) {
-        setReviews(reviewsData || []);
-      } else {
-        setReviews(prev => [...prev, ...(reviewsData || [])]);
-      }
-
       setHasMoreReviews((reviewsData?.length || 0) === REVIEWS_PER_PAGE);
 
       // Check if current user has reviewed
