@@ -9,9 +9,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
-import { Star } from "lucide-react";
 import { ClassReview } from "@/hooks/use-class-reviews";
+import StarRating from "./review-modal/StarRating";
+import ReviewTextArea from "./review-modal/ReviewTextArea";
 
 interface WriteReviewModalProps {
   isOpen: boolean;
@@ -80,51 +80,19 @@ const WriteReviewModal = ({
         </DialogHeader>
         
         <div className="space-y-4">
-          {/* Star Rating */}
-          <div>
-            <label className="text-sm font-medium mb-2 block">Rating</label>
-            <div className="flex gap-1">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <button
-                  key={star}
-                  type="button"
-                  className="p-1 transition-colors"
-                  onMouseEnter={() => setHoveredRating(star)}
-                  onMouseLeave={() => setHoveredRating(0)}
-                  onClick={() => setRating(star)}
-                >
-                  <Star
-                    className={`h-6 w-6 ${
-                      star <= (hoveredRating || rating)
-                        ? 'fill-yellow-400 stroke-yellow-400'
-                        : 'stroke-gray-300'
-                    }`}
-                  />
-                </button>
-              ))}
-            </div>
-            {rating === 0 && (
-              <p className="text-sm text-red-500 mt-1">Please select a rating</p>
-            )}
-          </div>
+          <StarRating
+            rating={rating}
+            hoveredRating={hoveredRating}
+            onRatingChange={setRating}
+            onHover={setHoveredRating}
+            onLeave={() => setHoveredRating(0)}
+            showError={rating === 0}
+          />
 
-          {/* Review Text */}
-          <div>
-            <label htmlFor="review-text" className="text-sm font-medium mb-2 block">
-              Review (Optional)
-            </label>
-            <Textarea
-              id="review-text"
-              placeholder="Tell us about your experience with this class..."
-              value={reviewText}
-              onChange={(e) => setReviewText(e.target.value)}
-              rows={4}
-              maxLength={1000}
-            />
-            <p className="text-xs text-gray-500 mt-1">
-              {reviewText.length}/1000 characters
-            </p>
-          </div>
+          <ReviewTextArea
+            value={reviewText}
+            onChange={setReviewText}
+          />
         </div>
 
         <DialogFooter>
