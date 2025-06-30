@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -44,7 +43,7 @@ export const useClassReviews = (classId: string) => {
       const startIndex = (page - 1) * REVIEWS_PER_PAGE;
       const endIndex = startIndex + REVIEWS_PER_PAGE - 1;
 
-      // Fetch reviews with explicit join to profiles table
+      // Fetch reviews with profile data using proper join syntax
       const { data: reviewsData, error: reviewsError } = await supabase
         .from("class_reviews")
         .select(`
@@ -54,7 +53,9 @@ export const useClassReviews = (classId: string) => {
           rating,
           review_text,
           created_at,
-          profiles!inner(full_name)
+          profiles (
+            full_name
+          )
         `)
         .eq("class_id", classId)
         .order("created_at", { ascending: false })
@@ -62,34 +63,24 @@ export const useClassReviews = (classId: string) => {
 
       if (reviewsError) {
         console.error("Reviews query error:", reviewsError);
-        // If the join fails, fetch reviews without profile data
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from("class_reviews")
-          .select("*")
-          .eq("class_id", classId)
-          .order("created_at", { ascending: false })
-          .range(startIndex, endIndex);
+        throw reviewsError;
+      }
 
-        if (fallbackError) throw fallbackError;
-        
-        const reviewsWithFallback: ClassReview[] = fallbackData?.map(review => ({
-          ...review,
-          profiles: null
-        })) || [];
+      // Process reviews to ensure type safety
+      const processedReviews: ClassReview[] = (reviewsData || []).map(review => ({
+        id: review.id,
+        class_id: review.class_id,
+        student_id: review.student_id,
+        rating: review.rating,
+        review_text: review.review_text,
+        created_at: review.created_at,
+        profiles: review.profiles ? { full_name: review.profiles.full_name } : null
+      }));
 
-        if (reset || page === 1) {
-          setReviews(reviewsWithFallback);
-        } else {
-          setReviews(prev => [...prev, ...reviewsWithFallback]);
-        }
+      if (reset || page === 1) {
+        setReviews(processedReviews);
       } else {
-        // Successfully got reviews with profile data
-        const processedReviews: ClassReview[] = reviewsData || [];
-        if (reset || page === 1) {
-          setReviews(processedReviews);
-        } else {
-          setReviews(prev => [...prev, ...processedReviews]);
-        }
+        setReviews(prev => [...prev, ...processedReviews]);
       }
 
       // Fetch review statistics
@@ -178,7 +169,6 @@ export const useClassReviews = (classId: string) => {
           .update({
             rating,
             review_text: reviewText.trim() || null,
-            updated_at: new Date().toISOString(),
           })
           .eq("id", userReview.id);
 
