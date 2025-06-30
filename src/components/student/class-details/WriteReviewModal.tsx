@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -11,18 +11,40 @@ import {
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Star } from "lucide-react";
+import { ClassReview } from "@/hooks/use-class-reviews";
 
 interface WriteReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (rating: number, reviewText: string) => Promise<boolean>;
   isSubmitting?: boolean;
+  existingReview?: ClassReview | null;
+  isUpdate?: boolean;
 }
 
-const WriteReviewModal = ({ isOpen, onClose, onSubmit, isSubmitting = false }: WriteReviewModalProps) => {
+const WriteReviewModal = ({ 
+  isOpen, 
+  onClose, 
+  onSubmit, 
+  isSubmitting = false,
+  existingReview,
+  isUpdate = false
+}: WriteReviewModalProps) => {
   const [rating, setRating] = useState(0);
   const [hoveredRating, setHoveredRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
+
+  // Pre-fill form when updating existing review
+  useEffect(() => {
+    if (isOpen && isUpdate && existingReview) {
+      setRating(existingReview.rating);
+      setReviewText(existingReview.review_text || "");
+    } else if (isOpen && !isUpdate) {
+      // Reset form for new review
+      setRating(0);
+      setReviewText("");
+    }
+  }, [isOpen, isUpdate, existingReview]);
 
   const handleSubmit = async () => {
     if (rating === 0) return;
@@ -34,9 +56,11 @@ const WriteReviewModal = ({ isOpen, onClose, onSubmit, isSubmitting = false }: W
   };
 
   const handleClose = () => {
-    setRating(0);
-    setHoveredRating(0);
-    setReviewText("");
+    if (!isUpdate) {
+      setRating(0);
+      setHoveredRating(0);
+      setReviewText("");
+    }
     onClose();
   };
 
@@ -44,9 +68,14 @@ const WriteReviewModal = ({ isOpen, onClose, onSubmit, isSubmitting = false }: W
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Write a Review</DialogTitle>
+          <DialogTitle>
+            {isUpdate ? "Update Your Review" : "Write a Review"}
+          </DialogTitle>
           <DialogDescription>
-            Share your experience with this class to help other students.
+            {isUpdate 
+              ? "Update your experience with this class to help other students."
+              : "Share your experience with this class to help other students."
+            }
           </DialogDescription>
         </DialogHeader>
         
@@ -106,7 +135,10 @@ const WriteReviewModal = ({ isOpen, onClose, onSubmit, isSubmitting = false }: W
             onClick={handleSubmit} 
             disabled={rating === 0 || isSubmitting}
           >
-            {isSubmitting ? "Submitting..." : "Submit Review"}
+            {isSubmitting 
+              ? (isUpdate ? "Updating..." : "Submitting...") 
+              : (isUpdate ? "Update Review" : "Submit Review")
+            }
           </Button>
         </DialogFooter>
       </DialogContent>

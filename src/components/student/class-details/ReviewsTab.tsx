@@ -21,6 +21,8 @@ const ReviewsTab = ({ classId }: ReviewsTabProps) => {
     reviewStats,
     isLoading,
     hasUserReviewed,
+    userReview,
+    isUserEnrolled,
     hasMoreReviews,
     submitReview,
     loadMoreReviews,
@@ -86,13 +88,13 @@ const ReviewsTab = ({ classId }: ReviewsTabProps) => {
               </p>
             </div>
             
-            {user && !hasUserReviewed && (
+            {user && isUserEnrolled && (
               <Button 
                 onClick={() => setIsWriteReviewOpen(true)}
                 className="bg-primary hover:bg-primary/90"
               >
                 <Edit className="h-4 w-4 mr-2" />
-                Write a Review
+                {hasUserReviewed ? "Update Review" : "Write a Review"}
               </Button>
             )}
           </div>
@@ -105,7 +107,7 @@ const ReviewsTab = ({ classId }: ReviewsTabProps) => {
           <Card>
             <CardContent className="pt-6 text-center">
               <p className="text-muted-foreground">
-                No reviews yet. Be the first to share your experience!
+                No reviews yet. {isUserEnrolled ? "Be the first to share your experience!" : "Enroll in this class to write a review."}
               </p>
             </CardContent>
           </Card>
@@ -157,6 +159,8 @@ const ReviewsTab = ({ classId }: ReviewsTabProps) => {
         onClose={() => setIsWriteReviewOpen(false)}
         onSubmit={handleSubmitReview}
         isSubmitting={isSubmitting}
+        existingReview={userReview}
+        isUpdate={hasUserReviewed}
       />
     </div>
   );

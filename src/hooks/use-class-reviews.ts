@@ -26,6 +26,8 @@ export const useClassReviews = (classId: string) => {
   const [reviewStats, setReviewStats] = useState<ReviewStats>({ averageRating: 0, totalReviews: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [hasUserReviewed, setHasUserReviewed] = useState(false);
+  const [userReview, setUserReview] = useState<ClassReview | null>(null);
+  const [isUserEnrolled, setIsUserEnrolled] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMoreReviews, setHasMoreReviews] = useState(false);
   const { user } = useAuth();
@@ -70,7 +72,7 @@ export const useClassReviews = (classId: string) => {
 
         if (fallbackError) throw fallbackError;
         
-        const reviewsWithFallback = fallbackData?.map(review => ({
+        const reviewsWithFallback: ClassReview[] = fallbackData?.map(review => ({
           ...review,
           profiles: null
         })) || [];
@@ -82,10 +84,11 @@ export const useClassReviews = (classId: string) => {
         }
       } else {
         // Successfully got reviews with profile data
+        const processedReviews: ClassReview[] = reviewsData || [];
         if (reset || page === 1) {
-          setReviews(reviewsData || []);
+          setReviews(processedReviews);
         } else {
-          setReviews(prev => [...prev, ...(reviewsData || [])]);
+          setReviews(prev => [...prev, ...processedReviews]);
         }
       }
 
@@ -106,16 +109,34 @@ export const useClassReviews = (classId: string) => {
       setReviewStats({ averageRating, totalReviews });
       setHasMoreReviews((reviewsData?.length || 0) === REVIEWS_PER_PAGE);
 
-      // Check if current user has reviewed
+      // Check if current user is enrolled and has reviewed
       if (user) {
-        const { data: userReview } = await supabase
-          .from("class_reviews")
+        // Check enrollment status
+        const { data: enrollmentData } = await supabase
+          .from("student_enrollments")
           .select("id")
+          .eq("class_id", classId)
+          .eq("student_id", user.id)
+          .eq("status", "active")
+          .maybeSingle();
+
+        setIsUserEnrolled(!!enrollmentData);
+
+        // Check if user has reviewed
+        const { data: userReviewData } = await supabase
+          .from("class_reviews")
+          .select("*")
           .eq("class_id", classId)
           .eq("student_id", user.id)
           .maybeSingle();
 
-        setHasUserReviewed(!!userReview);
+        if (userReviewData) {
+          setHasUserReviewed(true);
+          setUserReview(userReviewData);
+        } else {
+          setHasUserReviewed(false);
+          setUserReview(null);
+        }
       }
 
     } catch (error: any) {
@@ -140,22 +161,51 @@ export const useClassReviews = (classId: string) => {
       return false;
     }
 
-    try {
-      const { error } = await supabase
-        .from("class_reviews")
-        .insert({
-          class_id: classId,
-          student_id: user.id,
-          rating,
-          review_text: reviewText.trim() || null,
-        });
-
-      if (error) throw error;
-
+    if (!isUserEnrolled) {
       toast({
-        title: "Review Submitted",
-        description: "Thank you for your feedback!",
+        title: "Enrollment Required",
+        description: "You must be enrolled in this class to submit a review.",
+        variant: "destructive",
       });
+      return false;
+    }
+
+    try {
+      if (hasUserReviewed && userReview) {
+        // Update existing review
+        const { error } = await supabase
+          .from("class_reviews")
+          .update({
+            rating,
+            review_text: reviewText.trim() || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("id", userReview.id);
+
+        if (error) throw error;
+
+        toast({
+          title: "Review Updated",
+          description: "Your review has been updated successfully!",
+        });
+      } else {
+        // Create new review
+        const { error } = await supabase
+          .from("class_reviews")
+          .insert({
+            class_id: classId,
+            student_id: user.id,
+            rating,
+            review_text: reviewText.trim() || null,
+          });
+
+        if (error) throw error;
+
+        toast({
+          title: "Review Submitted",
+          description: "Thank you for your feedback!",
+        });
+      }
 
       // Refresh reviews
       await fetchReviews(1, true);
@@ -189,6 +239,8 @@ export const useClassReviews = (classId: string) => {
     reviewStats,
     isLoading,
     hasUserReviewed,
+    userReview,
+    isUserEnrolled,
     hasMoreReviews,
     submitReview,
     loadMoreReviews,
