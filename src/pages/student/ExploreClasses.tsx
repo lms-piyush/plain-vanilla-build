@@ -107,7 +107,7 @@ const ExploreClasses = () => {
           classFormat={classFormat}
           setClassFormat={setClassFormat}
           classSize={classSize}
-          setClassSize={(size: "group" | "1-on-1") => setClassSize(size)}
+          setClassSize={setClassSize}
           priceRange={priceRange}
           setPriceRange={setPriceRange}
           selectedSubjects={selectedSubjects}

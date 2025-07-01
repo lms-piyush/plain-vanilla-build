@@ -11,27 +11,33 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 
 interface FilterSheetProps {
-  classMode: "online" | "offline";
-  setClassMode: (mode: "online" | "offline") => void;
+  filterOpen: boolean;
+  setFilterOpen: (open: boolean) => void;
+  deliveryMode: "online" | "offline";
+  setDeliveryMode: (mode: "online" | "offline") => void;
   classFormat: "live" | "recorded" | "inbound" | "outbound";
   setClassFormat: (format: "live" | "recorded" | "inbound" | "outbound") => void;
   classSize: "group" | "1-on-1";
   setClassSize: (size: "group" | "1-on-1") => void;
-  classDuration: "finite" | "infinite";
-  setClassDuration: (duration: "finite" | "infinite") => void;
-  setFilterOpen: (open: boolean) => void;
+  priceRange: [number, number];
+  setPriceRange: (range: [number, number]) => void;
+  selectedSubjects: string[];
+  setSelectedSubjects: (subjects: string[]) => void;
 }
 
 const FilterSheet = ({
-  classMode,
-  setClassMode,
+  filterOpen,
+  setFilterOpen,
+  deliveryMode,
+  setDeliveryMode,
   classFormat,
   setClassFormat,
   classSize,
   setClassSize,
-  classDuration,
-  setClassDuration,
-  setFilterOpen
+  priceRange,
+  setPriceRange,
+  selectedSubjects,
+  setSelectedSubjects
 }: FilterSheetProps) => {
   return (
     <SheetContent className="overflow-y-auto">
@@ -43,8 +49,8 @@ const FilterSheet = ({
         <div className="space-y-2">
           <h3 className="text-sm font-medium">Class Mode</h3>
           <RadioGroup 
-            value={classMode} 
-            onValueChange={(value) => setClassMode(value as "online" | "offline")}
+            value={deliveryMode} 
+            onValueChange={(value) => setDeliveryMode(value as "online" | "offline")}
             className="flex flex-col space-y-1"
           >
             <div className="flex items-center space-x-2">
@@ -63,7 +69,7 @@ const FilterSheet = ({
         {/* Class Format */}
         <div className="space-y-2">
           <h3 className="text-sm font-medium">Class Format</h3>
-          {classMode === "online" ? (
+          {deliveryMode === "online" ? (
             <RadioGroup 
               value={classFormat} 
               onValueChange={(value) => setClassFormat(value as "live" | "recorded")}
@@ -114,27 +120,6 @@ const FilterSheet = ({
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="1-on-1" id="size-1on1" />
               <Label htmlFor="size-1on1">1-on-1</Label>
-            </div>
-          </RadioGroup>
-        </div>
-        
-        <Separator />
-        
-        {/* Class Duration */}
-        <div className="space-y-2">
-          <h3 className="text-sm font-medium">Class Duration</h3>
-          <RadioGroup 
-            value={classDuration} 
-            onValueChange={(value) => setClassDuration(value as "finite" | "infinite")}
-            className="flex flex-col space-y-1"
-          >
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="finite" id="duration-finite" />
-              <Label htmlFor="duration-finite">Finite classes</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <RadioGroupItem value="infinite" id="duration-infinite" />
-              <Label htmlFor="duration-infinite">Infinite classes</Label>
             </div>
           </RadioGroup>
         </div>
