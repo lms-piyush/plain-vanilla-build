@@ -15,11 +15,10 @@ const ClassDetail = () => {
 
   const { 
     classDetails, 
-    lessons, 
-    materials, 
     isLoading, 
     error,
-    reviewStats
+    reviewStats,
+    refetch
   } = useStudentClassDetails(id);
 
   if (isLoading) {
@@ -42,7 +41,7 @@ const ClassDetail = () => {
     <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
       <ClassDetailHeader
         title={classDetails.title}
-        tutor={classDetails.profiles?.full_name || "Unknown Tutor"}
+        tutor={classDetails.profiles?.full_name || classDetails.tutor_name || "Unknown Tutor"}
         deliveryMode={classDetails.delivery_mode}
         classFormat={classDetails.class_format}
         classSize={classDetails.class_size}
@@ -57,20 +56,15 @@ const ClassDetail = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2">
           <ClassTabs
+            classDetails={classDetails}
             classId={id}
-            description={classDetails.description || ""}
-            lessons={lessons}
-            materials={materials}
           />
         </div>
         
         <div className="lg:col-span-1">
           <ClassPurchaseSection
-            classId={id}
-            price={classDetails.price || 0}
-            currency={classDetails.currency || "USD"}
-            deliveryMode={classDetails.delivery_mode}
-            classFormat={classDetails.class_format}
+            classDetails={classDetails}
+            onEnrollmentChange={refetch}
           />
         </div>
       </div>

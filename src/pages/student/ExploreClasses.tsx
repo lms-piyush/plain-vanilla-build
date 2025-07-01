@@ -14,17 +14,18 @@ const ExploreClasses = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("popular");
   const [filterOpen, setFilterOpen] = useState(false);
   
   // Filter states
   const [deliveryMode, setDeliveryMode] = useState<"online" | "offline">("online");
   const [classFormat, setClassFormat] = useState<"live" | "recorded" | "inbound" | "outbound">("live");
-  const [classSize, setClassSize] = useState<"group" | "one-on-one">("group");
+  const [classSize, setClassSize] = useState<"group" | "1-on-1">("group");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 500]);
   const [selectedSubjects, setSelectedSubjects] = useState<string[]>([]);
 
   const { data: classes = [], isLoading } = useAllClassesWithReviews();
-  const { wishlist, toggleWishlist } = useWishlist();
+  const { wishlistedCourses, toggleWishlist } = useWishlist();
 
   // Convert classes to course card format with real data
   const convertToClassCard = (tutorClass: any) => ({
@@ -44,11 +45,11 @@ const ExploreClasses = () => {
             tutorClass.class_format === "recorded" ? "Recorded" :
             tutorClass.class_format === "inbound" ? "Inbound" : "Outbound",
     classSize: tutorClass.class_size === "group" ? "Group" : "1-on-1",
-    isWishlisted: wishlist.includes(tutorClass.id),
+    isWishlisted: wishlistedCourses.includes(tutorClass.id),
     description: tutorClass.description || "No description available"
   });
 
-  // Filter classes based on current filters
+  // Filter classes based on current filters  
   const filteredClasses = classes.filter((cls) => {
     // Search filter
     if (searchQuery && !cls.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
@@ -63,10 +64,11 @@ const ExploreClasses = () => {
     // Format filter
     if (cls.class_format !== classFormat) return false;
 
-    // Size filter
+    // Size filter - handle type conversion
+    const expectedSize = classSize === "1-on-1" ? "one-on-one" : "group";
     if (deliveryMode === "offline" && classFormat === "inbound") {
       // Inbound is always one-on-one, so skip size filter
-    } else if (cls.class_size !== classSize) {
+    } else if (cls.class_size !== expectedSize) {
       return false;
     }
 
@@ -83,30 +85,35 @@ const ExploreClasses = () => {
   });
 
   const displayedClasses = activeTab === "saved" 
-    ? filteredClasses.filter(cls => wishlist.includes(cls.id))
+    ? filteredClasses.filter(cls => wishlistedCourses.includes(cls.id))
     : filteredClasses;
 
   return (
     <div className="space-y-6">
       <ExploreClassesHeader 
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-      />
-
-      <FilterSheet
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        sortBy={sortBy}
+        setSortBy={setSortBy}
+        wishlistedCourses={wishlistedCourses}
         filterOpen={filterOpen}
         setFilterOpen={setFilterOpen}
-        deliveryMode={deliveryMode}
-        setDeliveryMode={setDeliveryMode}
-        classFormat={classFormat}
-        setClassFormat={setClassFormat}
-        classSize={classSize}
-        setClassSize={setClassSize}
-        priceRange={priceRange}
-        setPriceRange={setPriceRange}
-        selectedSubjects={selectedSubjects}
-        setSelectedSubjects={setSelectedSubjects}
-      />
+      >
+        <FilterSheet
+          filterOpen={filterOpen}
+          setFilterOpen={setFilterOpen}
+          deliveryMode={deliveryMode}
+          setDeliveryMode={setDeliveryMode}
+          classFormat={classFormat}
+          setClassFormat={setClassFormat}
+          classSize={classSize}
+          setClassSize={(size: "group" | "1-on-1") => setClassSize(size)}
+          priceRange={priceRange}
+          setPriceRange={setPriceRange}
+          selectedSubjects={selectedSubjects}
+          setSelectedSubjects={setSelectedSubjects}
+        />
+      </ExploreClassesHeader>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList>
@@ -114,7 +121,7 @@ const ExploreClasses = () => {
             All Classes ({filteredClasses.length})
           </TabsTrigger>
           <TabsTrigger value="saved">
-            Saved ({filteredClasses.filter(cls => wishlist.includes(cls.id)).length})
+            Saved ({filteredClasses.filter(cls => wishlistedCourses.includes(cls.id)).length})
           </TabsTrigger>
         </TabsList>
 
