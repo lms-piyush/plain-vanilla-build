@@ -4,6 +4,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { StudentClassDetails } from "./types";
 import { fetchClassData, fetchTutorName, checkEnrollmentStatus } from "./data-fetcher";
 import { processLessons } from "./lesson-utils";
+import { useClassReviewStats } from "@/hooks/use-class-review-stats";
 
 export type { StudentClassDetails };
 
@@ -12,6 +13,9 @@ export const useStudentClassDetails = (classId: string) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  
+  // Fetch review stats
+  const { data: reviewStats } = useClassReviewStats(classId);
 
   const fetchClassDetails = async () => {
     if (!classId) {
@@ -61,5 +65,6 @@ export const useStudentClassDetails = (classId: string) => {
     isLoading,
     error,
     refetch: fetchClassDetails,
+    reviewStats: reviewStats || { average_rating: 0, total_reviews: 0 }
   };
 };

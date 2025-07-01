@@ -1,5 +1,5 @@
 
-import { TutorClass } from "@/hooks/use-all-classes";
+import { TutorClassWithReviews } from "@/hooks/use-all-classes-with-reviews";
 
 interface FilterOptions {
   classMode: "online" | "offline";
@@ -11,7 +11,7 @@ interface FilterOptions {
 }
 
 export const getFilteredClasses = (
-  allClasses: TutorClass[], 
+  allClasses: TutorClassWithReviews[], 
   filters: FilterOptions
 ) => {
   if (!allClasses || !Array.isArray(allClasses)) {
@@ -76,16 +76,16 @@ export const getFilteredClasses = (
   // Sort the classes
   switch (filters.sortBy) {
     case "rating":
-      return [...filtered].sort((a, b) => 4.5 - 4.5); // Would use real ratings
+      return [...filtered].sort((a, b) => (b.average_rating || 0) - (a.average_rating || 0));
     case "newest":
       return [...filtered].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
     case "popular":
     default:
-      return filtered;
+      return [...filtered].sort((a, b) => (b.total_reviews || 0) - (a.total_reviews || 0));
   }
 };
 
-export const getSavedClasses = (allClasses: TutorClass[], wishlistedCourses: string[]) => {
+export const getSavedClasses = (allClasses: TutorClassWithReviews[], wishlistedCourses: string[]) => {
   if (!allClasses || !Array.isArray(allClasses)) {
     return [];
   }

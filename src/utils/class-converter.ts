@@ -1,7 +1,7 @@
 
-import { TutorClass } from "@/hooks/use-all-classes";
+import { TutorClassWithReviews } from "@/hooks/use-all-classes-with-reviews";
 
-export const convertToClassCard = (tutorClass: TutorClass, wishlistedCourses: string[]) => {
+export const convertToClassCard = (tutorClass: TutorClassWithReviews, wishlistedCourses: string[]) => {
   const getClassMode = () => {
     return tutorClass.delivery_mode === 'online' ? 'Online' : 'Offline';
   };
@@ -25,13 +25,15 @@ export const convertToClassCard = (tutorClass: TutorClass, wishlistedCourses: st
     title: tutorClass.title,
     tutor: tutorClass.tutor_name || "Unknown Tutor",
     tutorId: tutorClass.tutor_id,
-    rating: 4.5, // This would come from reviews in real app
+    rating: tutorClass.average_rating || 0,
+    reviewCount: tutorClass.total_reviews || 0,
     image: tutorClass.thumbnail_url || "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=300",
     description: tutorClass.description || "",
     mode: getClassMode(),
     format: getClassFormat(),
     classSize: getClassSize(),
-    students: tutorClass.max_students || 0,
+    students: tutorClass.student_count || 0,
+    maxStudents: tutorClass.max_students || 0,
     price: tutorClass.price ? `Rs. ${tutorClass.price}` : "Free",
     isSubscription: tutorClass.duration_type === 'recurring',
     wishListed: wishlistedCourses.includes(tutorClass.id)

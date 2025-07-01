@@ -6,7 +6,7 @@ import ExploreClassesHeader from "@/components/explore/ExploreClassesHeader";
 import FilterSheet from "@/components/explore/FilterSheet";
 import ClassesList from "@/components/explore/ClassesList";
 import ClassesPagination from "@/components/explore/ClassesPagination";
-import { useAllClasses } from "@/hooks/use-all-classes";
+import { useAllClassesWithReviews } from "@/hooks/use-all-classes-with-reviews";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useFilterEffects } from "@/hooks/use-filter-effects";
 import { convertToClassCard } from "@/utils/class-converter";
@@ -43,13 +43,13 @@ const ExploreClasses = () => {
     setPaymentModel: () => {} // Not used in explore classes
   });
 
-  // Fetch all classes for both tabs
+  // Fetch all classes with review data for both tabs
   const { 
     data: queryResult, 
     isLoading,
     error,
     refetch 
-  } = useAllClasses({
+  } = useAllClassesWithReviews({
     page: 1,
     pageSize: 1000 // Get all classes for proper filtering
   });

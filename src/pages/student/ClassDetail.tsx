@@ -11,7 +11,7 @@ const ClassDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { classDetails, isLoading, error, refetch } = useStudentClassDetails(id || '');
+  const { classDetails, isLoading, error, refetch, reviewStats } = useStudentClassDetails(id || '');
 
   if (isLoading) {
     return (
@@ -34,7 +34,11 @@ const ClassDetail = () => {
 
   return (
     <>
-      <ClassDetailHeader classDetails={classDetails} />
+      <ClassDetailHeader 
+        classDetails={classDetails} 
+        averageRating={reviewStats.average_rating}
+        totalReviews={reviewStats.total_reviews}
+      />
 
       <ClassPurchaseSection classDetails={classDetails} onEnrollmentChange={refetch} />
 

@@ -8,7 +8,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { useStudentEnrollments } from "@/hooks/use-student-enrollments";
+import { useStudentEnrollmentsWithReviews } from "@/hooks/use-student-enrollments-with-reviews";
 import { useFilterEffects } from "@/hooks/use-filter-effects";
 import { convertEnrollmentToClassCard } from "@/utils/enrollment-converter";
 import ClassCard from "@/components/student/ClassCard";
@@ -26,8 +26,8 @@ const MyClasses = () => {
   const [classDuration, setClassDuration] = useState<"finite" | "infinite">("finite");
   const [paymentModel, setPaymentModel] = useState<"one-time" | "subscription">("one-time");
   
-  // Fetch enrolled classes from database
-  const { data: enrollments = [], isLoading, error, refetch } = useStudentEnrollments();
+  // Fetch enrolled classes with review data from database
+  const { data: enrollments = [], isLoading, error, refetch } = useStudentEnrollmentsWithReviews();
 
   // Filter effects
   useFilterEffects({

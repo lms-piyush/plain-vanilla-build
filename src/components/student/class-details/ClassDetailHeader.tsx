@@ -7,9 +7,11 @@ import { StudentClassDetails } from "@/hooks/use-student-class-details";
 
 interface ClassDetailHeaderProps {
   classDetails: StudentClassDetails;
+  averageRating?: number;
+  totalReviews?: number;
 }
 
-const ClassDetailHeader = ({ classDetails }: ClassDetailHeaderProps) => {
+const ClassDetailHeader = ({ classDetails, averageRating = 0, totalReviews = 0 }: ClassDetailHeaderProps) => {
   const navigate = useNavigate();
 
   return (
@@ -49,11 +51,15 @@ const ClassDetailHeader = ({ classDetails }: ClassDetailHeaderProps) => {
               {classDetails.tutor_name}
             </button>
             
-            {/* Rating - dummy data */}
+            {/* Rating - now using real data */}
             <div className="flex items-center">
               <Star className="fill-yellow-400 stroke-yellow-400 h-4 w-4 mr-1" />
-              <span className="text-sm font-medium">4.8</span>
-              <span className="text-sm text-gray-500 ml-1">(128 reviews)</span>
+              <span className="text-sm font-medium">
+                {averageRating > 0 ? averageRating.toFixed(1) : "No ratings"}
+              </span>
+              {totalReviews > 0 && (
+                <span className="text-sm text-gray-500 ml-1">({totalReviews} reviews)</span>
+              )}
             </div>
             
             {/* Class Size */}

@@ -1,21 +1,56 @@
 
-import { StudentEnrollment } from "@/hooks/use-student-enrollments";
+import { StudentEnrollmentWithReviews } from "@/hooks/use-student-enrollments-with-reviews";
 
-export const convertEnrollmentToClassCard = (enrollment: StudentEnrollment) => {
-  const cls = enrollment.class;
+export const convertEnrollmentToClassCard = (enrollment: StudentEnrollmentWithReviews) => {
+  const classData = enrollment.class;
+  
+  // Determine class type and format
+  const getClassMode = () => {
+    return classData.delivery_mode === 'online' ? 'Online' : 'Offline';
+  };
+
+  const getClassFormat = () => {
+    switch (classData.class_format) {
+      case 'live': return 'Live';
+      case 'recorded': return 'Recorded';  
+      case 'inbound': return 'Inbound';
+      case 'outbound': return 'Outbound';
+      default: return 'Live';
+    }
+  };
+
+  const getClassSize = () => {
+    return classData.class_size === 'group' ? 'Group' : '1-on-1';
+  };
+
+  const getPaymentType = () => {
+    return classData.duration_type === 'recurring' ? 'Subscription' : 'One-time';
+  };
+
+  const getStatus = () => {
+    switch (enrollment.status) {
+      case 'active': return 'Active';
+      case 'completed': return 'Completed';
+      case 'cancelled': return 'Cancelled';
+      default: return 'Enrolled';
+    }
+  };
+
   return {
-    id: cls.id,
-    title: cls.title,
-    tutor: cls.tutor_name,
-    tutorId: cls.tutor_id,
-    type: cls.delivery_mode === 'online' ? 'Online' : 'Offline',
-    format: cls.class_format.charAt(0).toUpperCase() + cls.class_format.slice(1),
-    payment: cls.duration_type === 'recurring' ? 'Subscription' : 'Fixed',
-    status: enrollment.status === 'active' ? 'Active' : enrollment.status === 'completed' ? 'Completed' : 'Enrolled',
-    students: cls.class_size === 'group' ? 15 : 1, // Default values
-    image: cls.thumbnail_url || "https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=300",
-    rating: 4.8, // Default rating
-    description: cls.description || "No description available.",
-    classSize: cls.class_size === 'group' ? "Group" : "1-on-1",
+    id: classData.id,
+    title: classData.title,
+    tutor: classData.tutor_name,
+    tutorId: classData.tutor_id,
+    image: classData.thumbnail_url || "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=300",
+    type: getClassMode(),
+    format: getClassFormat(),
+    classSize: getClassSize(),
+    payment: getPaymentType(),
+    status: getStatus(),
+    rating: classData.average_rating || 0,
+    reviewCount: classData.total_reviews || 0,
+    studentCount: classData.student_count || 0,
+    price: classData.price || 0,
+    enrollmentDate: enrollment.enrollment_date
   };
 };
