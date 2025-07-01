@@ -17,10 +17,6 @@ export interface StudentClassDetails {
   created_at: string;
   updated_at: string;
   tutor_name: string;
-  student_count?: number;
-  profiles?: {
-    full_name: string;
-  } | null;
   class_locations?: Array<{
     meeting_link: string | null;
     street: string | null;

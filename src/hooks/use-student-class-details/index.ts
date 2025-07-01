@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { StudentClassDetails } from "./types";
@@ -40,26 +39,10 @@ export const useStudentClassDetails = (classId: string) => {
       // Process lessons data
       const finalLessons = processLessons(classData.class_syllabus);
 
-      // Get student count
-      const { count: studentCount } = await supabase
-        .from("student_enrollments")
-        .select("*", { count: "exact", head: true })
-        .eq("class_id", classId)
-        .eq("status", "active");
-
-      // Get tutor profile info
-      const { data: tutorProfile } = await supabase
-        .from('profiles')
-        .select('full_name')
-        .eq('id', classData.tutor_id)
-        .single();
-
       setClassDetails({
         ...classData,
         tutor_name: tutorName,
         lessons: finalLessons,
-        student_count: studentCount || 0,
-        profiles: tutorProfile,
         isEnrolled
       });
       setError(null);
@@ -87,8 +70,6 @@ export const useStudentClassDetails = (classId: string) => {
     isLoading,
     error,
     refetch: fetchClassDetails,
-    reviewStats: reviewStats || { averageRating: 0, totalReviews: 0 },
-    lessons: classDetails?.lessons || [],
-    materials: classDetails?.lessons?.flatMap(lesson => lesson.materials) || []
+    reviewStats: reviewStats || { averageRating: 0, totalReviews: 0 }
   };
 };

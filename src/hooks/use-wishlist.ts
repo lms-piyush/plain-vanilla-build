@@ -25,7 +25,6 @@ export const useWishlist = () => {
   };
 
   return {
-    wishlist: wishlistedCourses, // Keep both for backwards compatibility
     wishlistedCourses,
     toggleWishlist
   };
