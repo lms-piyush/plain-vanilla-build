@@ -185,7 +185,7 @@ const ClassTypeStep = ({ onNext }: ClassTypeStepProps) => {
       
       {(formState.classSize || formState.classFormat === "inbound" || formState.classFormat === "recorded") && (
         <div>
-          <h3 className="text-lg font-semibold mb-2">Duration Type</h3>
+          <h3 className="text-lg font-semibold mb-2">Payment Type</h3>
           <p className="text-sm text-muted-foreground mb-4">
             Choose between recurring or fixed duration classes
           </p>

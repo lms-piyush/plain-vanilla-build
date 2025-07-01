@@ -78,7 +78,7 @@ const SimpleClassConfigForm = ({
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="durationType">Duration Type</Label>
+          <Label htmlFor="durationType">Payment Type</Label>
           <Select value={durationType} onValueChange={setDurationType}>
             <SelectTrigger>
               <SelectValue />
