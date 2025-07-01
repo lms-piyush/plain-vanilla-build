@@ -3,13 +3,13 @@ import React from "react";
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import CourseCard from "@/components/dashboard/CourseCard";
-import { TutorClass } from "@/hooks/use-all-classes";
+import { TutorClassWithReviews } from "@/hooks/use-all-classes-with-reviews";
 
 interface ClassesListProps {
   activeTab: string;
   isLoading: boolean;
-  displayedClasses: TutorClass[];
-  convertToClassCard: (tutorClass: TutorClass) => any;
+  displayedClasses: TutorClassWithReviews[];
+  convertToClassCard: (tutorClass: TutorClassWithReviews) => any;
   navigate: (path: string) => void;
   toggleWishlist: (courseId: string) => void;
   setActiveTab: (tab: string) => void;

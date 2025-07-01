@@ -50,6 +50,8 @@ export const convertEnrollmentToClassCard = (enrollment: StudentEnrollmentWithRe
     rating: classData.average_rating || 0,
     reviewCount: classData.total_reviews || 0,
     studentCount: classData.student_count || 0,
+    students: classData.student_count || 0, // Add this for ClassCard compatibility
+    description: classData.description || "", // Add this for ClassCard compatibility
     price: classData.price || 0,
     enrollmentDate: enrollment.enrollment_date
   };
