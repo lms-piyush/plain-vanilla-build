@@ -10,9 +10,21 @@ export const fetchReviews = async (
 ): Promise<{
   reviews: ClassReview[];
   hasMore: boolean;
+  totalCount: number;
 }> => {
   const startIndex = (page - 1) * REVIEWS_PER_PAGE;
   const endIndex = startIndex + REVIEWS_PER_PAGE - 1;
+
+  // First get the total count
+  const { count, error: countError } = await supabase
+    .from("class_reviews")
+    .select("*", { count: 'exact', head: true })
+    .eq("class_id", classId);
+
+  if (countError) {
+    console.error("Count query error:", countError);
+    throw countError;
+  }
 
   // Fetch reviews with profile data using proper join syntax
   const { data: reviewsData, error: reviewsError } = await supabase
@@ -48,11 +60,13 @@ export const fetchReviews = async (
     profiles: review.profiles ? { full_name: review.profiles.full_name } : null
   }));
 
-  const hasMore = (reviewsData?.length || 0) === REVIEWS_PER_PAGE;
+  const totalCount = count || 0;
+  const hasMore = endIndex < totalCount - 1;
 
   return {
     reviews: processedReviews,
-    hasMore
+    hasMore,
+    totalCount
   };
 };
 

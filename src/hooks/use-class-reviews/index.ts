@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { ClassReview, ReviewStats } from "./types";
-import { fetchReviews, fetchReviewStats } from "./review-fetcher";
+import { fetchReviews, fetchReviewStats, REVIEWS_PER_PAGE } from "./review-fetcher";
 import { checkUserEnrollmentAndReview } from "./enrollment-checker";
 import { submitReview as submitReviewApi } from "./review-submitter";
 
@@ -15,7 +15,6 @@ export const useClassReviews = (classId: string) => {
   const [userReview, setUserReview] = useState<ClassReview | null>(null);
   const [isUserEnrolled, setIsUserEnrolled] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [hasMoreReviews, setHasMoreReviews] = useState(false);
   const [totalReviewCount, setTotalReviewCount] = useState(0);
   const { user } = useAuth();
   const { toast } = useToast();
@@ -26,7 +25,7 @@ export const useClassReviews = (classId: string) => {
     try {
       setIsLoading(true);
       
-      const { reviews: newReviews, hasMore } = await fetchReviews(classId, page);
+      const { reviews: newReviews, totalCount } = await fetchReviews(classId, page);
       const stats = await fetchReviewStats(classId);
 
       if (reset || page === 1) {
@@ -36,8 +35,7 @@ export const useClassReviews = (classId: string) => {
       }
 
       setReviewStats(stats);
-      setHasMoreReviews(hasMore);
-      setTotalReviewCount(stats.totalReviews);
+      setTotalReviewCount(totalCount);
 
       // Check user enrollment and review status
       if (user) {
@@ -106,19 +104,13 @@ export const useClassReviews = (classId: string) => {
     }
   };
 
-  const loadMoreReviews = () => {
-    if (!hasMoreReviews || isLoading) return;
-    const nextPage = currentPage + 1;
-    setCurrentPage(nextPage);
-    loadReviews(nextPage, false);
-  };
-
   const getTotalPages = () => {
-    return Math.ceil(totalReviewCount / 10);
+    return Math.ceil(totalReviewCount / REVIEWS_PER_PAGE);
   };
 
   const goToPage = (page: number) => {
-    if (page >= 1 && page <= getTotalPages()) {
+    const totalPages = getTotalPages();
+    if (page >= 1 && page <= totalPages && page !== currentPage) {
       setCurrentPage(page);
       loadReviews(page, true);
     }
@@ -135,12 +127,10 @@ export const useClassReviews = (classId: string) => {
     hasUserReviewed,
     userReview,
     isUserEnrolled,
-    hasMoreReviews,
     currentPage,
     totalPages: getTotalPages(),
     totalReviewCount,
     submitReview,
-    loadMoreReviews,
     goToPage,
     refetch: () => loadReviews(1, true),
   };

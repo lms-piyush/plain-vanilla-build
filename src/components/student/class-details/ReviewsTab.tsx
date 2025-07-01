@@ -58,6 +58,14 @@ const ReviewsTab = ({ classId }: ReviewsTabProps) => {
     );
   }
 
+  console.log("Reviews Tab Debug:", {
+    totalReviewCount,
+    totalPages,
+    currentPage,
+    reviewsLength: reviews.length,
+    hasReviews: reviews.length > 0
+  });
+
   return (
     <div className="space-y-6">
       {/* Review Statistics */}
