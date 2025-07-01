@@ -37,15 +37,32 @@ export const useTutorFeedback = (page: number = 1) => {
       const startIndex = (page - 1) * REVIEWS_PER_PAGE;
       const endIndex = startIndex + REVIEWS_PER_PAGE - 1;
 
+      // First, get the class IDs for the tutor
+      const { data: tutorClasses, error: classesError } = await supabase
+        .from("classes")
+        .select("id")
+        .eq("tutor_id", user.id);
+
+      if (classesError) {
+        console.error("Error fetching tutor classes:", classesError);
+        throw classesError;
+      }
+
+      if (!tutorClasses || tutorClasses.length === 0) {
+        return {
+          reviews: [],
+          totalCount: 0,
+          hasMore: false
+        };
+      }
+
+      const classIds = tutorClasses.map(cls => cls.id);
+
       // Get total count first
       const { count, error: countError } = await supabase
         .from("class_reviews")
         .select("*", { count: 'exact', head: true })
-        .eq("class_id", supabase
-          .from("classes")
-          .select("id")
-          .eq("tutor_id", user.id)
-        );
+        .in("class_id", classIds);
 
       if (countError) {
         console.error("Error fetching review count:", countError);
@@ -69,12 +86,7 @@ export const useTutorFeedback = (page: number = 1) => {
             title
           )
         `)
-        .in("class_id", 
-          supabase
-            .from("classes")
-            .select("id")
-            .eq("tutor_id", user.id)
-        )
+        .in("class_id", classIds)
         .order("created_at", { ascending: false })
         .range(startIndex, endIndex);
 
