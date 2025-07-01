@@ -50,44 +50,7 @@ const ResourcesTab = ({ classDetails }: ResourcesTabProps) => {
   // If no materials exist, show dummy data grouped by sessions
   const finalMaterialsGroup = Object.keys(materialsGroupedByLesson).length > 0 
     ? materialsGroupedByLesson 
-    : {
-        "Introduction and Setup": [
-          {
-            id: 'dummy-res-1',
-            material_name: "Setup Guide.pdf",
-            material_type: "pdf",
-            material_url: "#",
-            display_order: 1,
-            file_size: 1024
-          },
-          {
-            id: 'dummy-res-2',
-            material_name: "Introduction Slides.ppt",
-            material_type: "presentation",
-            material_url: "#",
-            display_order: 2,
-            file_size: 2048
-          }
-        ],
-        "Core Concepts": [
-          {
-            id: 'dummy-res-3',
-            material_name: "Concepts Cheatsheet.pdf",
-            material_type: "pdf",
-            material_url: "#",
-            display_order: 1,
-            file_size: 1536
-          },
-          {
-            id: 'dummy-res-4',
-            material_name: "Practice Examples.zip",
-            material_type: "archive",
-            material_url: "#",
-            display_order: 2,
-            file_size: 3072
-          }
-        ]
-      };
+    : {};
 
   return (
     <div className="space-y-6">
