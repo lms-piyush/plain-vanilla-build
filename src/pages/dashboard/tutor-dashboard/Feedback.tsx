@@ -21,7 +21,9 @@ const Feedback = () => {
   const totalPages = feedbackData ? Math.ceil(feedbackData.totalCount / 2) : 0;
 
   const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
   };
 
   if (isLoading) {
@@ -78,7 +80,7 @@ const Feedback = () => {
                     <PaginationContent>
                       <PaginationItem>
                         <PaginationPrevious 
-                          onClick={() => handlePageChange(Math.max(1, currentPage - 1))}
+                          onClick={() => handlePageChange(currentPage - 1)}
                           className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
                         />
                       </PaginationItem>
@@ -100,7 +102,7 @@ const Feedback = () => {
                       
                       <PaginationItem>
                         <PaginationNext 
-                          onClick={() => handlePageChange(Math.min(totalPages, currentPage + 1))}
+                          onClick={() => handlePageChange(currentPage + 1)}
                           className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
                         />
                       </PaginationItem>

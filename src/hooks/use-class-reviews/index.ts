@@ -16,6 +16,7 @@ export const useClassReviews = (classId: string) => {
   const [isUserEnrolled, setIsUserEnrolled] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [hasMoreReviews, setHasMoreReviews] = useState(false);
+  const [totalReviewCount, setTotalReviewCount] = useState(0);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -36,6 +37,7 @@ export const useClassReviews = (classId: string) => {
 
       setReviewStats(stats);
       setHasMoreReviews(hasMore);
+      setTotalReviewCount(stats.totalReviews);
 
       // Check user enrollment and review status
       if (user) {
@@ -111,6 +113,17 @@ export const useClassReviews = (classId: string) => {
     loadReviews(nextPage, false);
   };
 
+  const getTotalPages = () => {
+    return Math.ceil(totalReviewCount / 10);
+  };
+
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= getTotalPages()) {
+      setCurrentPage(page);
+      loadReviews(page, true);
+    }
+  };
+
   useEffect(() => {
     loadReviews(1, true);
   }, [classId, user]);
@@ -123,8 +136,12 @@ export const useClassReviews = (classId: string) => {
     userReview,
     isUserEnrolled,
     hasMoreReviews,
+    currentPage,
+    totalPages: getTotalPages(),
+    totalReviewCount,
     submitReview,
     loadMoreReviews,
+    goToPage,
     refetch: () => loadReviews(1, true),
   };
 };

@@ -106,10 +106,13 @@ export const useTutorFeedback = (page: number = 1) => {
         classes: review.classes
       }));
 
+      const totalCount = count || 0;
+      const hasMore = startIndex + (reviewsData?.length || 0) < totalCount;
+
       return {
         reviews: processedReviews,
-        totalCount: count || 0,
-        hasMore: (reviewsData?.length || 0) === REVIEWS_PER_PAGE
+        totalCount,
+        hasMore
       };
     },
     enabled: !!user,

@@ -48,9 +48,11 @@ export const fetchReviews = async (
     profiles: review.profiles ? { full_name: review.profiles.full_name } : null
   }));
 
+  const hasMore = (reviewsData?.length || 0) === REVIEWS_PER_PAGE;
+
   return {
     reviews: processedReviews,
-    hasMore: (reviewsData?.length || 0) === REVIEWS_PER_PAGE
+    hasMore
   };
 };
 

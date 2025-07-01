@@ -1,6 +1,14 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { 
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 import { useAuth } from "@/contexts/AuthContext";
 import { useClassReviews } from "@/hooks/use-class-reviews";
 import WriteReviewModal from "./WriteReviewModal";
@@ -24,9 +32,11 @@ const ReviewsTab = ({ classId }: ReviewsTabProps) => {
     hasUserReviewed,
     userReview,
     isUserEnrolled,
-    hasMoreReviews,
+    currentPage,
+    totalPages,
+    totalReviewCount,
     submitReview,
-    loadMoreReviews,
+    goToPage,
   } = useClassReviews(classId);
 
   const handleSubmitReview = async (rating: number, reviewText: string) => {
@@ -34,6 +44,10 @@ const ReviewsTab = ({ classId }: ReviewsTabProps) => {
     const success = await submitReview(rating, reviewText);
     setIsSubmitting(false);
     return success;
+  };
+
+  const handlePageChange = (page: number) => {
+    goToPage(page);
   };
 
   if (isLoading) {
@@ -65,16 +79,41 @@ const ReviewsTab = ({ classId }: ReviewsTabProps) => {
               <ReviewCard key={review.id} review={review} />
             ))}
 
-            {/* Load More Button */}
-            {hasMoreReviews && (
-              <div className="text-center pt-4">
-                <Button 
-                  variant="outline" 
-                  onClick={loadMoreReviews}
-                  disabled={isLoading}
-                >
-                  {isLoading ? "Loading..." : "Load More Reviews"}
-                </Button>
+            {/* Pagination Controls */}
+            {totalPages > 1 && (
+              <div className="pt-6">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                    
+                    {[...Array(totalPages)].map((_, index) => {
+                      const page = index + 1;
+                      return (
+                        <PaginationItem key={page}>
+                          <PaginationLink
+                            onClick={() => handlePageChange(page)}
+                            isActive={currentPage === page}
+                            className="cursor-pointer"
+                          >
+                            {page}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    })}
+                    
+                    <PaginationItem>
+                      <PaginationNext 
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
               </div>
             )}
           </>
