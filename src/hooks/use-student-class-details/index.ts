@@ -1,9 +1,11 @@
-
 import { useState, useEffect } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { StudentClassDetails } from "./types";
 import { fetchClassData, fetchTutorName, checkEnrollmentStatus } from "./data-fetcher";
 import { processLessons } from "./lesson-utils";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { fetchClassReviewStats, ClassReviewStats } from "./review-stats-fetcher";
 
 export type { StudentClassDetails };
 
@@ -52,6 +54,13 @@ export const useStudentClassDetails = (classId: string) => {
     }
   };
 
+  // Add review stats query
+  const { data: reviewStats } = useQuery({
+    queryKey: ["class-review-stats", classId],
+    queryFn: () => fetchClassReviewStats(classId),
+    enabled: !!classId,
+  });
+
   useEffect(() => {
     fetchClassDetails();
   }, [user, classId]);
@@ -61,5 +70,6 @@ export const useStudentClassDetails = (classId: string) => {
     isLoading,
     error,
     refetch: fetchClassDetails,
+    reviewStats: reviewStats || { averageRating: 0, totalReviews: 0 }
   };
 };

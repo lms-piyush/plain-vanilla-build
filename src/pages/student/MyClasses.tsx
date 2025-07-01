@@ -8,9 +8,8 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { useStudentEnrollments } from "@/hooks/use-student-enrollments";
+import { useStudentEnrollmentsWithReviews } from "@/hooks/use-student-enrollments-with-reviews";
 import { useFilterEffects } from "@/hooks/use-filter-effects";
-import { convertEnrollmentToClassCard } from "@/utils/enrollment-converter";
 import ClassCard from "@/components/student/ClassCard";
 import FilterSheet from "@/components/student/FilterSheet";
 
@@ -26,8 +25,8 @@ const MyClasses = () => {
   const [classDuration, setClassDuration] = useState<"finite" | "infinite">("finite");
   const [paymentModel, setPaymentModel] = useState<"one-time" | "subscription">("one-time");
   
-  // Fetch enrolled classes from database
-  const { data: enrollments = [], isLoading, error, refetch } = useStudentEnrollments();
+  // Fetch enrolled classes with review data
+  const { data: enrollments = [], isLoading, error, refetch } = useStudentEnrollmentsWithReviews();
 
   // Filter effects
   useFilterEffects({
@@ -44,8 +43,24 @@ const MyClasses = () => {
     refetch();
   }, [refetch]);
   
-  // Convert enrollments to class cards
-  const classes = enrollments.map(convertEnrollmentToClassCard);
+  // Convert enrollments to class cards with real data
+  const classes = enrollments.map(enrollment => ({
+    id: enrollment.classes.id,
+    title: enrollment.classes.title,
+    tutor: enrollment.classes.profiles?.full_name || "Unknown Tutor",
+    tutorId: enrollment.classes.tutor_id,
+    type: enrollment.classes.delivery_mode === "online" ? "Online" : "Offline",
+    format: enrollment.classes.class_format === "live" ? "Live" : 
+            enrollment.classes.class_format === "recorded" ? "Recorded" :
+            enrollment.classes.class_format === "inbound" ? "Inbound" : "Outbound",
+    payment: enrollment.classes.currency === "USD" ? "One-time" : "Subscription",
+    status: enrollment.status === "active" ? "Active" : "Completed",
+    students: enrollment.classes.student_count,
+    image: enrollment.classes.thumbnail_url || "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=800&h=450&q=80",
+    rating: enrollment.classes.average_rating,
+    description: enrollment.classes.description || "No description available",
+    classSize: enrollment.classes.class_size === "group" ? "Group" : "1-on-1"
+  }));
   
   console.log("My Classes - Total enrollments:", enrollments.length);
   console.log("My Classes - Converted classes:", classes.length);

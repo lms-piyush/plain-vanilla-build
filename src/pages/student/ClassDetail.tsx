@@ -1,22 +1,31 @@
 
 import React from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
+import { useParams } from "react-router-dom";
 import { useStudentClassDetails } from "@/hooks/use-student-class-details";
 import ClassDetailHeader from "@/components/student/class-details/ClassDetailHeader";
-import ClassPurchaseSection from "@/components/student/class-details/ClassPurchaseSection";
 import ClassTabs from "@/components/student/class-details/ClassTabs";
+import ClassPurchaseSection from "@/components/student/class-details/ClassPurchaseSection";
 
 const ClassDetail = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
+  const { id } = useParams<{ id: string }>();
+  
+  if (!id) {
+    return <div>Class not found</div>;
+  }
 
-  const { classDetails, isLoading, error, refetch } = useStudentClassDetails(id || '');
+  const { 
+    classDetails, 
+    lessons, 
+    materials, 
+    isLoading, 
+    error,
+    reviewStats
+  } = useStudentClassDetails(id);
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-[#8A5BB7]"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
     );
   }
@@ -24,22 +33,48 @@ const ClassDetail = () => {
   if (error || !classDetails) {
     return (
       <div className="text-center py-12">
-        <h1 className="text-2xl font-bold mb-4">Class Not Found</h1>
-        <Button onClick={() => navigate(-1)} variant="outline">
-          Go Back
-        </Button>
+        <p className="text-red-500">Error loading class details</p>
       </div>
     );
   }
 
   return (
-    <>
-      <ClassDetailHeader classDetails={classDetails} />
+    <div className="max-w-7xl mx-auto px-4 py-8 space-y-8">
+      <ClassDetailHeader
+        title={classDetails.title}
+        tutor={classDetails.profiles?.full_name || "Unknown Tutor"}
+        deliveryMode={classDetails.delivery_mode}
+        classFormat={classDetails.class_format}
+        classSize={classDetails.class_size}
+        studentCount={classDetails.student_count || 0}
+        averageRating={reviewStats.averageRating}
+        totalReviews={reviewStats.totalReviews}
+        price={classDetails.price || undefined}
+        currency={classDetails.currency || undefined}
+        thumbnailUrl={classDetails.thumbnail_url || undefined}
+      />
 
-      <ClassPurchaseSection classDetails={classDetails} onEnrollmentChange={refetch} />
-
-      <ClassTabs classDetails={classDetails} classId={id || ''} />
-    </>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="lg:col-span-2">
+          <ClassTabs
+            classId={id}
+            description={classDetails.description || ""}
+            lessons={lessons}
+            materials={materials}
+          />
+        </div>
+        
+        <div className="lg:col-span-1">
+          <ClassPurchaseSection
+            classId={id}
+            price={classDetails.price || 0}
+            currency={classDetails.currency || "USD"}
+            deliveryMode={classDetails.delivery_mode}
+            classFormat={classDetails.class_format}
+          />
+        </div>
+      </div>
+    </div>
   );
 };
 
