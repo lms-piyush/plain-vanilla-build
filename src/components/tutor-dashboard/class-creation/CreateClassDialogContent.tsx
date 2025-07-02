@@ -39,9 +39,10 @@ const CreateClassDialogContent = ({
   isStepDisabled,
 }: CreateClassDialogContentProps) => {
   return (
-    <div className="space-y-6">
-      <div className="border-b pb-4">
-        <h2 className="text-2xl font-bold">
+    <div className="flex flex-col h-full max-h-[90vh]">
+      {/* Header */}
+      <div className="flex-shrink-0 border-b pb-4 px-1">
+        <h2 className="text-xl md:text-2xl font-bold text-center md:text-left">
           {editMode === 'upload' 
             ? 'Upload Class Content' 
             : isEditMode 
@@ -50,36 +51,45 @@ const CreateClassDialogContent = ({
           }
         </h2>
         {editMode === 'upload' && (
-          <p className="text-sm text-gray-600 mt-1">
+          <p className="text-sm text-gray-600 mt-1 text-center md:text-left">
             Update schedules and content for your completed class
           </p>
         )}
       </div>
 
-      <ClassCreationStepper 
-        currentStep={currentStep} 
-        onStepClick={goToStep}
-        isStepDisabled={isStepDisabled}
-        editMode={editMode}
-      />
-
-      <div className="min-h-[400px]">
-        <StepRenderer
-          currentStep={currentStep}
-          onNext={goToNextStep}
-          onBack={goToPreviousStep}
-          onSaveAsDraft={onSaveAsDraft}
-          onPublish={onSubmit}
-          isPublishing={isSubmitting}
-          editingClass={isEditMode}
+      {/* Stepper */}
+      <div className="flex-shrink-0 py-4 md:py-6">
+        <ClassCreationStepper 
+          currentStep={currentStep} 
+          onStepClick={goToStep}
+          isStepDisabled={isStepDisabled}
+          editMode={editMode}
         />
       </div>
 
-      <DialogActions
-        isPublishing={isSubmitting}
-        onSaveAsDraft={onSaveAsDraft}
-        onPublish={onSubmit}
-      />
+      {/* Main Content */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="min-h-[400px] px-1">
+          <StepRenderer
+            currentStep={currentStep}
+            onNext={goToNextStep}
+            onBack={goToPreviousStep}
+            onSaveAsDraft={onSaveAsDraft}
+            onPublish={onSubmit}
+            isPublishing={isSubmitting}
+            editingClass={isEditMode}
+          />
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className="flex-shrink-0 border-t pt-4 px-1">
+        <DialogActions
+          isPublishing={isSubmitting}
+          onSaveAsDraft={onSaveAsDraft}
+          onPublish={onSubmit}
+        />
+      </div>
     </div>
   );
 };

@@ -63,11 +63,11 @@ const CreateClassDialog = ({
       case 1:
         return !!(formState.deliveryMode && formState.classFormat && formState.classSize && formState.durationType);
       case 2:
-        return formState.title.trim() !== '';
+        return !!formState.title.trim();
       case 3:
         return formState.timeSlots.length > 0;
       case 4:
-        return formState.deliveryMode === 'offline' || formState.meetingLink.trim() !== '';
+        return formState.deliveryMode === 'offline' || !!formState.meetingLink.trim();
       case 5:
         return formState.syllabus.length > 0;
       default:
@@ -102,7 +102,7 @@ const CreateClassDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="w-full max-w-4xl h-[90vh] max-h-[900px] p-6">
         <CreateClassDialogContent
           currentStep={currentStep}
           formData={formState}

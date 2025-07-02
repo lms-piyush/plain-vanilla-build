@@ -87,56 +87,78 @@ const MyClasses = () => {
 
   const getDeliveryIcon = (deliveryMode: string) => {
     return deliveryMode === 'online' ? (
-      <Globe className="h-3.5 w-3.5 mr-2 text-[#1F4E79]" />
+      <Globe className="h-3.5 w-3.5 mr-2 text-white" />
     ) : (
-      <MapPin className="h-3.5 w-3.5 mr-2 text-[#1F4E79]" />
+      <MapPin className="h-3.5 w-3.5 mr-2 text-white" />
     );
   };
 
   const renderClassCard = (classItem: any) => (
     <Card key={classItem.id} className="overflow-hidden hover:shadow-md transition-all border-[#1F4E79]/10">
-      <div className="relative h-40 bg-gradient-to-br from-[#1F4E79] to-[#8A5BB7]">
-        <div className="absolute top-2 right-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 bg-white/80 backdrop-blur-sm hover:bg-white">
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Actions</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuItem asChild>
-                <Link to={`/tutor-dashboard/classes/${classItem.id}`} className="cursor-pointer flex items-center">
-                  <ChevronRight className="mr-2 h-4 w-4" />
-                  View
-                </Link>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">
-                <Edit className="mr-2 h-4 w-4" />
-                Edit
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                className="cursor-pointer"
-                onClick={() => handleDuplicate(classItem.id, classItem.title)}
-              >
-                <Copy className="mr-2 h-4 w-4" />
-                Duplicate
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                className="cursor-pointer text-red-500 hover:text-red-600 focus:text-red-600 hover:bg-red-50 focus:bg-red-50"
-                onClick={() => handleDelete(classItem.id, classItem.title)}
-              >
-                <Trash2 className="mr-2 h-4 w-4" />
-                Delete
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-        <div className="absolute bottom-4 left-4 text-white">
-          <div className="flex items-center text-sm">
-            {getDeliveryIcon(classItem.delivery_mode)}
-            <span className="capitalize">{classItem.delivery_mode} • {classItem.class_size}</span>
+      <div className="relative h-40">
+        {/* Thumbnail Image with Fallback */}
+        {classItem.thumbnail_url ? (
+          <img 
+            src={classItem.thumbnail_url} 
+            alt={`${classItem.title} thumbnail`}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              // Fallback to gradient background if image fails to load
+              e.currentTarget.style.display = 'none';
+              const parent = e.currentTarget.parentElement;
+              if (parent) {
+                parent.style.background = 'linear-gradient(135deg, #1F4E79 0%, #8A5BB7 100%)';
+              }
+            }}
+          />
+        ) : (
+          <div className="w-full h-full bg-gradient-to-br from-[#1F4E79] to-[#8A5BB7]" />
+        )}
+        
+        {/* Overlay with content */}
+        <div className="absolute inset-0 bg-black/20">
+          <div className="absolute top-2 right-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8 bg-white/80 backdrop-blur-sm hover:bg-white">
+                  <MoreHorizontal className="h-4 w-4" />
+                  <span className="sr-only">Actions</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-40">
+                <DropdownMenuItem asChild>
+                  <Link to={`/tutor-dashboard/classes/${classItem.id}`} className="cursor-pointer flex items-center">
+                    <ChevronRight className="mr-2 h-4 w-4" />
+                    View
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="cursor-pointer">
+                  <Edit className="mr-2 h-4 w-4" />
+                  Edit
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  className="cursor-pointer"
+                  onClick={() => handleDuplicate(classItem.id, classItem.title)}
+                >
+                  <Copy className="mr-2 h-4 w-4" />
+                  Duplicate
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem 
+                  className="cursor-pointer text-red-500 hover:text-red-600 focus:text-red-600 hover:bg-red-50 focus:bg-red-50"
+                  onClick={() => handleDelete(classItem.id, classItem.title)}
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  Delete
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div className="absolute bottom-4 left-4 text-white">
+            <div className="flex items-center text-sm">
+              {getDeliveryIcon(classItem.delivery_mode)}
+              <span className="capitalize">{classItem.delivery_mode} • {classItem.class_size}</span>
+            </div>
           </div>
         </div>
       </div>

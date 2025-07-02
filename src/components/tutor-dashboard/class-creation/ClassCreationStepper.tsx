@@ -65,52 +65,101 @@ const ClassCreationStepper = ({
   };
 
   return (
-    <div className="flex items-center justify-center">
-      <nav className="flex items-center space-x-4">
-        {steps.map((step, index) => {
-          const status = getStepStatus(step.number);
-          const isLast = index === steps.length - 1;
-          
-          return (
-            <div key={step.number} className="flex items-center">
-              <div className="flex flex-col items-center">
-                <button
-                  onClick={() => handleStepClick(step.number)}
-                  disabled={status === 'disabled'}
-                  className={`
-                    flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium transition-all
-                    ${getStepClasses(status)}
-                    ${status !== 'disabled' ? 'cursor-pointer' : ''}
-                  `}
-                >
-                  {status === 'completed' ? (
-                    <Check className="w-5 h-5" />
-                  ) : (
-                    step.number
-                  )}
-                </button>
-                <div className="mt-2 text-center">
-                  <p className={`text-sm font-medium ${
-                    status === 'disabled' ? 'text-gray-400' : 
-                    status === 'current' ? 'text-primary' : 'text-gray-600'
-                  }`}>
-                    {step.title}
-                  </p>
-                  {editMode === 'upload' && status === 'disabled' && (
-                    <p className="text-xs text-gray-400">Locked</p>
-                  )}
+    <div className="w-full overflow-x-auto">
+      {/* Mobile View - Stacked */}
+      <div className="md:hidden">
+        <div className="flex items-center space-x-2 px-4">
+          {steps.map((step, index) => {
+            const status = getStepStatus(step.number);
+            const isLast = index === steps.length - 1;
+            
+            return (
+              <div key={step.number} className="flex items-center flex-1">
+                <div className="flex flex-col items-center min-w-0">
+                  <button
+                    onClick={() => handleStepClick(step.number)}
+                    disabled={status === 'disabled'}
+                    className={`
+                      flex items-center justify-center w-8 h-8 rounded-full border-2 text-xs font-medium transition-all flex-shrink-0
+                      ${getStepClasses(status)}
+                      ${status !== 'disabled' ? 'cursor-pointer' : ''}
+                    `}
+                  >
+                    {status === 'completed' ? (
+                      <Check className="w-4 h-4" />
+                    ) : (
+                      step.number
+                    )}
+                  </button>
+                  <div className="mt-1 text-center">
+                    <p className={`text-xs font-medium truncate max-w-[60px] ${
+                      status === 'disabled' ? 'text-gray-400' : 
+                      status === 'current' ? 'text-primary' : 'text-gray-600'
+                    }`}>
+                      {step.title.split(' ')[0]}
+                    </p>
+                  </div>
                 </div>
+                
+                {!isLast && (
+                  <div className={`flex-1 h-0.5 mx-2 ${
+                    step.number < currentStep ? 'bg-primary' : 'bg-gray-300'
+                  }`} />
+                )}
               </div>
-              
-              {!isLast && (
-                <div className={`w-16 h-0.5 mx-4 ${
-                  step.number < currentStep ? 'bg-primary' : 'bg-gray-300'
-                }`} />
-              )}
-            </div>
-          );
-        })}
-      </nav>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Desktop View - Horizontal */}
+      <div className="hidden md:flex items-center justify-center px-6">
+        <nav className="flex items-center space-x-4">
+          {steps.map((step, index) => {
+            const status = getStepStatus(step.number);
+            const isLast = index === steps.length - 1;
+            
+            return (
+              <div key={step.number} className="flex items-center">
+                <div className="flex flex-col items-center">
+                  <button
+                    onClick={() => handleStepClick(step.number)}
+                    disabled={status === 'disabled'}
+                    className={`
+                      flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium transition-all
+                      ${getStepClasses(status)}
+                      ${status !== 'disabled' ? 'cursor-pointer' : ''}
+                    `}
+                  >
+                    {status === 'completed' ? (
+                      <Check className="w-5 h-5" />
+                    ) : (
+                      step.number
+                    )}
+                  </button>
+                  <div className="mt-2 text-center max-w-[100px]">
+                    <p className={`text-sm font-medium ${
+                      status === 'disabled' ? 'text-gray-400' : 
+                      status === 'current' ? 'text-primary' : 'text-gray-600'
+                    }`}>
+                      {step.title}
+                    </p>
+                    {editMode === 'upload' && status === 'disabled' && (
+                      <p className="text-xs text-gray-400 mt-1">Locked</p>
+                    )}
+                  </div>
+                </div>
+                
+                {!isLast && (
+                  <div className={`w-16 h-0.5 mx-4 ${
+                    step.number < currentStep ? 'bg-primary' : 'bg-gray-300'
+                  }`} />
+                )}
+              </div>
+            );
+          })}
+        </nav>
+      </div>
     </div>
   );
 };
