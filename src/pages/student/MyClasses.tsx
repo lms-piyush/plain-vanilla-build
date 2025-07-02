@@ -49,6 +49,8 @@ const MyClasses = () => {
   
   console.log("My Classes - Total enrollments:", enrollments.length);
   console.log("My Classes - Converted classes:", classes.length);
+  console.log("My Classes - Sample enrollment data:", enrollments[0]);
+  console.log("My Classes - Sample converted class:", classes[0]);
   
   const filteredClasses = classes.filter(cls => {
     // Filter by tab first
@@ -99,6 +101,7 @@ const MyClasses = () => {
   }
 
   if (error) {
+    console.error("Error in MyClasses component:", error);
     return (
       <div className="text-center py-12">
         <h1 className="text-2xl font-bold mb-6">My Classes</h1>

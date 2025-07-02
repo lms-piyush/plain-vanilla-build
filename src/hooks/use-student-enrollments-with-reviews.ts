@@ -23,11 +23,15 @@ export interface StudentEnrollmentWithReviews {
     class_format: 'live' | 'recorded' | 'inbound' | 'outbound';
     class_size: 'group' | 'one-on-one';
     duration_type: 'recurring' | 'fixed';
+    max_students: number | null;
+    currency: string | null;
     tutor_id: string;
     tutor_name: string;
     average_rating: number;
     total_reviews: number;
     student_count: number;
+    created_at: string;
+    updated_at: string;
   };
 }
 
@@ -41,7 +45,7 @@ export const useStudentEnrollmentsWithReviews = () => {
         return [];
       }
 
-      console.log("Fetching enrollments with reviews for user:", user.id);
+      console.log("Fetching enrollments with comprehensive class data for user:", user.id);
 
       const { data: enrollments, error } = await supabase
         .from("student_enrollments")
@@ -49,11 +53,24 @@ export const useStudentEnrollmentsWithReviews = () => {
           *,
           classes (
             *,
-            profiles (
+            profiles!classes_tutor_id_fkey (
               full_name
             ),
             class_reviews(rating),
-            student_enrollments(id)
+            student_enrollments(id),
+            class_time_slots (
+              id,
+              day_of_week,
+              start_time,
+              end_time
+            ),
+            class_schedules (
+              id,
+              start_date,
+              end_date,
+              frequency,
+              total_sessions
+            )
           )
         `)
         .eq("student_id", user.id)
@@ -90,7 +107,7 @@ export const useStudentEnrollmentsWithReviews = () => {
         };
       }) || [];
 
-      console.log("Transformed enrollments with reviews:", transformedEnrollments);
+      console.log("Transformed enrollments with comprehensive data:", transformedEnrollments);
 
       return transformedEnrollments;
     },

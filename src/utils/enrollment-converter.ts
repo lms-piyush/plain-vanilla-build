@@ -36,10 +36,19 @@ export const convertEnrollmentToClassCard = (enrollment: StudentEnrollmentWithRe
     }
   };
 
+  // Get frequency information from class schedules
+  const getFrequency = () => {
+    if (classData.class_schedules && classData.class_schedules.length > 0) {
+      const schedule = classData.class_schedules[0];
+      return schedule.frequency || 'Weekly';
+    }
+    return 'Weekly';
+  };
+
   return {
     id: classData.id,
-    title: classData.title,
-    tutor: classData.tutor_name,
+    title: classData.title || 'Untitled Class',
+    tutor: classData.tutor_name || 'Unknown Tutor',
     tutorId: classData.tutor_id,
     image: classData.thumbnail_url || "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=300",
     type: getClassMode(),
@@ -50,9 +59,12 @@ export const convertEnrollmentToClassCard = (enrollment: StudentEnrollmentWithRe
     rating: classData.average_rating || 0,
     reviewCount: classData.total_reviews || 0,
     studentCount: classData.student_count || 0,
-    students: classData.student_count || 0, // Add this for ClassCard compatibility
-    description: classData.description || "", // Add this for ClassCard compatibility
+    students: classData.student_count || 0,
+    description: classData.description || "No description available",
     price: classData.price || 0,
-    enrollmentDate: enrollment.enrollment_date
+    enrollmentDate: enrollment.enrollment_date,
+    frequency: getFrequency(),
+    maxStudents: classData.max_students || 0,
+    subject: classData.subject || 'General'
   };
 };
