@@ -18,7 +18,7 @@ export interface StudentEnrollmentWithReviews {
     subject: string | null;
     price: number | null;
     thumbnail_url: string | null;
-    status: 'draft' | 'active' | 'inactive' | 'completed';
+    status: 'draft' | 'active' | 'inactive' | 'completed' | 'running';
     delivery_mode: 'online' | 'offline';
     class_format: 'live' | 'recorded' | 'inbound' | 'outbound';
     class_size: 'group' | 'one-on-one';

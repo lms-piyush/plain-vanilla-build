@@ -8,7 +8,7 @@ export interface ClassDetails {
   class_format: 'live' | 'recorded' | 'inbound' | 'outbound';
   class_size: 'group' | 'one-on-one';
   duration_type: 'recurring' | 'fixed';
-  status: 'draft' | 'active' | 'inactive' | 'completed';
+  status: 'draft' | 'active' | 'inactive' | 'completed' | 'running';
   price: number | null;
   currency: string | null;
   max_students: number | null;
