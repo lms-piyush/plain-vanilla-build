@@ -28,10 +28,12 @@ export const convertEnrollmentToClassCard = (enrollment: StudentEnrollmentWithRe
   };
 
   const getStatus = () => {
-    switch (enrollment.status) {
+    switch (classData.status) {
+      case 'draft': return 'Draft';
       case 'active': return 'Active';
+      case 'inactive': return 'Inactive';
       case 'completed': return 'Completed';
-      case 'cancelled': return 'Cancelled';
+      case 'running': return 'Enrolled';
       default: return 'Enrolled';
     }
   };
