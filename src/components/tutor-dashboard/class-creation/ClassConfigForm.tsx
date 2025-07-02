@@ -87,7 +87,7 @@ const ClassConfigForm = ({
       </div>
 
       <div>
-        <Label htmlFor="duration-type">Duration Type</Label>
+        <Label htmlFor="duration-type">Payment Type</Label>
         <Select value={durationType} onValueChange={(value: 'recurring' | 'fixed') => setDurationType(value)}>
           <SelectTrigger>
             <SelectValue />

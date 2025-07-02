@@ -39,7 +39,7 @@ const CreateClassDialogContent = ({
   isStepDisabled,
 }: CreateClassDialogContentProps) => {
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col max-h-[90vh] h-full overflow-hidden">
       {/* Header */}
       <div className="flex-shrink-0 pb-4">
         <h2 className="text-xl md:text-2xl font-bold text-center">
