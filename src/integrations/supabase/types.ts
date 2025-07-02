@@ -593,12 +593,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      update_class_statuses: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
     }
     Enums: {
       class_format: "live" | "recorded" | "inbound" | "outbound"
       class_size: "group" | "one-on-one"
-      class_status: "draft" | "active" | "inactive" | "completed"
+      class_status: "draft" | "active" | "inactive" | "completed" | "running"
       delivery_mode: "online" | "offline"
       duration_type: "recurring" | "fixed"
       user_role: "student" | "parent" | "tutor"
@@ -719,7 +722,7 @@ export const Constants = {
     Enums: {
       class_format: ["live", "recorded", "inbound", "outbound"],
       class_size: ["group", "one-on-one"],
-      class_status: ["draft", "active", "inactive", "completed"],
+      class_status: ["draft", "active", "inactive", "completed", "running"],
       delivery_mode: ["online", "offline"],
       duration_type: ["recurring", "fixed"],
       user_role: ["student", "parent", "tutor"],
