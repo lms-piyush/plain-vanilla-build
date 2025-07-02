@@ -102,23 +102,25 @@ const CreateClassDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="w-full max-w-4xl h-[90vh] max-h-[900px] p-6">
-        <CreateClassDialogContent
-          currentStep={currentStep}
-          formData={formState}
-          isSubmitting={isPublishing}
-          onSubmit={handlePublish}
-          onSaveAsDraft={handleSaveAsDraft}
-          onClose={handleClose}
-          canProceedToNext={canProceedToNext}
-          canGoBack={canGoBack}
-          goToNextStep={goToNextStep}
-          goToPreviousStep={goToPreviousStep}
-          goToStep={goToStep}
-          isEditMode={!!editingClass}
-          editMode={editMode}
-          isStepDisabled={isStepDisabled}
-        />
+      <DialogContent className="w-full max-w-5xl h-[90vh] max-h-[800px] p-0 overflow-hidden">
+        <div className="h-full p-6">
+          <CreateClassDialogContent
+            currentStep={currentStep}
+            formData={formState}
+            isSubmitting={isPublishing}
+            onSubmit={handlePublish}
+            onSaveAsDraft={handleSaveAsDraft}
+            onClose={handleClose}
+            canProceedToNext={canProceedToNext}
+            canGoBack={canGoBack}
+            goToNextStep={goToNextStep}
+            goToPreviousStep={goToPreviousStep}
+            goToStep={goToStep}
+            isEditMode={!!editingClass}
+            editMode={editMode}
+            isStepDisabled={isStepDisabled}
+          />
+        </div>
       </DialogContent>
     </Dialog>
   );

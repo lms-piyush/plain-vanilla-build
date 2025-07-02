@@ -39,10 +39,10 @@ const CreateClassDialogContent = ({
   isStepDisabled,
 }: CreateClassDialogContentProps) => {
   return (
-    <div className="flex flex-col h-full max-h-[90vh]">
+    <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="flex-shrink-0 border-b pb-4 px-1">
-        <h2 className="text-xl md:text-2xl font-bold text-center md:text-left">
+      <div className="flex-shrink-0 pb-4">
+        <h2 className="text-xl md:text-2xl font-bold text-center">
           {editMode === 'upload' 
             ? 'Upload Class Content' 
             : isEditMode 
@@ -51,14 +51,14 @@ const CreateClassDialogContent = ({
           }
         </h2>
         {editMode === 'upload' && (
-          <p className="text-sm text-gray-600 mt-1 text-center md:text-left">
+          <p className="text-sm text-gray-600 mt-1 text-center">
             Update schedules and content for your completed class
           </p>
         )}
       </div>
 
       {/* Stepper */}
-      <div className="flex-shrink-0 py-4 md:py-6">
+      <div className="flex-shrink-0 py-4">
         <ClassCreationStepper 
           currentStep={currentStep} 
           onStepClick={goToStep}
@@ -68,8 +68,8 @@ const CreateClassDialogContent = ({
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto">
-        <div className="min-h-[400px] px-1">
+      <div className="flex-1 overflow-y-auto min-h-0">
+        <div className="h-full">
           <StepRenderer
             currentStep={currentStep}
             onNext={goToNextStep}
@@ -83,7 +83,7 @@ const CreateClassDialogContent = ({
       </div>
 
       {/* Actions */}
-      <div className="flex-shrink-0 border-t pt-4 px-1">
+      <div className="flex-shrink-0 border-t pt-4 mt-4">
         <DialogActions
           isPublishing={isSubmitting}
           onSaveAsDraft={onSaveAsDraft}

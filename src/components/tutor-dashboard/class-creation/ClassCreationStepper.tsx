@@ -65,22 +65,22 @@ const ClassCreationStepper = ({
   };
 
   return (
-    <div className="w-full overflow-x-auto">
-      {/* Mobile View - Stacked */}
+    <div className="w-full px-4">
+      {/* Mobile View - Horizontal Scrollable */}
       <div className="md:hidden">
-        <div className="flex items-center space-x-2 px-4">
+        <div className="flex items-center space-x-3 overflow-x-auto pb-2">
           {steps.map((step, index) => {
             const status = getStepStatus(step.number);
             const isLast = index === steps.length - 1;
             
             return (
-              <div key={step.number} className="flex items-center flex-1">
-                <div className="flex flex-col items-center min-w-0">
+              <div key={step.number} className="flex items-center flex-shrink-0">
+                <div className="flex flex-col items-center">
                   <button
                     onClick={() => handleStepClick(step.number)}
                     disabled={status === 'disabled'}
                     className={`
-                      flex items-center justify-center w-8 h-8 rounded-full border-2 text-xs font-medium transition-all flex-shrink-0
+                      flex items-center justify-center w-8 h-8 rounded-full border-2 text-xs font-medium transition-all
                       ${getStepClasses(status)}
                       ${status !== 'disabled' ? 'cursor-pointer' : ''}
                     `}
@@ -92,17 +92,17 @@ const ClassCreationStepper = ({
                     )}
                   </button>
                   <div className="mt-1 text-center">
-                    <p className={`text-xs font-medium truncate max-w-[60px] ${
+                    <p className={`text-xs font-medium whitespace-nowrap ${
                       status === 'disabled' ? 'text-gray-400' : 
                       status === 'current' ? 'text-primary' : 'text-gray-600'
                     }`}>
-                      {step.title.split(' ')[0]}
+                      {step.title}
                     </p>
                   </div>
                 </div>
                 
                 {!isLast && (
-                  <div className={`flex-1 h-0.5 mx-2 ${
+                  <div className={`w-8 h-0.5 mx-2 flex-shrink-0 ${
                     step.number < currentStep ? 'bg-primary' : 'bg-gray-300'
                   }`} />
                 )}
@@ -112,9 +112,9 @@ const ClassCreationStepper = ({
         </div>
       </div>
 
-      {/* Desktop View - Horizontal */}
-      <div className="hidden md:flex items-center justify-center px-6">
-        <nav className="flex items-center space-x-4">
+      {/* Desktop View - Centered */}
+      <div className="hidden md:flex items-center justify-center">
+        <div className="flex items-center space-x-4">
           {steps.map((step, index) => {
             const status = getStepStatus(step.number);
             const isLast = index === steps.length - 1;
@@ -151,14 +151,14 @@ const ClassCreationStepper = ({
                 </div>
                 
                 {!isLast && (
-                  <div className={`w-16 h-0.5 mx-4 ${
+                  <div className={`w-12 h-0.5 mx-3 ${
                     step.number < currentStep ? 'bg-primary' : 'bg-gray-300'
                   }`} />
                 )}
               </div>
             );
           })}
-        </nav>
+        </div>
       </div>
     </div>
   );
