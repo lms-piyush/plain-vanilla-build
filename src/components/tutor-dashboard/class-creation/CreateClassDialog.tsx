@@ -61,7 +61,7 @@ const CreateClassDialog = ({
     // Basic validation logic based on current step
     switch (currentStep) {
       case 1:
-        return formState.deliveryMode && formState.classFormat && formState.classSize && formState.durationType;
+        return !!(formState.deliveryMode && formState.classFormat && formState.classSize && formState.durationType);
       case 2:
         return formState.title.trim() !== '';
       case 3:
