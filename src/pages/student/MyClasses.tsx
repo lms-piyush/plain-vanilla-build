@@ -26,7 +26,7 @@ const MyClasses = () => {
   const [classDuration, setClassDuration] = useState<"finite" | "infinite">("finite");
   const [paymentModel, setPaymentModel] = useState<"one-time" | "subscription">("one-time");
   
-  // Fetch enrolled classes with review data from database
+  // Fetch real enrolled classes with review data from database
   const { data: enrollments = [], isLoading, error, refetch } = useStudentEnrollmentsWithReviews();
 
   // Filter effects
@@ -39,27 +39,28 @@ const MyClasses = () => {
     setPaymentModel
   });
 
-  // Force refetch when component mounts
+  // Force refetch when component mounts to get latest real data
   useEffect(() => {
     refetch();
   }, [refetch]);
   
-  // Convert enrollments to class cards
+  // Convert real enrollments to class cards (no dummy data)
   const classes = enrollments.map(convertEnrollmentToClassCard);
   
-  console.log("My Classes - Total enrollments:", enrollments.length);
-  console.log("My Classes - Converted classes:", classes.length);
-  console.log("My Classes - Sample enrollment data:", enrollments[0]);
-  console.log("My Classes - Sample converted class:", classes[0]);
+  console.log("My Classes - Total real enrollments from database:", enrollments.length);
+  console.log("My Classes - Converted real classes:", classes.length);
+  console.log("My Classes - Sample real enrollment data:", enrollments[0]);
+  console.log("My Classes - Sample converted real class:", classes[0]);
   
+  // Filter classes based on real enrollment status and class status
   const filteredClasses = classes.filter(cls => {
-    // Filter by tab first
+    // Filter by tab first - using real status data
     if (activeTab === "active") {
       return cls.status === "Active" || cls.status === "Enrolled";
     } else if (activeTab === "completed") {
       return cls.status === "Completed";
     }
-    // For "all" tab, include all classes
+    // For "all" tab, include all real classes
     return true;
   }).filter(cls => {
     // Apply additional filters only if filter drawer has been opened
@@ -89,23 +90,23 @@ const MyClasses = () => {
     return true;
   });
 
-  console.log("My Classes - Filtered classes:", filteredClasses.length);
+  console.log("My Classes - Filtered real classes:", filteredClasses.length);
 
   if (isLoading) {
     return (
       <div className="text-center py-12">
         <h1 className="text-2xl font-bold mb-6">My Classes</h1>
-        <p>Loading your enrolled classes...</p>
+        <p>Loading your real enrolled classes from database...</p>
       </div>
     );
   }
 
   if (error) {
-    console.error("Error in MyClasses component:", error);
+    console.error("Error in MyClasses component loading real data:", error);
     return (
       <div className="text-center py-12">
         <h1 className="text-2xl font-bold mb-6">My Classes</h1>
-        <p className="text-red-500 mb-4">Error loading classes: {error.message}</p>
+        <p className="text-red-500 mb-4">Error loading real classes from database: {error.message}</p>
         <Button 
           onClick={() => refetch()}
           className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"

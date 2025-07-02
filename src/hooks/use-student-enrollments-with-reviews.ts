@@ -58,13 +58,13 @@ export const useStudentEnrollmentsWithReviews = () => {
         return [];
       }
 
-      console.log("Fetching enrollments with comprehensive class data for user:", user.id);
+      console.log("Fetching real enrollments with comprehensive class data for user:", user.id);
 
       const { data: enrollments, error } = await supabase
         .from("student_enrollments")
         .select(`
           *,
-          classes (
+          classes!inner (
             *,
             profiles!classes_tutor_id_fkey (
               full_name
@@ -87,16 +87,27 @@ export const useStudentEnrollmentsWithReviews = () => {
           )
         `)
         .eq("student_id", user.id)
+        .in("classes.status", ["active", "running", "completed", "draft"])
         .order("enrollment_date", { ascending: false });
 
       if (error) {
-        console.error("Error fetching enrollments with reviews:", error);
+        console.error("Error fetching real enrollments with reviews:", error);
         throw error;
       }
 
-      console.log("Raw enrollments data:", enrollments);
+      console.log("Raw real enrollments data from database:", enrollments);
 
-      const transformedEnrollments: StudentEnrollmentWithReviews[] = enrollments?.map(enrollment => {
+      // Only process enrollments that have valid class data (no dummy data)
+      const validEnrollments = enrollments?.filter(enrollment => 
+        enrollment.classes && 
+        enrollment.classes.title && 
+        enrollment.classes.title.trim() !== '' &&
+        !enrollment.classes.title.toLowerCase().includes('dummy') &&
+        !enrollment.classes.title.toLowerCase().includes('test') &&
+        !enrollment.classes.title.toLowerCase().includes('placeholder')
+      ) || [];
+
+      const transformedEnrollments: StudentEnrollmentWithReviews[] = validEnrollments.map(enrollment => {
         const classData = enrollment.classes;
         const reviews = classData?.class_reviews || [];
         const totalReviews = reviews.length;
@@ -115,17 +126,19 @@ export const useStudentEnrollmentsWithReviews = () => {
             tutor_name: classData?.profiles?.full_name || "Unknown Tutor",
             average_rating: averageRating,
             total_reviews: totalReviews,
-            student_count: studentCount
+            student_count: studentCount,
+            class_schedules: classData?.class_schedules || [],
+            class_time_slots: classData?.class_time_slots || []
           }
         };
-      }) || [];
+      });
 
-      console.log("Transformed enrollments with comprehensive data:", transformedEnrollments);
+      console.log("Transformed real enrollments with comprehensive data (no dummy data):", transformedEnrollments);
 
       return transformedEnrollments;
     },
-    staleTime: 10 * 1000, // 10 seconds
-    gcTime: 30 * 1000,
+    staleTime: 5 * 1000, // Reduced to 5 seconds for real-time data
+    gcTime: 15 * 1000,
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });
