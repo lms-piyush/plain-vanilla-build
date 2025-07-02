@@ -1,8 +1,9 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Dialog, DialogContent } from '@/components/ui/dialog';
 import { TutorClass } from '@/hooks/use-tutor-classes';
 import { useCreateClassDialog } from './hooks/useCreateClassDialog';
+import { useClassCreationStore } from '@/hooks/use-class-creation-store';
 import CreateClassDialogContent from './CreateClassDialogContent';
 
 interface CreateClassDialogProps {
@@ -20,25 +21,14 @@ const CreateClassDialog = ({
   editingClass,
   editMode = 'full'
 }: CreateClassDialogProps) => {
+  const [currentStep, setCurrentStep] = useState(1);
+  const { formState, reset } = useClassCreationStore();
+  
   const {
-    currentStep,
-    setCurrentStep,
-    formData,
-    setFormData,
-    isSubmitting,
-    resetForm,
-    handleSubmit,
-    canProceedToNext,
-    canGoBack,
-    goToNextStep,
-    goToPreviousStep,
-    goToStep,
-    isEditMode,
-  } = useCreateClassDialog({
-    onClassCreated,
-    onClose: () => onOpenChange(false),
-    editingClass,
-  });
+    handleSaveAsDraft,
+    handlePublish,
+    isPublishing,
+  } = useCreateClassDialog(editingClass, onClassCreated, () => onOpenChange(false));
 
   // Set initial step based on edit mode
   useEffect(() => {
@@ -49,12 +39,13 @@ const CreateClassDialog = ({
       // Start from Step 1 for new classes
       setCurrentStep(1);
     }
-  }, [open, editMode, editingClass, setCurrentStep]);
+  }, [open, editMode, editingClass]);
 
   const handleClose = () => {
-    if (!isSubmitting) {
+    if (!isPublishing) {
       onOpenChange(false);
-      resetForm();
+      reset();
+      setCurrentStep(1);
     }
   };
 
@@ -66,22 +57,65 @@ const CreateClassDialog = ({
     return false;
   };
 
+  const canProceedToNext = () => {
+    // Basic validation logic based on current step
+    switch (currentStep) {
+      case 1:
+        return formState.deliveryMode && formState.classFormat && formState.classSize && formState.durationType;
+      case 2:
+        return formState.title.trim() !== '';
+      case 3:
+        return formState.timeSlots.length > 0;
+      case 4:
+        return formState.deliveryMode === 'offline' || formState.meetingLink.trim() !== '';
+      case 5:
+        return formState.syllabus.length > 0;
+      default:
+        return true;
+    }
+  };
+
+  const canGoBack = () => {
+    if (editMode === 'upload') {
+      return currentStep > 3; // Can't go back past step 3 in upload mode
+    }
+    return currentStep > 1;
+  };
+
+  const goToNextStep = () => {
+    if (canProceedToNext() && currentStep < 6) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const goToPreviousStep = () => {
+    if (canGoBack()) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  const goToStep = (step: number) => {
+    if (!isStepDisabled?.(step)) {
+      setCurrentStep(step);
+    }
+  };
+
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-y-auto">
         <CreateClassDialogContent
           currentStep={currentStep}
-          formData={formData}
-          setFormData={setFormData}
-          isSubmitting={isSubmitting}
-          onSubmit={handleSubmit}
+          formData={formState}
+          isSubmitting={isPublishing}
+          onSubmit={handlePublish}
+          onSaveAsDraft={handleSaveAsDraft}
           onClose={handleClose}
           canProceedToNext={canProceedToNext}
           canGoBack={canGoBack}
           goToNextStep={goToNextStep}
           goToPreviousStep={goToPreviousStep}
           goToStep={goToStep}
-          isEditMode={isEditMode}
+          isEditMode={!!editingClass}
           editMode={editMode}
           isStepDisabled={isStepDisabled}
         />

@@ -1,16 +1,16 @@
 
 import React from 'react';
-import { ClassCreationFormData } from '@/hooks/use-class-creation-store/types';
+import { ClassCreationState } from '@/hooks/use-class-creation-store/types';
 import ClassCreationStepper from './ClassCreationStepper';
 import StepRenderer from './StepRenderer';
 import DialogActions from './DialogActions';
 
 interface CreateClassDialogContentProps {
   currentStep: number;
-  formData: ClassCreationFormData;
-  setFormData: (data: Partial<ClassCreationFormData>) => void;
+  formData: ClassCreationState;
   isSubmitting: boolean;
   onSubmit: () => Promise<void>;
+  onSaveAsDraft: () => Promise<void>;
   onClose: () => void;
   canProceedToNext: () => boolean;
   canGoBack: () => boolean;
@@ -25,9 +25,9 @@ interface CreateClassDialogContentProps {
 const CreateClassDialogContent = ({
   currentStep,
   formData,
-  setFormData,
   isSubmitting,
   onSubmit,
+  onSaveAsDraft,
   onClose,
   canProceedToNext,
   canGoBack,
@@ -66,23 +66,19 @@ const CreateClassDialogContent = ({
       <div className="min-h-[400px]">
         <StepRenderer
           currentStep={currentStep}
-          formData={formData}
-          setFormData={setFormData}
-          editMode={editMode}
+          onNext={goToNextStep}
+          onBack={goToPreviousStep}
+          onSaveAsDraft={onSaveAsDraft}
+          onPublish={onSubmit}
+          isPublishing={isSubmitting}
+          editingClass={isEditMode}
         />
       </div>
 
       <DialogActions
-        currentStep={currentStep}
-        canGoBack={canGoBack}
-        canProceedToNext={canProceedToNext}
-        isSubmitting={isSubmitting}
-        onBack={goToPreviousStep}
-        onNext={goToNextStep}
-        onSubmit={onSubmit}
-        onClose={onClose}
-        isEditMode={isEditMode}
-        editMode={editMode}
+        isPublishing={isSubmitting}
+        onSaveAsDraft={onSaveAsDraft}
+        onPublish={onSubmit}
       />
     </div>
   );

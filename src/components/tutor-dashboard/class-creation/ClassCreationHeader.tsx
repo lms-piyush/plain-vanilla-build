@@ -58,7 +58,6 @@ const ClassCreationHeader = ({
       </div>
       
       <ClassCreationStepper
-        steps={steps}
         currentStep={currentStep}
         onStepClick={onStepClick}
       />

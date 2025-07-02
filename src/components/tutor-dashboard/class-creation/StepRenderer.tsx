@@ -27,19 +27,19 @@ const StepRenderer = ({
   editingClass
 }: StepRendererProps) => {
   switch (currentStep) {
-    case 0:
-      return <ClassTypeStep onNext={onNext} />;
     case 1:
-      return <DetailsStep onNext={onNext} onBack={onBack} />;
+      return <ClassTypeStep onNext={onNext} />;
     case 2:
-      return <ScheduleStep onNext={onNext} onBack={onBack} />;
+      return <DetailsStep onNext={onNext} onBack={onBack} />;
     case 3:
-      return <PricingStep onNext={onNext} onBack={onBack} />;
+      return <ScheduleStep onNext={onNext} onBack={onBack} />;
     case 4:
-      return <LocationStep onNext={onNext} onBack={onBack} />;
+      return <PricingStep onNext={onNext} onBack={onBack} />;
     case 5:
-      return <CurriculumStep onNext={onNext} onBack={onBack} />;
+      return <LocationStep onNext={onNext} onBack={onBack} />;
     case 6:
+      return <CurriculumStep onNext={onNext} onBack={onBack} />;
+    case 7:
       return (
         <PreviewStep 
           onBack={onBack} 
