@@ -19,6 +19,7 @@ const Classes = () => {
   const [editingClass, setEditingClass] = useState<TutorClass | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [editMode, setEditMode] = useState<'full' | 'upload'>('full');
   
   const classesPerPage = 6;
   const { classes, totalCount, isLoading, error, refetch } = useTutorClasses({
@@ -30,18 +31,33 @@ const Classes = () => {
 
   const handleCreateClass = () => {
     setEditingClass(null);
+    setEditMode('full');
     setCreateClassDialogOpen(true);
   };
 
   const handleEditClass = (classItem: TutorClass) => {
+    // Only allow editing if class is in draft status
+    if (classItem.status !== 'draft') {
+      toast.error('Only draft classes can be edited');
+      return;
+    }
+    
     setEditingClass(classItem);
+    setEditMode('full');
     setCreateClassDialogOpen(true);
   };
 
-  // const handleManageClass = (classItem: TutorClass) => {
-  //   setSelectedClass(classItem);
-  //   setManageDialogOpen(true);
-  // };
+  const handleUploadClass = (classItem: TutorClass) => {
+    // Only allow upload mode for completed classes
+    if (classItem.status !== 'completed') {
+      toast.error('Upload option is only available for completed classes');
+      return;
+    }
+    
+    setEditingClass(classItem);
+    setEditMode('upload');
+    setCreateClassDialogOpen(true);
+  };
 
   const handleManageClass = (classItem: TutorClass) => {
     navigate(`/tutor/classes/${classItem.id}`);
@@ -76,6 +92,7 @@ const Classes = () => {
   const handleClassCreated = () => {
     refetch();
     setEditingClass(null);
+    setEditMode('full');
   };
 
   const handlePageChange = (page: number) => {
@@ -118,6 +135,7 @@ const Classes = () => {
         onOpenChange={setCreateClassDialogOpen}
         onClassCreated={handleClassCreated}
         editingClass={editingClass}
+        editMode={editMode}
       />
 
       {/* Manage Class Dialog */}
@@ -140,6 +158,7 @@ const Classes = () => {
               onManageClass={handleManageClass}
               onCreateClass={handleCreateClass}
               onDeleteClass={handleDeleteClass}
+              onUploadClass={handleUploadClass}
             />
           </div>
 

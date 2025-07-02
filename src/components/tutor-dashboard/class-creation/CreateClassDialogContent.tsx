@@ -1,76 +1,90 @@
 
-import { 
-  Dialog, 
-  DialogContent
-} from "@/components/ui/dialog";
-import ClassCreationHeader from "./ClassCreationHeader";
-import StepRenderer from "./StepRenderer";
-import { TutorClass } from "@/hooks/use-tutor-classes";
-
-const steps = [
-  "Delivery & Type",
-  "Details", 
-  "Schedule",
-  "Pricing & Capacity",
-  "Location/Links",
-  "Curriculum",
-  "Preview & Publish"
-];
+import React from 'react';
+import { ClassCreationFormData } from '@/hooks/use-class-creation-store/types';
+import ClassCreationStepper from './ClassCreationStepper';
+import StepRenderer from './StepRenderer';
+import DialogActions from './DialogActions';
 
 interface CreateClassDialogContentProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
   currentStep: number;
-  onStepClick: (step: number) => void;
-  onTestClick: () => void;
+  formData: ClassCreationFormData;
+  setFormData: (data: Partial<ClassCreationFormData>) => void;
+  isSubmitting: boolean;
+  onSubmit: () => Promise<void>;
   onClose: () => void;
-  onNext: () => void;
-  onBack: () => void;
-  onSaveAsDraft: () => void;
-  onPublish: () => void;
-  isPublishing: boolean;
-  editingClass?: TutorClass | null;
+  canProceedToNext: () => boolean;
+  canGoBack: () => boolean;
+  goToNextStep: () => void;
+  goToPreviousStep: () => void;
+  goToStep: (step: number) => void;
+  isEditMode: boolean;
+  editMode?: 'full' | 'upload';
+  isStepDisabled?: (step: number) => boolean;
 }
 
 const CreateClassDialogContent = ({
-  open,
-  onOpenChange,
   currentStep,
-  onStepClick,
-  onTestClick,
+  formData,
+  setFormData,
+  isSubmitting,
+  onSubmit,
   onClose,
-  onNext,
-  onBack,
-  onSaveAsDraft,
-  onPublish,
-  isPublishing,
-  editingClass
+  canProceedToNext,
+  canGoBack,
+  goToNextStep,
+  goToPreviousStep,
+  goToStep,
+  isEditMode,
+  editMode = 'full',
+  isStepDisabled,
 }: CreateClassDialogContentProps) => {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[900px] p-0 overflow-hidden max-h-[90vh]">
-        <ClassCreationHeader
-          steps={steps}
+    <div className="space-y-6">
+      <div className="border-b pb-4">
+        <h2 className="text-2xl font-bold">
+          {editMode === 'upload' 
+            ? 'Upload Class Content' 
+            : isEditMode 
+            ? 'Edit Class' 
+            : 'Create New Class'
+          }
+        </h2>
+        {editMode === 'upload' && (
+          <p className="text-sm text-gray-600 mt-1">
+            Update schedules and content for your completed class
+          </p>
+        )}
+      </div>
+
+      <ClassCreationStepper 
+        currentStep={currentStep} 
+        onStepClick={goToStep}
+        isStepDisabled={isStepDisabled}
+        editMode={editMode}
+      />
+
+      <div className="min-h-[400px]">
+        <StepRenderer
           currentStep={currentStep}
-          onStepClick={onStepClick}
-          onTestClick={onTestClick}
-          onClose={onClose}
-          editingClass={editingClass}
+          formData={formData}
+          setFormData={setFormData}
+          editMode={editMode}
         />
-        
-        <div className="overflow-y-auto max-h-[calc(90vh-150px)] px-6 py-4">
-          <StepRenderer
-            currentStep={currentStep}
-            onNext={onNext}
-            onBack={onBack}
-            onSaveAsDraft={onSaveAsDraft}
-            onPublish={onPublish}
-            isPublishing={isPublishing}
-            editingClass={!!editingClass}
-          />
-        </div>
-      </DialogContent>
-    </Dialog>
+      </div>
+
+      <DialogActions
+        currentStep={currentStep}
+        canGoBack={canGoBack}
+        canProceedToNext={canProceedToNext}
+        isSubmitting={isSubmitting}
+        onBack={goToPreviousStep}
+        onNext={goToNextStep}
+        onSubmit={onSubmit}
+        onClose={onClose}
+        isEditMode={isEditMode}
+        editMode={editMode}
+      />
+    </div>
   );
 };
 
