@@ -4,7 +4,7 @@ import { StudentEnrollmentWithReviews } from "@/hooks/use-student-enrollments-wi
 export const convertEnrollmentToClassCard = (enrollment: StudentEnrollmentWithReviews) => {
   const classData = enrollment.class;
   
-  // Determine class type and format from real database data
+  // Determine class type and format
   const getClassMode = () => {
     return classData.delivery_mode === 'online' ? 'Online' : 'Offline';
   };
@@ -28,23 +28,15 @@ export const convertEnrollmentToClassCard = (enrollment: StudentEnrollmentWithRe
   };
 
   const getStatus = () => {
-    // Map real enrollment and class status to display status
-    if (enrollment.status === 'completed' || classData.status === 'completed') {
-      return 'Completed';
+    switch (enrollment.status) {
+      case 'active': return 'Active';
+      case 'completed': return 'Completed';
+      case 'cancelled': return 'Cancelled';
+      default: return 'Enrolled';
     }
-    if (enrollment.status === 'cancelled') {
-      return 'Cancelled';
-    }
-    if (enrollment.status === 'active' && (classData.status === 'active' || classData.status === 'running')) {
-      return 'Active';
-    }
-    if (enrollment.status === 'active' && classData.status === 'draft') {
-      return 'Enrolled';
-    }
-    return 'Enrolled';
   };
 
-  // Get frequency information from real class schedules data
+  // Get frequency information from class schedules
   const getFrequency = () => {
     if (classData.class_schedules && classData.class_schedules.length > 0) {
       const schedule = classData.class_schedules[0];
@@ -53,7 +45,6 @@ export const convertEnrollmentToClassCard = (enrollment: StudentEnrollmentWithRe
     return 'Weekly';
   };
 
-  // Use real data from database, no dummy data
   return {
     id: classData.id,
     title: classData.title || 'Untitled Class',
