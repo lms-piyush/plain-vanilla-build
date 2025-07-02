@@ -593,6 +593,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      is_student_enrolled_in_class: {
+        Args: { class_id_param: string; student_id_param: string }
+        Returns: boolean
+      }
       update_class_statuses: {
         Args: Record<PropertyKey, never>
         Returns: undefined
