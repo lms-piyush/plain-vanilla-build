@@ -22,12 +22,17 @@ export const useCreateClassDialog = (
   const { updateFormState } = useFormStateManager();
   const { loadClassData } = useClassEditingLogic();
 
-  // Load existing class data when editing
+  // Load existing class data when editing - use a ref to track if we've already loaded
+  const [hasLoadedClass, setHasLoadedClass] = useState(false);
+  
   useEffect(() => {
-    if (editingClass && onClose) {
+    if (editingClass && !hasLoadedClass) {
       loadClassData(editingClass);
+      setHasLoadedClass(true);
+    } else if (!editingClass && hasLoadedClass) {
+      setHasLoadedClass(false);
     }
-  }, [editingClass?.id, onClose, loadClassData]);
+  }, [editingClass?.id, hasLoadedClass, loadClassData]); // Only depend on class ID to avoid loops
 
   const handleNext = useCallback(() => {
     setCurrentStep(prev => prev < 6 ? prev + 1 : prev);
@@ -134,6 +139,7 @@ export const useCreateClassDialog = (
 
   const handleReset = useCallback(() => {
     setCurrentStep(0);
+    setHasLoadedClass(false);
     reset();
   }, [reset]);
 

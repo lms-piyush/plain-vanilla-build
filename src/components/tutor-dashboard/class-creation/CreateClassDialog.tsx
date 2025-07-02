@@ -30,16 +30,16 @@ const CreateClassDialog = ({
     isPublishing,
   } = useCreateClassDialog(editingClass, onClassCreated, () => onOpenChange(false));
 
-  // Set initial step based on edit mode
+  // Set initial step based on edit mode - only run when dialog opens or editMode changes
   useEffect(() => {
-    if (open && editMode === 'upload') {
-      // Start from Step 3 (Schedule) for upload mode
-      setCurrentStep(3);
-    } else if (open && !editingClass) {
-      // Start from Step 1 for new classes
-      setCurrentStep(1);
+    if (open) {
+      if (editMode === 'upload') {
+        setCurrentStep(3); // Start from Step 3 (Schedule) for upload mode
+      } else if (!editingClass) {
+        setCurrentStep(1); // Start from Step 1 for new classes
+      }
     }
-  }, [open, editMode, editingClass]);
+  }, [open, editMode]); // Removed editingClass from dependencies to prevent loops
 
   const handleClose = () => {
     if (!isPublishing) {
@@ -95,7 +95,7 @@ const CreateClassDialog = ({
   };
 
   const goToStep = (step: number) => {
-    if (!isStepDisabled?.(step)) {
+    if (!isStepDisabled(step)) {
       setCurrentStep(step);
     }
   };
