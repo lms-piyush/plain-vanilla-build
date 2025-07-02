@@ -32,6 +32,19 @@ export interface StudentEnrollmentWithReviews {
     student_count: number;
     created_at: string;
     updated_at: string;
+    class_schedules: {
+      id: string;
+      start_date: string | null;
+      end_date: string | null;
+      frequency: string | null;
+      total_sessions: number | null;
+    }[];
+    class_time_slots: {
+      id: string;
+      day_of_week: string;
+      start_time: string;
+      end_time: string;
+    }[];
   };
 }
 
