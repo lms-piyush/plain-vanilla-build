@@ -23,11 +23,12 @@ const ClassCreationStepper = ({
 }: ClassCreationStepperProps) => {
   const steps: Step[] = [
     { number: 1, title: 'Delivery & Type', description: 'Choose class delivery mode and format' },
-    { number: 2, title: 'Details', description: 'Add class title, description, and pricing' },
+    { number: 2, title: 'Details', description: 'Add class title, description, and details' },
     { number: 3, title: 'Schedule', description: 'Set up class timing and duration' },
-    { number: 4, title: 'Location', description: 'Add location or meeting details' },
-    { number: 5, title: 'Curriculum', description: 'Create lessons and learning objectives' },
-    { number: 6, title: 'Preview', description: 'Review and publish your class' },
+    { number: 4, title: 'Pricing', description: 'Set pricing and capacity options' },
+    { number: 5, title: 'Location', description: 'Add location or meeting details' },
+    { number: 6, title: 'Curriculum', description: 'Create lessons and learning objectives' },
+    { number: 7, title: 'Preview', description: 'Review and publish your class' },
   ];
 
   const getStepStatus = (stepNumber: number) => {

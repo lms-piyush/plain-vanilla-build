@@ -67,8 +67,10 @@ const CreateClassDialog = ({
       case 3:
         return formState.timeSlots.length > 0;
       case 4:
-        return formState.deliveryMode === 'offline' || !!formState.meetingLink.trim();
+        return formState.price !== null || formState.price === 0; // Allow free classes
       case 5:
+        return formState.deliveryMode === 'offline' || !!formState.meetingLink.trim();
+      case 6:
         return formState.syllabus.length > 0;
       default:
         return true;
@@ -83,7 +85,7 @@ const CreateClassDialog = ({
   };
 
   const goToNextStep = () => {
-    if (canProceedToNext() && currentStep < 6) {
+    if (canProceedToNext() && currentStep < 7) {
       setCurrentStep(currentStep + 1);
     }
   };
