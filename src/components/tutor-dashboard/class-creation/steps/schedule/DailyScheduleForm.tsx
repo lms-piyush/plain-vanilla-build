@@ -23,45 +23,41 @@ const DailyScheduleForm = ({
   onUpdateTimeSlot
 }: DailyScheduleFormProps) => {
   return (
-    <div className="space-y-4">
-      <div className="bg-blue-50 p-3 rounded-md">
-        <p className="text-sm text-blue-800">
-          Daily classes will occur every day at the specified times between the start and end dates.
-        </p>
+    <div className="bg-white border border-gray-200 rounded-lg p-6 space-y-6">
+      <div className="flex items-center justify-between">
+        <h3 className="text-lg font-semibold text-[#1F4E79]">Class Times</h3>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={onAddTimeSlot}
+          className="flex items-center gap-2 px-3 py-1.5 text-sm"
+        >
+          <Plus className="h-4 w-4" />
+          Add Time
+        </Button>
       </div>
       
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <Label className="text-base">Class Times</Label>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={onAddTimeSlot}
-            className="flex items-center gap-2"
-          >
-            <Plus className="h-4 w-4" />
-            Add Time
-          </Button>
-        </div>
-        
+      <div className="space-y-4">
         {timeSlots.map((slot, index) => (
-          <div key={index} className="flex items-center gap-3 p-3 border rounded-md">
+          <div key={index} className="flex items-end gap-3 p-4 bg-gray-50 border border-gray-200 rounded-md">
             <div className="grid grid-cols-2 gap-3 flex-1">
-              <div>
-                <Label className="text-sm">Start Time</Label>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">Start Time</Label>
                 <Input
                   type="time"
                   value={slot.startTime}
                   onChange={(e) => onUpdateTimeSlot(index, "startTime", e.target.value)}
+                  className="h-10 border-gray-300"
                 />
               </div>
-              <div>
-                <Label className="text-sm">End Time</Label>
+              <div className="space-y-2">
+                <Label className="text-sm font-medium text-gray-700">End Time</Label>
                 <Input
                   type="time"
                   value={slot.endTime}
                   onChange={(e) => onUpdateTimeSlot(index, "endTime", e.target.value)}
+                  className="h-10 border-gray-300"
                 />
               </div>
             </div>
@@ -71,6 +67,7 @@ const DailyScheduleForm = ({
                 variant="outline"
                 size="sm"
                 onClick={() => onRemoveTimeSlot(index)}
+                className="h-10 w-10 p-0 flex-shrink-0"
               >
                 <X className="h-4 w-4" />
               </Button>

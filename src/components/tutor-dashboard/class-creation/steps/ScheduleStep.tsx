@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { 
   useClassCreationStore, 
@@ -277,8 +278,10 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   };
   
   return (
-    <div className="space-y-6 pb-24 min-h-screen overflow-y-auto">
-      <div className="grid md:grid-cols-2 gap-6">
+    <div className="space-y-8 p-6">
+      {/* Main Content Grid */}
+      <div className="grid lg:grid-cols-2 gap-8">
+        {/* Left Column - Form Controls */}
         <div className="space-y-6">
           <FrequencySelector
             frequency={frequency}
@@ -300,33 +303,34 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
           />
         </div>
         
-        <div className="space-y-4">
+        {/* Right Column - Time Slots & Tips */}
+        <div className="space-y-6">
           {renderFrequencyFields()}
           {errors.timeSlots && (
-            <p className="text-red-500 text-sm">{errors.timeSlots}</p>
+            <div className="bg-red-50 border border-red-200 rounded-md p-3">
+              <p className="text-red-600 text-sm">{errors.timeSlots}</p>
+            </div>
           )}
           
           <ScheduleTips frequency={frequency} />
         </div>
       </div>
       
-      {/* Fixed positioning for buttons with proper spacing */}
-      <div className="sticky bottom-0 left-0 right-0 bg-white border-t p-4 shadow-lg mt-8">
-        <div className="flex justify-between items-center max-w-4xl mx-auto">
-          <Button 
-            variant="outline" 
-            onClick={onBack}
-            className="w-24"
-          >
-            Back
-          </Button>
-          <Button 
-            onClick={handleNext}
-            className="bg-[#1F4E79] hover:bg-[#1a4369] w-32"
-          >
-            Continue to Pricing
-          </Button>
-        </div>
+      {/* Action Buttons */}
+      <div className="flex justify-between items-center pt-6 border-t">
+        <Button 
+          variant="outline" 
+          onClick={onBack}
+          className="px-6"
+        >
+          Back
+        </Button>
+        <Button 
+          onClick={handleNext}
+          className="bg-[#1F4E79] hover:bg-[#1a4369] px-6"
+        >
+          Continue to Location
+        </Button>
       </div>
     </div>
   );
