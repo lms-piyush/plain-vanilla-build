@@ -12,8 +12,8 @@ interface SimpleBasicInfoFormProps {
   setDescription: (description: string) => void;
   subject: string;
   setSubject: (subject: string) => void;
-  status: 'draft' | 'active' | 'inactive' | 'completed';
-  setStatus: (status: 'draft' | 'active' | 'inactive' | 'completed') => void;
+  status: 'draft' | 'active' | 'inactive' | 'completed' | 'running';
+  setStatus: (status: 'draft' | 'active' | 'inactive' | 'completed' | 'running') => void;
   price: string;
   setPrice: (price: string) => void;
   maxStudents: string;
@@ -84,6 +84,7 @@ const SimpleBasicInfoForm = ({
               <SelectItem value="active">Active</SelectItem>
               <SelectItem value="inactive">Inactive</SelectItem>
               <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="running">Running</SelectItem>
             </SelectContent>
           </Select>
         </div>
