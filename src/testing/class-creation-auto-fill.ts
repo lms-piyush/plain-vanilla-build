@@ -125,31 +125,17 @@ export const autoFillClassCreation = async (
   // Step 6: Curriculum
   console.log("Step 6: Filling Curriculum");
   
-  // Create proper LessonItem objects with all required properties
-  const completeSyllabus = defaultSyllabus.map((item, index) => ({
-    id: item.id,
-    title: item.title,
-    description: item.description,
-    weekNumber: index + 1,
-    learningObjectives: item.learningObjectives || [],
-    sessionDate: item.sessionDate,
-    startTime: item.startTime || "09:00",
-    endTime: item.endTime || "10:00",
-    status: item.status || "upcoming",
-    notes: item.notes || ""
-  }));
-  
-  // Add syllabus items quickly
+  // Add syllabus items quickly - the defaultSyllabus now contains complete LessonItem objects
   await delay(100);
-  updateFormState({ syllabus: [completeSyllabus[0]] });
+  updateFormState({ syllabus: [defaultSyllabus[0]] });
   await delay(100);
-  updateFormState({ syllabus: completeSyllabus.slice(0, 2) });
+  updateFormState({ syllabus: defaultSyllabus.slice(0, 2) });
   await delay(100);
-  updateFormState({ syllabus: completeSyllabus.slice(0, 3) });
+  updateFormState({ syllabus: defaultSyllabus.slice(0, 3) });
   await delay(100);
-  updateFormState({ syllabus: completeSyllabus.slice(0, 4) });
+  updateFormState({ syllabus: defaultSyllabus.slice(0, 4) });
   await delay(100);
-  updateFormState({ syllabus: completeSyllabus });
+  updateFormState({ syllabus: defaultSyllabus });
   
   // Add materials quickly with lessonIndex
   await delay(100);
