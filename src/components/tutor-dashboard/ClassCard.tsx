@@ -32,7 +32,7 @@ const ClassCard = ({ classItem, onEdit, onManage, onDelete, onUpload }: ClassCar
     };
 
     const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.draft;
-    
+
     return (
       <Badge className={`${config.color} text-xs`}>
         {config.label}
@@ -45,7 +45,13 @@ const ClassCard = ({ classItem, onEdit, onManage, onDelete, onUpload }: ClassCar
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
-      <div className="relative h-48 bg-gradient-to-br from-primary to-primary/80">
+      <div className="relative h-48 bg-gradient-to-br from-primary to-primary/80"
+        style={{
+          backgroundImage: `url(${classItem.thumbnail_url})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
         <div className="absolute top-3 right-3">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -58,8 +64,8 @@ const ClassCard = ({ classItem, onEdit, onManage, onDelete, onUpload }: ClassCar
                 <Eye className="mr-2 h-4 w-4" />
                 Manage
               </DropdownMenuItem>
-              
-              <DropdownMenuItem 
+
+              <DropdownMenuItem
                 onClick={() => onEdit(classItem)}
                 disabled={!canEdit}
                 className={!canEdit ? "opacity-50 cursor-not-allowed" : ""}
@@ -67,17 +73,17 @@ const ClassCard = ({ classItem, onEdit, onManage, onDelete, onUpload }: ClassCar
                 <Edit className="mr-2 h-4 w-4" />
                 Edit
               </DropdownMenuItem>
-              
+
               {canUpload && onUpload && (
                 <DropdownMenuItem onClick={() => onUpload(classItem)}>
                   <Upload className="mr-2 h-4 w-4" />
                   Upload
                 </DropdownMenuItem>
               )}
-              
+
               <DropdownMenuSeparator />
-              
-              <DropdownMenuItem 
+
+              <DropdownMenuItem
                 onClick={() => onDelete(classItem)}
                 className="text-red-600 hover:text-red-700 hover:bg-red-50"
               >
@@ -87,7 +93,6 @@ const ClassCard = ({ classItem, onEdit, onManage, onDelete, onUpload }: ClassCar
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
-        
         <div className="absolute bottom-4 left-4 right-4">
           <div className="flex items-center justify-between text-white">
             <div className="text-sm opacity-90">
@@ -97,13 +102,13 @@ const ClassCard = ({ classItem, onEdit, onManage, onDelete, onUpload }: ClassCar
           </div>
         </div>
       </div>
-      
+
       <CardContent className="p-4">
         <h3 className="font-semibold text-lg mb-2 line-clamp-2">{classItem.title}</h3>
         <p className="text-gray-600 text-sm mb-4 line-clamp-2">
           {classItem.description || 'No description available'}
         </p>
-        
+
         <div className="space-y-2 text-sm text-gray-500">
           <div className="flex justify-between">
             <span>Students:</span>
@@ -118,9 +123,9 @@ const ClassCard = ({ classItem, onEdit, onManage, onDelete, onUpload }: ClassCar
             <span>{new Date(classItem.created_at).toLocaleDateString()}</span>
           </div>
         </div>
-        
+
         <div className="mt-4 pt-4 border-t">
-          <Button 
+          <Button
             onClick={() => onManage(classItem)}
             className="w-full"
             size="sm"
