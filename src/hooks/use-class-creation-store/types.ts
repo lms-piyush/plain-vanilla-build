@@ -1,106 +1,83 @@
 
-// Define the types for our form state
-export type DeliveryMode = 'online' | 'offline';
-export type ClassFormat = 'live' | 'recorded' | 'inbound' | 'outbound';
-export type ClassSize = 'group' | 'one-on-one';
-export type DurationType = 'recurring' | 'fixed';
-export type Frequency = 'daily' | 'weekly' | 'monthly';
-export type DayOfWeek = 'monday' | 'tuesday' | 'wednesday' | 'thursday' | 'friday' | 'saturday' | 'sunday';
-
-export type TimeSlot = {
-  dayOfWeek: DayOfWeek;
+export interface LessonItem {
+  id?: string;
+  title: string;
+  description: string;
+  weekNumber: number;
+  learningObjectives: string[];
+  sessionDate?: Date;
   startTime: string;
   endTime: string;
-};
+  status?: string;
+  notes: string;
+}
 
-export type FormState = {
-  // Step 1: Delivery & Type
-  deliveryMode: DeliveryMode | null;
-  classFormat: ClassFormat | null;
-  classSize: ClassSize | null;
-  durationType: DurationType | null;
+export interface ClassCreationState {
+  currentStep: number;
+  editingClassId: string | null;
   
-  // Step 2: Details
-  basicDetails: {
+  basicInfo: {
     title: string;
-    subject: string;
     description: string;
+    subject: string;
     thumbnailUrl: string;
   };
   
-  // Step 3: Schedule
-  schedule: {
-    frequency: Frequency | null;
-    startDate: string | null;
-    endDate: string | null;
-    enrollmentDeadline: string | null;
-    totalSessions: number | null;
-  };
-  timeSlots: TimeSlot[];
-  
-  // Step 4: Pricing & Capacity
-  pricing: {
-    price: number | null;
-    currency: string;
-    maxStudents: number | null;
-    autoRenewal: boolean;
-  };
-  
-  // Step 5: Location/Links
-  location: {
+  classType: {
+    deliveryMode: 'online' | 'offline';
+    classFormat: 'live' | 'recorded' | 'inbound' | 'outbound';
+    classSize: 'group' | 'one-on-one';
+    durationType: 'recurring' | 'fixed';
     meetingLink: string;
-    address: {
-      street: string;
-      city: string;
-      state: string;
-      zipCode: string;
-      country: string;
-    };
   };
   
-  // Step 6: Curriculum
-  syllabus: { title: string; description: string }[];
-  materials: { name: string; type: string; url: string; lessonIndex: number }[];
-};
-
-export type ClassCreationState = {
-  // Step 1: Delivery & Type
-  deliveryMode: DeliveryMode | null;
-  classFormat: ClassFormat | null;
-  classSize: ClassSize | null;
-  durationType: DurationType | null;
+  schedule: {
+    startDate?: Date;
+    endDate?: Date;
+    frequency: string;
+    totalSessions: number;
+    timeSlots: Array<{
+      dayOfWeek: string;
+      startTime: string;
+      endTime: string;
+    }>;
+  };
   
-  // Step 2: Details
-  title: string;
-  subject: string;
-  description: string;
-  thumbnailUrl: string;
+  pricing: {
+    price: number;
+    currency: string;
+    maxStudents: number;
+    autoRenewal: boolean;
+    enrollmentDeadline?: Date;
+  };
   
-  // Step 3: Schedule
-  frequency: Frequency | null;
-  startDate: string | null;
-  endDate: string | null;
-  enrollmentDeadline: string | null;
-  totalSessions: number | null;
-  timeSlots: TimeSlot[];
-  
-  // Step 4: Pricing & Capacity
-  price: number | null;
-  currency: string;
-  maxStudents: number | null;
-  autoRenewal: boolean;
-  
-  // Step 5: Location/Links
-  meetingLink: string;
-  address: {
+  location: {
     street: string;
     city: string;
     state: string;
     zipCode: string;
     country: string;
+    meetingLink: string;
   };
   
-  // Step 6: Curriculum
-  syllabus: { title: string; description: string }[];
-  materials: { name: string; type: string; url: string; lessonIndex: number }[];
-};
+  curriculum: LessonItem[];
+}
+
+export interface ClassCreationActions {
+  setBasicInfo: (info: Partial<ClassCreationState['basicInfo']>) => void;
+  setClassType: (classType: Partial<ClassCreationState['classType']>) => void;
+  setSchedule: (schedule: Partial<ClassCreationState['schedule']>) => void;
+  setPricing: (pricing: Partial<ClassCreationState['pricing']>) => void;
+  setLocation: (location: Partial<ClassCreationState['location']>) => void;
+  setCurriculum: (curriculum: ClassCreationState['curriculum']) => void;
+  addLesson: (lesson: LessonItem) => void;
+  updateLesson: (index: number, lesson: Partial<LessonItem>) => void;
+  removeLesson: (index: number) => void;
+  loadExistingClassData: (classId: string) => Promise<void>;
+  nextStep: () => void;
+  previousStep: () => void;
+  goToStep: (step: number) => void;
+  reset: () => void;
+}
+
+export type ClassCreationStore = ClassCreationState & ClassCreationActions;
