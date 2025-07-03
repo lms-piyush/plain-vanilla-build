@@ -56,7 +56,8 @@ export const useCreateClassDialog = (
   const handleSubmit = useCallback(async () => {
     setIsSubmitting(true);
     try {
-      await saveClass(store.formState, 'active', editingClass?.id);
+      // Use the store state directly instead of formState
+      await saveClass(store, 'active', editingClass?.id);
       toast({
         title: editingClass ? "Class updated and published!" : "Class published!",
         description: editingClass ? "Your class changes have been saved and published." : "Your class is now live and students can enroll.",
@@ -71,12 +72,13 @@ export const useCreateClassDialog = (
     } finally {
       setIsSubmitting(false);
     }
-  }, [store.formState, editingClass?.id, onOpenChange, toast]);
+  }, [store, editingClass?.id, onOpenChange, toast]);
 
   const handleSaveAsDraft = useCallback(async () => {
     setIsSubmitting(true);
     try {
-      await saveClass(store.formState, 'draft', editingClass?.id);
+      // Use the store state directly instead of formState
+      await saveClass(store, 'draft', editingClass?.id);
       toast({
         title: editingClass ? "Class updated" : "Saved as draft",
         description: editingClass ? "Your class has been updated successfully." : "Your class has been saved as a draft.",
@@ -91,7 +93,7 @@ export const useCreateClassDialog = (
     } finally {
       setIsSubmitting(false);
     }
-  }, [store.formState, editingClass?.id, onOpenChange, toast]);
+  }, [store, editingClass?.id, onOpenChange, toast]);
 
   const handleClose = useCallback(() => {
     onOpenChange(false);
@@ -104,7 +106,7 @@ export const useCreateClassDialog = (
 
   return {
     currentStep: store.currentStep,
-    formData: store.formState,
+    formData: store,
     isSubmitting,
     canProceedToNext,
     canGoBack,

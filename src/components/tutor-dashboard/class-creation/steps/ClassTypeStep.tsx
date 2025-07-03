@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useClassCreationStore, DeliveryMode, ClassFormat, ClassSize, DurationType } from "@/hooks/use-class-creation-store";
 import { Button } from "@/components/ui/button";
@@ -18,20 +17,22 @@ interface ClassTypeStepProps {
 }
 
 const ClassTypeStep = ({ onNext }: ClassTypeStepProps) => {
+  const store = useClassCreationStore();
   const { 
-    formState, 
+    deliveryMode,
+    classFormat,
+    classSize,
+    durationType,
     setDeliveryMode, 
     setClassFormat, 
     setClassSize, 
     setDurationType 
-  } = useClassCreationStore();
+  } = store;
   
   const [isValid, setIsValid] = useState(false);
   
   // Validate if all required fields are filled
   useEffect(() => {
-    const { deliveryMode, classFormat, classSize, durationType } = formState;
-    
     // Special cases where classSize is not required:
     // 1. For inbound classes, classSize is always "one-on-one"
     // 2. For recorded classes, classSize is not needed
@@ -46,35 +47,14 @@ const ClassTypeStep = ({ onNext }: ClassTypeStepProps) => {
       isClassSizeValid && 
       !!durationType
     );
-  }, [formState]);
+  }, [deliveryMode, classFormat, classSize, durationType]);
 
   // Auto-set class size for recorded classes
   useEffect(() => {
-    if (formState.classFormat === "recorded") {
+    if (classFormat === "recorded") {
       setClassSize("group"); // Default to group for recorded classes
     }
-  }, [formState.classFormat, setClassSize]);
-  
-  // Get available class formats based on delivery mode
-  const getClassFormats = () => {
-    if (formState.deliveryMode === "online") {
-      return [
-        { value: "live", label: "Live" },
-        { value: "recorded", label: "Recorded" }
-      ];
-    } else if (formState.deliveryMode === "offline") {
-      return [
-        { value: "inbound", label: "Inbound (you go to student)" },
-        { value: "outbound", label: "Outbound (student comes to you)" }
-      ];
-    }
-    return [];
-  };
-
-  // Check if class size should be shown
-  const shouldShowClassSize = formState.classFormat && 
-    formState.classFormat !== "inbound" && 
-    formState.classFormat !== "recorded";
+  }, [classFormat, setClassSize]);
   
   return (
     <div className="space-y-8">
@@ -85,7 +65,7 @@ const ClassTypeStep = ({ onNext }: ClassTypeStepProps) => {
         </p>
         
         <RadioGroup 
-          defaultValue={formState.deliveryMode || undefined}
+          defaultValue={deliveryMode || undefined}
           onValueChange={(value) => setDeliveryMode(value as DeliveryMode)}
           className="grid grid-cols-2 gap-4"
         >
@@ -117,7 +97,7 @@ const ClassTypeStep = ({ onNext }: ClassTypeStepProps) => {
         </RadioGroup>
       </div>
       
-      {formState.deliveryMode && (
+      {deliveryMode && (
         <div>
           <h3 className="text-lg font-semibold mb-2">Class Format</h3>
           <p className="text-sm text-muted-foreground mb-4">
@@ -125,24 +105,30 @@ const ClassTypeStep = ({ onNext }: ClassTypeStepProps) => {
           </p>
           
           <Select 
-            value={formState.classFormat || undefined}
+            value={classFormat || undefined}
             onValueChange={(value) => setClassFormat(value as ClassFormat)}
           >
             <SelectTrigger className="w-full">
               <SelectValue placeholder="Select class format" />
             </SelectTrigger>
             <SelectContent>
-              {getClassFormats().map((format) => (
-                <SelectItem key={format.value} value={format.value}>
-                  {format.label}
-                </SelectItem>
-              ))}
+              {deliveryMode === "online" ? (
+                <>
+                  <SelectItem value="live">Live</SelectItem>
+                  <SelectItem value="recorded">Recorded</SelectItem>
+                </>
+              ) : (
+                <>
+                  <SelectItem value="inbound">Inbound (you go to student)</SelectItem>
+                  <SelectItem value="outbound">Outbound (student comes to you)</SelectItem>
+                </>
+              )}
             </SelectContent>
           </Select>
         </div>
       )}
       
-      {shouldShowClassSize && (
+      {classFormat && classFormat !== "inbound" && classFormat !== "recorded" && (
         <div>
           <h3 className="text-lg font-semibold mb-2">Class Size</h3>
           <p className="text-sm text-muted-foreground mb-4">
@@ -150,7 +136,7 @@ const ClassTypeStep = ({ onNext }: ClassTypeStepProps) => {
           </p>
           
           <RadioGroup 
-            defaultValue={formState.classSize || undefined}
+            defaultValue={classSize || undefined}
             onValueChange={(value) => setClassSize(value as ClassSize)}
             className="grid grid-cols-2 gap-4"
           >
@@ -183,7 +169,7 @@ const ClassTypeStep = ({ onNext }: ClassTypeStepProps) => {
         </div>
       )}
       
-      {(formState.classSize || formState.classFormat === "inbound" || formState.classFormat === "recorded") && (
+      {(classSize || classFormat === "inbound" || classFormat === "recorded") && (
         <div>
           <h3 className="text-lg font-semibold mb-2">Payment Type</h3>
           <p className="text-sm text-muted-foreground mb-4">
@@ -200,7 +186,7 @@ const ClassTypeStep = ({ onNext }: ClassTypeStepProps) => {
                   </p>
                 </div>
                 <Switch
-                  checked={formState.durationType === "recurring"}
+                  checked={durationType === "recurring"}
                   onCheckedChange={() => setDurationType("recurring")}
                 />
               </Label>
@@ -215,7 +201,7 @@ const ClassTypeStep = ({ onNext }: ClassTypeStepProps) => {
                   </p>
                 </div>
                 <Switch
-                  checked={formState.durationType === "fixed"}
+                  checked={durationType === "fixed"}
                   onCheckedChange={() => setDurationType("fixed")}
                 />
               </Label>
