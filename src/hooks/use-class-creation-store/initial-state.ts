@@ -2,6 +2,9 @@
 import { ClassCreationState } from './types';
 
 export const initialState: ClassCreationState = {
+  currentStep: 1,
+  editingClassId: null,
+  
   // Step 1: Delivery & Type
   deliveryMode: null,
   classFormat: null,
@@ -39,6 +42,7 @@ export const initialState: ClassCreationState = {
   },
   
   // Step 6: Curriculum
+  curriculum: [],
   syllabus: [],
   materials: [],
 };

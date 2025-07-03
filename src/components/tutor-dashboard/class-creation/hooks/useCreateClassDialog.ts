@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { useClassCreationStore, FormState } from "@/hooks/use-class-creation-store";
+import { useClassCreationStore } from "@/hooks/use-class-creation-store";
 import { autoFillClassCreation } from "@/testing/class-creation-auto-fill";
 import { LectureType } from "@/types/lecture-types";
 import { useFormStateManager } from "@/hooks/use-form-state-manager";
@@ -10,19 +10,17 @@ import { TutorClass } from "@/hooks/use-tutor-classes";
 import { useClassEditingLogic } from "./useClassEditingLogic";
 
 export const useCreateClassDialog = (
-  editingClass?: TutorClass | null,
-  onClassCreated?: () => void,
-  onClose?: () => void
+  onOpenChange: (open: boolean) => void,
+  editingClass?: any,
+  editMode?: 'full' | 'upload'
 ) => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [typeSelectorOpen, setTypeSelectorOpen] = useState(false);
-  const [isPublishing, setIsPublishing] = useState(false);
+  const store = useClassCreationStore();
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const { reset } = useClassCreationStore();
   const { updateFormState } = useFormStateManager();
   const { loadClassData } = useClassEditingLogic();
 
-  // Load existing class data when editing - use a ref to track if we've already loaded
+  // Load existing class data when editing
   const [hasLoadedClass, setHasLoadedClass] = useState(false);
   
   useEffect(() => {
@@ -32,92 +30,72 @@ export const useCreateClassDialog = (
     } else if (!editingClass && hasLoadedClass) {
       setHasLoadedClass(false);
     }
-  }, [editingClass?.id, hasLoadedClass, loadClassData]); // Only depend on class ID to avoid loops
+  }, [editingClass?.id, hasLoadedClass, loadClassData]);
 
-  const handleNext = useCallback(() => {
-    setCurrentStep(prev => prev < 6 ? prev + 1 : prev);
+  const goToNextStep = useCallback(() => {
+    store.nextStep();
+  }, [store]);
+
+  const goToPreviousStep = useCallback(() => {
+    store.previousStep();
+  }, [store]);
+
+  const goToStep = useCallback((step: number) => {
+    store.goToStep(step);
+  }, [store]);
+
+  const canProceedToNext = useCallback(() => {
+    // Add validation logic here based on current step
+    return true;
   }, []);
 
-  const handleBack = useCallback(() => {
-    setCurrentStep(prev => prev > 0 ? prev - 1 : prev);
-  }, []);
+  const canGoBack = useCallback(() => {
+    return store.currentStep > 1;
+  }, [store.currentStep]);
 
-  const handleJumpToStep = useCallback((step: number) => {
-    setCurrentStep(step);
-  }, []);
-
-  const transformFormState = useCallback((formState: any): FormState => {
-    return {
-      deliveryMode: formState.deliveryMode,
-      classFormat: formState.classFormat,
-      classSize: formState.classSize,
-      durationType: formState.durationType,
-      basicDetails: {
-        title: formState.title,
-        subject: formState.subject,
-        description: formState.description,
-        thumbnailUrl: formState.thumbnailUrl,
-      },
-      schedule: {
-        frequency: formState.frequency,
-        startDate: formState.startDate,
-        endDate: formState.endDate,
-        enrollmentDeadline: formState.enrollmentDeadline,
-        totalSessions: formState.totalSessions,
-      },
-      timeSlots: formState.timeSlots,
-      pricing: {
-        price: formState.price,
-        currency: formState.currency,
-        maxStudents: formState.maxStudents,
-        autoRenewal: formState.autoRenewal,
-      },
-      location: {
-        meetingLink: formState.meetingLink,
-        address: formState.address,
-      },
-      syllabus: formState.syllabus,
-      materials: formState.materials,
-    };
-  }, []);
-
-  const handleSaveAsDraft = useCallback(async () => {
-    setIsPublishing(true);
+  const handleSubmit = useCallback(async () => {
+    setIsSubmitting(true);
     try {
-      const { formState } = useClassCreationStore.getState();
-      const transformedFormState = transformFormState(formState);
+      // Transform store state to match expected format
+      const formData = {
+        deliveryMode: store.deliveryMode,
+        classFormat: store.classFormat,
+        classSize: store.classSize,
+        durationType: store.durationType,
+        basicDetails: {
+          title: store.title,
+          subject: store.subject,
+          description: store.description,
+          thumbnailUrl: store.thumbnailUrl,
+        },
+        schedule: {
+          frequency: store.frequency,
+          startDate: store.startDate,
+          endDate: store.endDate,
+          enrollmentDeadline: store.enrollmentDeadline,
+          totalSessions: store.totalSessions,
+        },
+        timeSlots: store.timeSlots,
+        pricing: {
+          price: store.price,
+          currency: store.currency,
+          maxStudents: store.maxStudents,
+          autoRenewal: store.autoRenewal,
+        },
+        location: {
+          meetingLink: store.meetingLink,
+          address: store.address,
+        },
+        syllabus: store.syllabus,
+        materials: store.materials,
+      };
 
-      await saveClass(transformedFormState, 'draft', editingClass?.id);
-      toast({
-        title: editingClass ? "Class updated" : "Saved as draft",
-        description: editingClass ? "Your class has been updated successfully." : "Your class has been saved as a draft.",
-      });
-      onClose?.();
-      onClassCreated?.();
-    } catch (error: any) {
-      toast({
-        title: "Error saving draft",
-        description: error.message,
-        variant: "destructive"
-      });
-    } finally {
-      setIsPublishing(false);
-    }
-  }, [editingClass?.id, onClose, onClassCreated, toast, transformFormState]);
-
-  const handlePublish = useCallback(async () => {
-    setIsPublishing(true);
-    try {
-      const { formState } = useClassCreationStore.getState();
-      const transformedFormState = transformFormState(formState);
-
-      await saveClass(transformedFormState, 'active', editingClass?.id);
+      await saveClass(formData, 'active', editingClass?.id);
       toast({
         title: editingClass ? "Class updated and published!" : "Class published!",
         description: editingClass ? "Your class changes have been saved and published." : "Your class is now live and students can enroll.",
       });
-      onClose?.();
-      onClassCreated?.();
+      onOpenChange(false);
     } catch (error: any) {
       toast({
         title: "Error publishing class",
@@ -125,35 +103,84 @@ export const useCreateClassDialog = (
         variant: "destructive"
       });
     } finally {
-      setIsPublishing(false);
+      setIsSubmitting(false);
     }
-  }, [editingClass?.id, onClose, onClassCreated, toast, transformFormState]);
+  }, [store, editingClass?.id, onOpenChange, toast]);
 
-  const handleSelectClassType = useCallback(async (selectedType: LectureType) => {
-    toast({
-      title: "Test Mode Activated",
-      description: `Auto-filling ${selectedType} class creation form...`,
-    });
-    await autoFillClassCreation(selectedType, setCurrentStep, updateFormState);
-  }, [toast, updateFormState]);
+  const handleSaveAsDraft = useCallback(async () => {
+    setIsSubmitting(true);
+    try {
+      const formData = {
+        deliveryMode: store.deliveryMode,
+        classFormat: store.classFormat,
+        classSize: store.classSize,
+        durationType: store.durationType,
+        basicDetails: {
+          title: store.title,
+          subject: store.subject,
+          description: store.description,
+          thumbnailUrl: store.thumbnailUrl,
+        },
+        schedule: {
+          frequency: store.frequency,
+          startDate: store.startDate,
+          endDate: store.endDate,
+          enrollmentDeadline: store.enrollmentDeadline,
+          totalSessions: store.totalSessions,
+        },
+        timeSlots: store.timeSlots,
+        pricing: {
+          price: store.price,
+          currency: store.currency,
+          maxStudents: store.maxStudents,
+          autoRenewal: store.autoRenewal,
+        },
+        location: {
+          meetingLink: store.meetingLink,
+          address: store.address,
+        },
+        syllabus: store.syllabus,
+        materials: store.materials,
+      };
 
-  const handleReset = useCallback(() => {
-    setCurrentStep(0);
-    setHasLoadedClass(false);
-    reset();
-  }, [reset]);
+      await saveClass(formData, 'draft', editingClass?.id);
+      toast({
+        title: editingClass ? "Class updated" : "Saved as draft",
+        description: editingClass ? "Your class has been updated successfully." : "Your class has been saved as a draft.",
+      });
+      onOpenChange(false);
+    } catch (error: any) {
+      toast({
+        title: "Error saving draft",
+        description: error.message,
+        variant: "destructive"
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [store, editingClass?.id, onOpenChange, toast]);
+
+  const handleClose = useCallback(() => {
+    onOpenChange(false);
+  }, [onOpenChange]);
+
+  const isStepDisabled = useCallback((step: number) => {
+    // Add logic to disable steps based on requirements
+    return false;
+  }, []);
 
   return {
-    currentStep,
-    typeSelectorOpen,
-    isPublishing,
-    setTypeSelectorOpen,
-    handleNext,
-    handleBack,
-    handleJumpToStep,
+    currentStep: store.currentStep,
+    formData: store,
+    isSubmitting,
+    canProceedToNext,
+    canGoBack,
+    goToNextStep,
+    goToPreviousStep,
+    goToStep,
+    handleSubmit,
     handleSaveAsDraft,
-    handlePublish,
-    handleSelectClassType,
-    handleReset
+    handleClose,
+    isStepDisabled,
   };
 };
