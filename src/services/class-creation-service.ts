@@ -1,10 +1,10 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { FormState } from "@/hooks/use-class-creation-store";
+import { ClassCreationState } from "@/hooks/use-class-creation-store";
 import { saveCurriculumToDatabase } from "./curriculum-service";
 
 export const saveClass = async (
-  formState: FormState, 
+  formState: ClassCreationState, 
   status: 'draft' | 'active' = 'draft',
   classId?: string
 ) => {
@@ -16,19 +16,19 @@ export const saveClass = async (
 
     // Prepare class data
     const classData = {
-      title: formState.basicDetails.title,
-      description: formState.basicDetails.description,
-      subject: formState.basicDetails.subject,
-      thumbnail_url: formState.basicDetails.thumbnailUrl,
+      title: formState.title,
+      description: formState.description,
+      subject: formState.subject,
+      thumbnail_url: formState.thumbnailUrl,
       delivery_mode: formState.deliveryMode,
       class_format: formState.classFormat,
       class_size: formState.classSize,
       duration_type: formState.durationType,
-      price: formState.pricing.price,
-      currency: formState.pricing.currency,
-      max_students: formState.pricing.maxStudents,
-      auto_renewal: formState.pricing.autoRenewal,
-      enrollment_deadline: formState.schedule.enrollmentDeadline,
+      price: formState.price,
+      currency: formState.currency,
+      max_students: formState.maxStudents,
+      auto_renewal: formState.autoRenewal,
+      enrollment_deadline: formState.enrollmentDeadline,
       status: status,
       updated_at: new Date().toISOString()
     };
@@ -60,7 +60,7 @@ export const saveClass = async (
     }
 
     // Save schedule data
-    if (formState.schedule.startDate) {
+    if (formState.startDate) {
       // Delete existing schedule
       await supabase
         .from('class_schedules')
@@ -72,10 +72,10 @@ export const saveClass = async (
         .from('class_schedules')
         .insert({
           class_id: finalClassId,
-          start_date: formState.schedule.startDate,
-          end_date: formState.schedule.endDate,
-          frequency: formState.schedule.frequency,
-          total_sessions: formState.schedule.totalSessions
+          start_date: formState.startDate,
+          end_date: formState.endDate,
+          frequency: formState.frequency,
+          total_sessions: formState.totalSessions
         });
 
       if (scheduleError) throw scheduleError;
@@ -105,9 +105,9 @@ export const saveClass = async (
     }
 
     // Save location data
-    if (formState.location.meetingLink || 
-        formState.location.address.street || 
-        formState.location.address.city) {
+    if (formState.meetingLink || 
+        formState.address.street || 
+        formState.address.city) {
       
       // Delete existing location
       await supabase
@@ -120,12 +120,12 @@ export const saveClass = async (
         .from('class_locations')
         .insert({
           class_id: finalClassId,
-          meeting_link: formState.location.meetingLink || null,
-          street: formState.location.address.street || null,
-          city: formState.location.address.city || null,
-          state: formState.location.address.state || null,
-          zip_code: formState.location.address.zipCode || null,
-          country: formState.location.address.country || null
+          meeting_link: formState.meetingLink || null,
+          street: formState.address.street || null,
+          city: formState.address.city || null,
+          state: formState.address.state || null,
+          zip_code: formState.address.zipCode || null,
+          country: formState.address.country || null
         });
 
       if (locationError) throw locationError;

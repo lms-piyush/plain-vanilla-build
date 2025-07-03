@@ -56,41 +56,7 @@ export const useCreateClassDialog = (
   const handleSubmit = useCallback(async () => {
     setIsSubmitting(true);
     try {
-      // Transform store state to match expected format
-      const formData = {
-        deliveryMode: store.deliveryMode,
-        classFormat: store.classFormat,
-        classSize: store.classSize,
-        durationType: store.durationType,
-        basicDetails: {
-          title: store.title,
-          subject: store.subject,
-          description: store.description,
-          thumbnailUrl: store.thumbnailUrl,
-        },
-        schedule: {
-          frequency: store.frequency,
-          startDate: store.startDate,
-          endDate: store.endDate,
-          enrollmentDeadline: store.enrollmentDeadline,
-          totalSessions: store.totalSessions,
-        },
-        timeSlots: store.timeSlots,
-        pricing: {
-          price: store.price,
-          currency: store.currency,
-          maxStudents: store.maxStudents,
-          autoRenewal: store.autoRenewal,
-        },
-        location: {
-          meetingLink: store.meetingLink,
-          address: store.address,
-        },
-        syllabus: store.syllabus,
-        materials: store.materials,
-      };
-
-      await saveClass(formData, 'active', editingClass?.id);
+      await saveClass(store.formState, 'active', editingClass?.id);
       toast({
         title: editingClass ? "Class updated and published!" : "Class published!",
         description: editingClass ? "Your class changes have been saved and published." : "Your class is now live and students can enroll.",
@@ -105,45 +71,12 @@ export const useCreateClassDialog = (
     } finally {
       setIsSubmitting(false);
     }
-  }, [store, editingClass?.id, onOpenChange, toast]);
+  }, [store.formState, editingClass?.id, onOpenChange, toast]);
 
   const handleSaveAsDraft = useCallback(async () => {
     setIsSubmitting(true);
     try {
-      const formData = {
-        deliveryMode: store.deliveryMode,
-        classFormat: store.classFormat,
-        classSize: store.classSize,
-        durationType: store.durationType,
-        basicDetails: {
-          title: store.title,
-          subject: store.subject,
-          description: store.description,
-          thumbnailUrl: store.thumbnailUrl,
-        },
-        schedule: {
-          frequency: store.frequency,
-          startDate: store.startDate,
-          endDate: store.endDate,
-          enrollmentDeadline: store.enrollmentDeadline,
-          totalSessions: store.totalSessions,
-        },
-        timeSlots: store.timeSlots,
-        pricing: {
-          price: store.price,
-          currency: store.currency,
-          maxStudents: store.maxStudents,
-          autoRenewal: store.autoRenewal,
-        },
-        location: {
-          meetingLink: store.meetingLink,
-          address: store.address,
-        },
-        syllabus: store.syllabus,
-        materials: store.materials,
-      };
-
-      await saveClass(formData, 'draft', editingClass?.id);
+      await saveClass(store.formState, 'draft', editingClass?.id);
       toast({
         title: editingClass ? "Class updated" : "Saved as draft",
         description: editingClass ? "Your class has been updated successfully." : "Your class has been saved as a draft.",
@@ -158,7 +91,7 @@ export const useCreateClassDialog = (
     } finally {
       setIsSubmitting(false);
     }
-  }, [store, editingClass?.id, onOpenChange, toast]);
+  }, [store.formState, editingClass?.id, onOpenChange, toast]);
 
   const handleClose = useCallback(() => {
     onOpenChange(false);
@@ -171,7 +104,7 @@ export const useCreateClassDialog = (
 
   return {
     currentStep: store.currentStep,
-    formData: store,
+    formData: store.formState,
     isSubmitting,
     canProceedToNext,
     canGoBack,

@@ -36,9 +36,9 @@ export const useClassEditingLogic = () => {
     const schedule = editingClass.class_schedules?.[0];
     setSchedule({
       frequency: schedule?.frequency as any || null,
-      startDate: schedule?.start_date || null,
-      endDate: schedule?.end_date || null,
-      enrollmentDeadline: editingClass.enrollment_deadline || null,
+      startDate: schedule?.start_date ? new Date(schedule.start_date) : null,
+      endDate: schedule?.end_date ? new Date(schedule.end_date) : null,
+      enrollmentDeadline: editingClass.enrollment_deadline ? new Date(editingClass.enrollment_deadline) : null,
       totalSessions: schedule?.total_sessions || null,
     });
 
