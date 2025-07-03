@@ -1,8 +1,8 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { FormState } from '@/hooks/use-class-creation-store';
+import { ClassCreationState } from '@/hooks/use-class-creation-store';
 
-export const saveClassSyllabus = async (formState: FormState, classId: string, isEditing: boolean) => {
+export const saveClassSyllabus = async (formState: ClassCreationState, classId: string, isEditing: boolean) => {
   if (formState.syllabus.length === 0) return;
 
   if (isEditing) {
@@ -45,13 +45,15 @@ export const saveClassSyllabus = async (formState: FormState, classId: string, i
   return insertedLessons;
 };
 
-export const saveClassMaterials = async (formState: FormState, insertedLessons: any[]) => {
+export const saveClassMaterials = async (formState: ClassCreationState, insertedLessons: any[]) => {
   if (!insertedLessons || formState.materials.length === 0) return;
 
   const materialsData: any[] = [];
   
   formState.materials.forEach(material => {
-    const lessonId = insertedLessons[material.lessonIndex]?.id;
+    // Use lessonIndex if available, otherwise default to 0
+    const lessonIndex = material.lessonIndex || 0;
+    const lessonId = insertedLessons[lessonIndex]?.id;
     if (lessonId) {
       materialsData.push({
         lesson_id: lessonId,

@@ -63,9 +63,9 @@ export const autoFillClassCreation = async (
   await delay(100);
   updateFormState({ frequency: testData.frequency });
   await delay(100);
-  updateFormState({ startDate: testData.startDate });
+  updateFormState({ startDate: new Date(testData.startDate) });
   await delay(100);
-  updateFormState({ endDate: testData.endDate });
+  updateFormState({ endDate: new Date(testData.endDate) });
   await delay(100);
   updateFormState({ totalSessions: testData.totalSessions });
   await delay(100);
@@ -124,17 +124,32 @@ export const autoFillClassCreation = async (
   
   // Step 6: Curriculum
   console.log("Step 6: Filling Curriculum");
+  
+  // Create proper LessonItem objects with all required properties
+  const completeSyllabus = defaultSyllabus.map((item, index) => ({
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    weekNumber: index + 1,
+    learningObjectives: item.learningObjectives || [],
+    sessionDate: item.sessionDate,
+    startTime: item.startTime || "09:00",
+    endTime: item.endTime || "10:00",
+    status: item.status || "upcoming",
+    notes: item.notes || ""
+  }));
+  
   // Add syllabus items quickly
   await delay(100);
-  updateFormState({ syllabus: [defaultSyllabus[0]] });
+  updateFormState({ syllabus: [completeSyllabus[0]] });
   await delay(100);
-  updateFormState({ syllabus: defaultSyllabus.slice(0, 2) });
+  updateFormState({ syllabus: completeSyllabus.slice(0, 2) });
   await delay(100);
-  updateFormState({ syllabus: defaultSyllabus.slice(0, 3) });
+  updateFormState({ syllabus: completeSyllabus.slice(0, 3) });
   await delay(100);
-  updateFormState({ syllabus: defaultSyllabus.slice(0, 4) });
+  updateFormState({ syllabus: completeSyllabus.slice(0, 4) });
   await delay(100);
-  updateFormState({ syllabus: defaultSyllabus });
+  updateFormState({ syllabus: completeSyllabus });
   
   // Add materials quickly with lessonIndex
   await delay(100);

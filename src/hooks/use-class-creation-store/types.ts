@@ -22,6 +22,7 @@ export interface Material {
   name: string;
   type: string;
   url?: string;
+  lessonIndex?: number;
 }
 
 export interface Address {

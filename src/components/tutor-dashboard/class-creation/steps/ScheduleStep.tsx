@@ -40,9 +40,15 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   const store = useClassCreationStore();
   
   const [frequency, setFrequency] = useState<Frequency | null>(store.frequency || null);
-  const [startDate, setStartDate] = useState(store.startDate || "");
-  const [endDate, setEndDate] = useState(store.endDate || "");
-  const [enrollmentDeadline, setEnrollmentDeadline] = useState(store.enrollmentDeadline || "");
+  const [startDate, setStartDate] = useState<string>(
+    store.startDate ? (store.startDate instanceof Date ? store.startDate.toISOString().split('T')[0] : store.startDate) : ""
+  );
+  const [endDate, setEndDate] = useState<string>(
+    store.endDate ? (store.endDate instanceof Date ? store.endDate.toISOString().split('T')[0] : store.endDate) : ""
+  );
+  const [enrollmentDeadline, setEnrollmentDeadline] = useState<string>(
+    store.enrollmentDeadline ? (store.enrollmentDeadline instanceof Date ? store.enrollmentDeadline.toISOString().split('T')[0] : store.enrollmentDeadline) : ""
+  );
   
   // Initialize state from existing store.timeSlots
   const [dailyTimeSlots, setDailyTimeSlots] = useState<DailyTimeSlot[]>(() => {
@@ -58,12 +64,12 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   const [weeklyTimeSlots, setWeeklyTimeSlots] = useState<WeeklyTimeSlot[]>(() => {
     if (store.timeSlots.length > 0 && store.frequency === "weekly") {
       return store.timeSlots.map(slot => ({
-        dayOfWeek: slot.dayOfWeek,
+        dayOfWeek: slot.dayOfWeek as DayOfWeek,
         startTime: slot.startTime,
         endTime: slot.endTime
       }));
     }
-    return [{ dayOfWeek: "monday", startTime: "09:00", endTime: "10:00" }];
+    return [{ dayOfWeek: "monday" as DayOfWeek, startTime: "09:00", endTime: "10:00" }];
   });
   
   const [monthlyDates, setMonthlyDates] = useState<MonthlyDate[]>(() => {
@@ -90,7 +96,7 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
     if (frequency !== store.frequency && store.timeSlots.length > 0) {
       // Reset to defaults when frequency changes
       setDailyTimeSlots([{ startTime: "09:00", endTime: "10:00" }]);
-      setWeeklyTimeSlots([{ dayOfWeek: "monday", startTime: "09:00", endTime: "10:00" }]);
+      setWeeklyTimeSlots([{ dayOfWeek: "monday" as DayOfWeek, startTime: "09:00", endTime: "10:00" }]);
       setMonthlyDates([{ dayOfMonth: 1, startTime: "09:00", endTime: "10:00" }]);
     }
   }, [frequency, store.frequency, store.timeSlots.length]);
@@ -147,9 +153,9 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
     if (validateForm()) {
       store.setSchedule({
         frequency: store.durationType === "recurring" ? frequency : null,
-        startDate,
-        endDate: endDate || null,
-        enrollmentDeadline,
+        startDate: startDate ? new Date(startDate) : null,
+        endDate: endDate ? new Date(endDate) : null,
+        enrollmentDeadline: enrollmentDeadline ? new Date(enrollmentDeadline) : null,
         totalSessions: null
       });
       
@@ -198,7 +204,7 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   
   // Weekly schedule handlers
   const addWeeklyTimeSlot = () => {
-    setWeeklyTimeSlots([...weeklyTimeSlots, { dayOfWeek: "monday", startTime: "09:00", endTime: "10:00" }]);
+    setWeeklyTimeSlots([...weeklyTimeSlots, { dayOfWeek: "monday" as DayOfWeek, startTime: "09:00", endTime: "10:00" }]);
   };
   
   const removeWeeklyTimeSlot = (index: number) => {
