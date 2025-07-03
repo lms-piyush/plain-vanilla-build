@@ -37,7 +37,7 @@ const CreateClassDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[95vh] p-0 overflow-hidden">
+      <DialogContent className="w-full max-w-5xl max-h-[90vh] p-0 overflow-hidden">
         <ClassDataLoader classId={editingClass?.id}>
           <div className="p-6 h-full">
             <CreateClassDialogContent
