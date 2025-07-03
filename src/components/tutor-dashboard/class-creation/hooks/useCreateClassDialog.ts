@@ -12,7 +12,8 @@ import { useClassEditingLogic } from "./useClassEditingLogic";
 export const useCreateClassDialog = (
   onOpenChange: (open: boolean) => void,
   editingClass?: any,
-  editMode?: 'full' | 'upload'
+  editMode?: 'full' | 'upload',
+  onClassCreated?: () => void
 ) => {
   const store = useClassCreationStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -62,6 +63,7 @@ export const useCreateClassDialog = (
         title: editingClass ? "Class updated and published!" : "Class published!",
         description: editingClass ? "Your class changes have been saved and published." : "Your class is now live and students can enroll.",
       });
+      onClassCreated?.();
       onOpenChange(false);
     } catch (error: any) {
       toast({
@@ -72,7 +74,7 @@ export const useCreateClassDialog = (
     } finally {
       setIsSubmitting(false);
     }
-  }, [store, editingClass?.id, onOpenChange, toast]);
+  }, [store, editingClass?.id, onOpenChange, onClassCreated, toast]);
 
   const handleSaveAsDraft = useCallback(async () => {
     setIsSubmitting(true);
@@ -83,6 +85,7 @@ export const useCreateClassDialog = (
         title: editingClass ? "Class updated" : "Saved as draft",
         description: editingClass ? "Your class has been updated successfully." : "Your class has been saved as a draft.",
       });
+      onClassCreated?.();
       onOpenChange(false);
     } catch (error: any) {
       toast({
@@ -93,7 +96,7 @@ export const useCreateClassDialog = (
     } finally {
       setIsSubmitting(false);
     }
-  }, [store, editingClass?.id, onOpenChange, toast]);
+  }, [store, editingClass?.id, onOpenChange, onClassCreated, toast]);
 
   const handleClose = useCallback(() => {
     onOpenChange(false);

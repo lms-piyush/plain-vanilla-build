@@ -10,13 +10,15 @@ interface CreateClassDialogProps {
   onOpenChange: (open: boolean) => void;
   editingClass?: any;
   editMode?: 'full' | 'upload';
+  onClassCreated?: () => void;
 }
 
 const CreateClassDialog = ({ 
   open, 
   onOpenChange, 
   editingClass,
-  editMode = 'full'
+  editMode = 'full',
+  onClassCreated
 }: CreateClassDialogProps) => {
   const {
     currentStep,
@@ -31,7 +33,7 @@ const CreateClassDialog = ({
     handleSaveAsDraft,
     handleClose,
     isStepDisabled
-  } = useCreateClassDialog(onOpenChange, editingClass, editMode);
+  } = useCreateClassDialog(onOpenChange, editingClass, editMode, onClassCreated);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

@@ -29,17 +29,17 @@ const currencies = [
 ];
 
 const PricingStep = ({ onNext, onBack }: PricingStepProps) => {
-  const { formState, setPricing } = useClassCreationStore();
+  const store = useClassCreationStore();
   
-  const [isFree, setIsFree] = useState(formState.price === null || formState.price === 0);
-  const [price, setPrice] = useState(formState.price?.toString() || "");
-  const [currency, setCurrency] = useState(formState.currency || "USD");
+  const [isFree, setIsFree] = useState(store.price === null || store.price === 0);
+  const [price, setPrice] = useState(store.price?.toString() || "");
+  const [currency, setCurrency] = useState(store.currency || "USD");
   const [maxStudents, setMaxStudents] = useState(
-    formState.classSize === "one-on-one" 
+    store.classSize === "one-on-one" 
       ? "1" 
-      : formState.maxStudents?.toString() || ""
+      : store.maxStudents?.toString() || ""
   );
-  const [autoRenewal, setAutoRenewal] = useState(formState.autoRenewal);
+  const [autoRenewal, setAutoRenewal] = useState(store.autoRenewal);
   
   const [errors, setErrors] = useState({
     price: "",
@@ -50,7 +50,7 @@ const PricingStep = ({ onNext, onBack }: PricingStepProps) => {
     const newErrors = {
       price: !isFree && (!price || parseFloat(price) < 0) ? "Price must be 0 or greater" : "",
       maxStudents: 
-        formState.classSize !== "one-on-one" && (!maxStudents || parseInt(maxStudents) < 2) 
+        store.classSize !== "one-on-one" && (!maxStudents || parseInt(maxStudents) < 2) 
           ? "Group classes must allow at least 2 students" 
           : ""
     };
@@ -61,11 +61,11 @@ const PricingStep = ({ onNext, onBack }: PricingStepProps) => {
   
   const handleNext = () => {
     if (validateForm()) {
-      setPricing({
+      store.setPricing({
         price: isFree ? 0 : parseFloat(price) || 0,
         currency,
         maxStudents: parseInt(maxStudents || "1"),
-        autoRenewal: formState.durationType === "recurring" ? autoRenewal : false
+        autoRenewal: store.durationType === "recurring" ? autoRenewal : false
       });
       onNext();
     }
@@ -126,7 +126,7 @@ const PricingStep = ({ onNext, onBack }: PricingStepProps) => {
                     <Label htmlFor="price" className="text-base block mb-2">
                       Price <span className="text-red-500">*</span>
                       <span className="text-sm text-muted-foreground ml-2">
-                        ({formState.durationType === "recurring" ? "per month" : "one-time"})
+                        ({store.durationType === "recurring" ? "per month" : "one-time"})
                       </span>
                     </Label>
                     <div className="relative">
@@ -159,14 +159,14 @@ const PricingStep = ({ onNext, onBack }: PricingStepProps) => {
               <Input
                 id="maxStudents"
                 type="number"
-                min={formState.classSize === "one-on-one" ? "1" : "2"}
+                min={store.classSize === "one-on-one" ? "1" : "2"}
                 placeholder="10"
                 value={maxStudents}
                 onChange={(e) => setMaxStudents(e.target.value)}
-                disabled={formState.classSize === "one-on-one"}
+                disabled={store.classSize === "one-on-one"}
                 className={errors.maxStudents ? "border-red-500" : ""}
               />
-              {formState.classSize === "one-on-one" && (
+              {store.classSize === "one-on-one" && (
                 <p className="text-sm text-muted-foreground">
                   One-on-one classes are limited to 1 student.
                 </p>
@@ -176,7 +176,7 @@ const PricingStep = ({ onNext, onBack }: PricingStepProps) => {
               )}
             </div>
             
-            {formState.durationType === "recurring" && !isFree && (
+            {store.durationType === "recurring" && !isFree && (
               <div className="space-y-2 mt-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
@@ -216,7 +216,7 @@ const PricingStep = ({ onNext, onBack }: PricingStepProps) => {
                   <span>
                     {isFree 
                       ? "No payment required"
-                      : formState.durationType === "recurring" 
+                      : store.durationType === "recurring" 
                         ? autoRenewal ? "Monthly, auto-renewal" : "Monthly, manual renewal"
                         : "One-time payment"
                     }
@@ -229,7 +229,7 @@ const PricingStep = ({ onNext, onBack }: PricingStepProps) => {
                 <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Maximum students:</span>
                   <span className="font-semibold">
-                    {formState.classSize === "one-on-one" ? "1 (One-on-one)" : maxStudents || "Not set"}
+                    {store.classSize === "one-on-one" ? "1 (One-on-one)" : maxStudents || "Not set"}
                   </span>
                 </div>
               </div>

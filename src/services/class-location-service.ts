@@ -1,11 +1,11 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { FormState } from '@/hooks/use-class-creation-store';
+import { ClassCreationState } from '@/hooks/use-class-creation-store';
 
-export const saveClassLocation = async (formState: FormState, classId: string, isEditing: boolean) => {
-  const hasLocationData = formState.location.meetingLink || 
-    formState.location.address.street || 
-    formState.location.address.city;
+export const saveClassLocation = async (formState: ClassCreationState, classId: string, isEditing: boolean) => {
+  const hasLocationData = formState.meetingLink || 
+    formState.address.street || 
+    formState.address.city;
   
   if (!hasLocationData) return;
 
@@ -22,11 +22,11 @@ export const saveClassLocation = async (formState: FormState, classId: string, i
     .from('class_locations')
     .insert({
       class_id: classId,
-      meeting_link: formState.location.meetingLink,
-      street: formState.location.address.street,
-      city: formState.location.address.city,
-      state: formState.location.address.state,
-      zip_code: formState.location.address.zipCode,
-      country: formState.location.address.country
+      meeting_link: formState.meetingLink,
+      street: formState.address.street,
+      city: formState.address.city,
+      state: formState.address.state,
+      zip_code: formState.address.zipCode,
+      country: formState.address.country
     });
 };

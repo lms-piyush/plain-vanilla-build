@@ -1,9 +1,9 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { FormState } from '@/hooks/use-class-creation-store';
+import { ClassCreationState } from '@/hooks/use-class-creation-store';
 
-export const saveClassSchedule = async (formState: FormState, classId: string, isEditing: boolean) => {
-  if (!formState.schedule.frequency && formState.durationType === 'recurring') return;
+export const saveClassSchedule = async (formState: ClassCreationState, classId: string, isEditing: boolean) => {
+  if (!formState.frequency && formState.durationType === 'recurring') return;
 
   if (isEditing) {
     // Delete existing schedule
@@ -14,20 +14,20 @@ export const saveClassSchedule = async (formState: FormState, classId: string, i
   }
 
   // Insert new schedule only for recurring classes
-  if (formState.durationType === 'recurring' && formState.schedule.frequency) {
+  if (formState.durationType === 'recurring' && formState.frequency) {
     await supabase
       .from('class_schedules')
       .insert({
         class_id: classId,
-        start_date: formState.schedule.startDate,
-        end_date: formState.schedule.endDate,
-        frequency: formState.schedule.frequency,
-        total_sessions: formState.schedule.totalSessions
+        start_date: formState.startDate ? formState.startDate.toISOString().split('T')[0] : null,
+        end_date: formState.endDate ? formState.endDate.toISOString().split('T')[0] : null,
+        frequency: formState.frequency,
+        total_sessions: formState.totalSessions
       });
   }
 };
 
-export const saveClassTimeSlots = async (formState: FormState, classId: string, isEditing: boolean) => {
+export const saveClassTimeSlots = async (formState: ClassCreationState, classId: string, isEditing: boolean) => {
   if (formState.timeSlots.length === 0) return;
 
   if (isEditing) {

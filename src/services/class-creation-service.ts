@@ -14,7 +14,7 @@ export const saveClass = async (
       throw new Error('You must be logged in to create a class');
     }
 
-    // Prepare class data
+    // Prepare class data with date conversion
     const classData = {
       title: formState.title,
       description: formState.description,
@@ -28,7 +28,7 @@ export const saveClass = async (
       currency: formState.currency,
       max_students: formState.maxStudents,
       auto_renewal: formState.autoRenewal,
-      enrollment_deadline: formState.enrollmentDeadline,
+      enrollment_deadline: formState.enrollmentDeadline ? formState.enrollmentDeadline.toISOString().split('T')[0] : null,
       status: status,
       updated_at: new Date().toISOString()
     };
@@ -72,8 +72,8 @@ export const saveClass = async (
         .from('class_schedules')
         .insert({
           class_id: finalClassId,
-          start_date: formState.startDate,
-          end_date: formState.endDate,
+          start_date: formState.startDate.toISOString().split('T')[0],
+          end_date: formState.endDate ? formState.endDate.toISOString().split('T')[0] : null,
           frequency: formState.frequency,
           total_sessions: formState.totalSessions
         });

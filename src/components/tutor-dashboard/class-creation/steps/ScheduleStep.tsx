@@ -37,21 +37,17 @@ interface MonthlyDate {
 }
 
 const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
-  const { 
-    formState, 
-    setSchedule, 
-    setTimeSlots
-  } = useClassCreationStore();
+  const store = useClassCreationStore();
   
-  const [frequency, setFrequency] = useState<Frequency | null>(formState.frequency || null);
-  const [startDate, setStartDate] = useState(formState.startDate || "");
-  const [endDate, setEndDate] = useState(formState.endDate || "");
-  const [enrollmentDeadline, setEnrollmentDeadline] = useState(formState.enrollmentDeadline || "");
+  const [frequency, setFrequency] = useState<Frequency | null>(store.frequency || null);
+  const [startDate, setStartDate] = useState(store.startDate || "");
+  const [endDate, setEndDate] = useState(store.endDate || "");
+  const [enrollmentDeadline, setEnrollmentDeadline] = useState(store.enrollmentDeadline || "");
   
-  // Initialize state from existing formState.timeSlots
+  // Initialize state from existing store.timeSlots
   const [dailyTimeSlots, setDailyTimeSlots] = useState<DailyTimeSlot[]>(() => {
-    if (formState.timeSlots.length > 0 && formState.frequency === "daily") {
-      return formState.timeSlots.map(slot => ({
+    if (store.timeSlots.length > 0 && store.frequency === "daily") {
+      return store.timeSlots.map(slot => ({
         startTime: slot.startTime,
         endTime: slot.endTime
       }));
@@ -60,8 +56,8 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   });
   
   const [weeklyTimeSlots, setWeeklyTimeSlots] = useState<WeeklyTimeSlot[]>(() => {
-    if (formState.timeSlots.length > 0 && formState.frequency === "weekly") {
-      return formState.timeSlots.map(slot => ({
+    if (store.timeSlots.length > 0 && store.frequency === "weekly") {
+      return store.timeSlots.map(slot => ({
         dayOfWeek: slot.dayOfWeek,
         startTime: slot.startTime,
         endTime: slot.endTime
@@ -71,8 +67,8 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   });
   
   const [monthlyDates, setMonthlyDates] = useState<MonthlyDate[]>(() => {
-    if (formState.timeSlots.length > 0 && formState.frequency === "monthly") {
-      return formState.timeSlots.map((slot, index) => ({
+    if (store.timeSlots.length > 0 && store.frequency === "monthly") {
+      return store.timeSlots.map((slot, index) => ({
         dayOfMonth: index + 1, // Default fallback
         startTime: slot.startTime,
         endTime: slot.endTime
@@ -91,17 +87,17 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   
   // Update local state when frequency changes
   useEffect(() => {
-    if (frequency !== formState.frequency && formState.timeSlots.length > 0) {
+    if (frequency !== store.frequency && store.timeSlots.length > 0) {
       // Reset to defaults when frequency changes
       setDailyTimeSlots([{ startTime: "09:00", endTime: "10:00" }]);
       setWeeklyTimeSlots([{ dayOfWeek: "monday", startTime: "09:00", endTime: "10:00" }]);
       setMonthlyDates([{ dayOfMonth: 1, startTime: "09:00", endTime: "10:00" }]);
     }
-  }, [frequency, formState.frequency, formState.timeSlots.length]);
+  }, [frequency, store.frequency, store.timeSlots.length]);
   
   const validateForm = () => {
     const newErrors = {
-      frequency: formState.durationType === "recurring" && !frequency ? "Frequency is required for recurring classes" : "",
+      frequency: store.durationType === "recurring" && !frequency ? "Frequency is required for recurring classes" : "",
       startDate: !startDate ? "Start date is required" : "",
       endDate: !endDate ? "End date is required" : "",
       enrollmentDeadline: !enrollmentDeadline ? "Enrollment deadline is required" : "",
@@ -149,8 +145,8 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
   
   const handleNext = () => {
     if (validateForm()) {
-      setSchedule({
-        frequency: formState.durationType === "recurring" ? frequency : null,
+      store.setSchedule({
+        frequency: store.durationType === "recurring" ? frequency : null,
         startDate,
         endDate: endDate || null,
         enrollmentDeadline,
@@ -180,7 +176,7 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
         }));
       }
       
-      setTimeSlots(timeSlots);
+      store.setTimeSlots(timeSlots);
       onNext();
     }
   };
@@ -287,7 +283,7 @@ const ScheduleStep = ({ onNext, onBack }: ScheduleStepProps) => {
             frequency={frequency}
             onFrequencyChange={setFrequency}
             error={errors.frequency}
-            isRecurring={formState.durationType === "recurring"}
+            isRecurring={store.durationType === "recurring"}
           />
           
           <DateRangeSelector

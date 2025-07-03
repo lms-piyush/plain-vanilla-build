@@ -109,7 +109,9 @@ export interface ClassCreationActions {
   reset: () => void;
 }
 
-export type ClassCreationStore = ClassCreationState & ClassCreationActions;
+export type ClassCreationStore = ClassCreationState & ClassCreationActions & {
+  formState: ClassCreationState;
+};
 
 // Legacy types for backward compatibility
 export type FormState = ClassCreationState;
