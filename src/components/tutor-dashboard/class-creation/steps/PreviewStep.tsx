@@ -17,7 +17,7 @@ interface PreviewStepProps {
 }
 
 const PreviewStep = ({ onBack, onSaveAsDraft, onPublish, isPublishing = false, editingClass = false }: PreviewStepProps) => {
-  const { formState } = useClassCreationStore();
+  const store = useClassCreationStore();
   const [showPublishModal, setShowPublishModal] = useState(false);
 
   const handlePublishClick = () => {
@@ -31,22 +31,22 @@ const PreviewStep = ({ onBack, onSaveAsDraft, onPublish, isPublishing = false, e
 
   const formatClassType = () => {
     const parts = [];
-    if (formState.deliveryMode) parts.push(formState.deliveryMode === 'online' ? 'Online' : 'Offline');
-    if (formState.classFormat) parts.push(formState.classFormat.charAt(0).toUpperCase() + formState.classFormat.slice(1));
-    if (formState.classSize) parts.push(formState.classSize === 'one-on-one' ? 'One-on-One' : 'Group');
+    if (store.deliveryMode) parts.push(store.deliveryMode === 'online' ? 'Online' : 'Offline');
+    if (store.classFormat) parts.push(store.classFormat.charAt(0).toUpperCase() + store.classFormat.slice(1));
+    if (store.classSize) parts.push(store.classSize === 'one-on-one' ? 'One-on-One' : 'Group');
     return parts.join(' ');
   };
 
   const formatSchedule = () => {
-    if (!formState.startDate) return 'No schedule set';
+    if (!store.startDate) return 'No schedule set';
     
-    const startDate = new Date(formState.startDate).toLocaleDateString();
+    const startDate = new Date(store.startDate).toLocaleDateString();
     let frequency = '';
     
-    if (formState.durationType === 'recurring' && formState.frequency) {
-      frequency = `${formState.frequency.charAt(0).toUpperCase() + formState.frequency.slice(1)} classes`;
-    } else if (formState.durationType === 'fixed') {
-      frequency = `${formState.totalSessions || 0} sessions`;
+    if (store.durationType === 'recurring' && store.frequency) {
+      frequency = `${store.frequency.charAt(0).toUpperCase() + store.frequency.slice(1)} classes`;
+    } else if (store.durationType === 'fixed') {
+      frequency = `${store.totalSessions || 0} sessions`;
     } else {
       frequency = 'Weekly classes';
     }
@@ -55,23 +55,23 @@ const PreviewStep = ({ onBack, onSaveAsDraft, onPublish, isPublishing = false, e
   };
 
   const formatTimeSlots = () => {
-    if (formState.timeSlots.length === 0) return 'No time slots set';
+    if (store.timeSlots.length === 0) return 'No time slots set';
     
-    return formState.timeSlots.map(slot => 
+    return store.timeSlots.map(slot => 
       `${slot.dayOfWeek.charAt(0).toUpperCase() + slot.dayOfWeek.slice(1)}s, ${slot.startTime} - ${slot.endTime}`
     ).join(', ');
   };
 
   const formatPrice = () => {
-    if (!formState.price || formState.price === 0) return 'Free';
-    const currencySymbol = formState.currency === 'USD' ? '$' : formState.currency;
-    const interval = formState.durationType === 'recurring' ? '/month' : '';
-    return `${currencySymbol}${formState.price}${interval}`;
+    if (!store.price || store.price === 0) return 'Free';
+    const currencySymbol = store.currency === 'USD' ? '$' : store.currency;
+    const interval = store.durationType === 'recurring' ? '/month' : '';
+    return `${currencySymbol}${store.price}${interval}`;
   };
 
   const getConnectionDetails = () => {
-    if (formState.deliveryMode === 'online') {
-      if (formState.classFormat === 'recorded') {
+    if (store.deliveryMode === 'online') {
+      if (store.classFormat === 'recorded') {
         return {
           type: 'Recorded Class',
           detail: 'Videos will be available to enrolled students'
@@ -79,14 +79,14 @@ const PreviewStep = ({ onBack, onSaveAsDraft, onPublish, isPublishing = false, e
       } else {
         return {
           type: 'Meeting Link',
-          detail: formState.meetingLink || 'Not set'
+          detail: store.meetingLink || 'Not set'
         };
       }
     } else {
-      const address = formState.address;
+      const address = store.address;
       if (address.street || address.city) {
         return {
-          type: formState.classFormat === 'inbound' ? 'Student Location' : 'Teaching Location',
+          type: store.classFormat === 'inbound' ? 'Student Location' : 'Teaching Location',
           detail: `${address.street}, ${address.city}, ${address.state} ${address.zipCode}`
         };
       }
@@ -109,13 +109,13 @@ const PreviewStep = ({ onBack, onSaveAsDraft, onPublish, isPublishing = false, e
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Left Column - Class Preview */}
         <ClassPreviewCard 
-          formState={formState}
+          formState={store}
           formatClassType={formatClassType}
         />
 
         {/* Right Column - Class Details */}
         <ClassDetailsCard
-          formState={formState}
+          formState={store}
           formatSchedule={formatSchedule}
           formatTimeSlots={formatTimeSlots}
           formatPrice={formatPrice}

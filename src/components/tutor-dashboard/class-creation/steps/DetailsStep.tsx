@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useClassCreationStore } from "@/hooks/use-class-creation-store";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,7 @@ interface DetailsStepProps {
 }
 
 const DetailsStep = ({ onNext, onBack }: DetailsStepProps) => {
-  const { formState, setBasicDetails } = useClassCreationStore();
+  const store = useClassCreationStore();
   const { colors } = useDesignTokens();
   const [errors, setErrors] = useState({
     title: "",
@@ -35,10 +36,11 @@ const DetailsStep = ({ onNext, onBack }: DetailsStepProps) => {
   const [filteredSubjects, setFilteredSubjects] = useState<string[]>([]);
   const [showSubjectDropdown, setShowSubjectDropdown] = useState(false);
   
-  const [title, setTitle] = useState(formState.title);
-  const [subject, setSubject] = useState(formState.subject);
-  const [description, setDescription] = useState(formState.description);
-  const [thumbnailUrl, setThumbnailUrl] = useState(formState.thumbnailUrl);
+  // Use store properties directly instead of nested formState
+  const [title, setTitle] = useState(store.title);
+  const [subject, setSubject] = useState(store.subject);
+  const [description, setDescription] = useState(store.description);
+  const [thumbnailUrl, setThumbnailUrl] = useState(store.thumbnailUrl);
   
   const [isUploadingThumbnail, setIsUploadingThumbnail] = useState(false);
   
@@ -66,7 +68,7 @@ const DetailsStep = ({ onNext, onBack }: DetailsStepProps) => {
   
   const handleNext = () => {
     if (validateForm()) {
-      setBasicDetails({
+      store.setBasicDetails({
         title,
         subject,
         description,
