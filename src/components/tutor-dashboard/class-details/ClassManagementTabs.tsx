@@ -5,6 +5,7 @@ import { ClassDetails } from "@/types/class-details";
 import SessionsTab from "./SessionsTab";
 import StudentsTab from "./StudentsTab";
 import MaterialsTab from "./MaterialsTab";
+import ReviewsTab from "./ReviewsTab";
 
 interface ClassManagementTabsProps {
   classDetails: ClassDetails;
@@ -37,10 +38,11 @@ const ClassManagementTabs = ({
 
   return (
     <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-      <TabsList className="grid w-full grid-cols-3">
+      <TabsList className="grid w-full grid-cols-4">
         <TabsTrigger value="sessions">Sessions</TabsTrigger>
         <TabsTrigger value="students">Students</TabsTrigger>
         <TabsTrigger value="materials">Materials</TabsTrigger>
+        <TabsTrigger value="reviews">Reviews</TabsTrigger>
       </TabsList>
       
       <TabsContent value="sessions" className="space-y-4">
@@ -69,6 +71,10 @@ const ClassManagementTabs = ({
           onEditMaterial={onEditMaterial}
           onNewMaterial={onNewMaterial}
         />
+      </TabsContent>
+      
+      <TabsContent value="reviews" className="space-y-4">
+        <ReviewsTab classId={classDetails.id} />
       </TabsContent>
     </Tabs>
   );

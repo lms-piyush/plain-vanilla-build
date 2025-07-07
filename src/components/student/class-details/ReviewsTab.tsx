@@ -11,9 +11,13 @@ import {
 } from "@/components/ui/pagination";
 import { useAuth } from "@/contexts/AuthContext";
 import { useClassReviews } from "@/hooks/use-class-reviews";
+import { useTutorReviews } from "@/hooks/use-tutor-reviews";
+import { useStudentClassDetails } from "@/hooks/use-student-class-details";
 import WriteReviewModal from "./WriteReviewModal";
+import ReviewTypeModal from "./ReviewTypeModal";
 import ReviewStats from "./reviews-tab/ReviewStats";
 import ReviewCard from "./reviews-tab/ReviewCard";
+import TutorReviewCard from "./reviews-tab/TutorReviewCard";
 import EmptyReviewsState from "./reviews-tab/EmptyReviewsState";
 
 interface ReviewsTabProps {
@@ -22,28 +26,56 @@ interface ReviewsTabProps {
 
 const ReviewsTab = ({ classId }: ReviewsTabProps) => {
   const [isWriteReviewOpen, setIsWriteReviewOpen] = useState(false);
+  const [isReviewTypeOpen, setIsReviewTypeOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentReviewType, setCurrentReviewType] = useState<"class" | "tutor">("class");
   const { user } = useAuth();
   
+  const { classDetails } = useStudentClassDetails(classId);
+  
   const {
-    reviews,
+    reviews: classReviews,
     reviewStats,
-    isLoading,
-    hasUserReviewed,
-    userReview,
+    isLoading: isLoadingClassReviews,
+    hasUserReviewed: hasClassReviewed,
+    userReview: classReview,
     isUserEnrolled,
     currentPage,
     totalPages,
     totalReviewCount,
-    submitReview,
+    submitReview: submitClassReview,
     goToPage,
   } = useClassReviews(classId);
 
+  const {
+    hasUserReviewed: hasTutorReviewed,
+    userReview: tutorReview,
+    submitReview: submitTutorReview,
+  } = useTutorReviews(classDetails?.tutor_id || "");
+
+  const isLoading = isLoadingClassReviews;
+
+  const handleReviewTypeSelect = (type: "class" | "tutor") => {
+    setCurrentReviewType(type);
+    setIsReviewTypeOpen(false);
+    setIsWriteReviewOpen(true);
+  };
+
   const handleSubmitReview = async (rating: number, reviewText: string) => {
     setIsSubmitting(true);
-    const success = await submitReview(rating, reviewText);
+    const success = currentReviewType === "class" 
+      ? await submitClassReview(rating, reviewText)
+      : await submitTutorReview(rating, reviewText);
     setIsSubmitting(false);
     return success;
+  };
+
+  const getCurrentReview = (): any => {
+    return currentReviewType === "class" ? classReview : tutorReview;
+  };
+
+  const hasCurrentReview = () => {
+    return currentReviewType === "class" ? hasClassReviewed : hasTutorReviewed;
   };
 
   const handlePageChange = (page: number) => {
@@ -62,8 +94,8 @@ const ReviewsTab = ({ classId }: ReviewsTabProps) => {
     totalReviewCount,
     totalPages,
     currentPage,
-    reviewsLength: reviews.length,
-    hasReviews: reviews.length > 0
+    reviewsLength: classReviews.length,
+    hasReviews: classReviews.length > 0
   });
 
   return (
@@ -73,17 +105,17 @@ const ReviewsTab = ({ classId }: ReviewsTabProps) => {
         reviewStats={reviewStats}
         user={user}
         isUserEnrolled={isUserEnrolled}
-        hasUserReviewed={hasUserReviewed}
-        onWriteReviewClick={() => setIsWriteReviewOpen(true)}
+        hasUserReviewed={hasClassReviewed || hasTutorReviewed}
+        onWriteReviewClick={() => setIsReviewTypeOpen(true)}
       />
 
       {/* Reviews List */}
       <div className="space-y-4">
-        {reviews.length === 0 ? (
+        {classReviews.length === 0 ? (
           <EmptyReviewsState isUserEnrolled={isUserEnrolled} />
         ) : (
           <>
-            {reviews.map((review) => (
+            {classReviews.map((review) => (
               <ReviewCard key={review.id} review={review} />
             ))}
 
@@ -128,14 +160,25 @@ const ReviewsTab = ({ classId }: ReviewsTabProps) => {
         )}
       </div>
 
+      {/* Review Type Modal */}
+      <ReviewTypeModal
+        isOpen={isReviewTypeOpen}
+        onClose={() => setIsReviewTypeOpen(false)}
+        onSelectType={handleReviewTypeSelect}
+        hasClassReview={hasClassReviewed}
+        hasTutorReview={hasTutorReviewed}
+        tutorName={classDetails?.tutor_name || ""}
+        className={classDetails?.title || ""}
+      />
+
       {/* Write Review Modal */}
       <WriteReviewModal
         isOpen={isWriteReviewOpen}
         onClose={() => setIsWriteReviewOpen(false)}
         onSubmit={handleSubmitReview}
         isSubmitting={isSubmitting}
-        existingReview={userReview}
-        isUpdate={hasUserReviewed}
+        existingReview={getCurrentReview()}
+        isUpdate={hasCurrentReview()}
       />
     </div>
   );

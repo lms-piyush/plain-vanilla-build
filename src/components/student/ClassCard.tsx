@@ -9,8 +9,10 @@ import {
 } from "lucide-react";
 import { useCreateConversation } from "@/hooks/use-conversations";
 import { useClassReviews } from "@/hooks/use-class-reviews";
+import { useTutorReviews } from "@/hooks/use-tutor-reviews";
 import { toast } from "@/components/ui/use-toast";
 import WriteReviewModal from "./class-details/WriteReviewModal";
+import ReviewTypeModal from "./class-details/ReviewTypeModal";
 
 interface ClassCardProps {
   id: string;
@@ -50,16 +52,24 @@ const ClassCard = ({
 }: ClassCardProps) => {
   const navigate = useNavigate();
   const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [reviewTypeDialogOpen, setReviewTypeDialogOpen] = useState(false);
   const [isSubmittingReview, setIsSubmittingReview] = useState(false);
+  const [currentReviewType, setCurrentReviewType] = useState<"class" | "tutor">("class");
   
   const createConversationMutation = useCreateConversation();
   
-  // Use the existing review hook to check if user has reviewed and get existing review
+  // Use the existing review hooks to check if user has reviewed
   const {
-    hasUserReviewed,
-    userReview,
-    submitReview,
+    hasUserReviewed: hasClassReviewed,
+    userReview: classReview,
+    submitReview: submitClassReview,
   } = useClassReviews(id);
+
+  const {
+    hasUserReviewed: hasTutorReviewed,
+    userReview: tutorReview,
+    submitReview: submitTutorReview,
+  } = useTutorReviews(tutorId);
 
   const handleMessageTutor = async () => {
     try {
@@ -79,22 +89,32 @@ const ClassCard = ({
     }
   };
 
+  const handleReviewTypeSelect = (type: "class" | "tutor") => {
+    setCurrentReviewType(type);
+    setReviewTypeDialogOpen(false);
+    setReviewDialogOpen(true);
+  };
+
   const handleSubmitReview = async (rating: number, reviewText: string) => {
     setIsSubmittingReview(true);
-    const success = await submitReview(rating, reviewText);
+    const success = currentReviewType === "class" 
+      ? await submitClassReview(rating, reviewText)
+      : await submitTutorReview(rating, reviewText);
     setIsSubmittingReview(false);
     
     if (success) {
       setReviewDialogOpen(false);
-      toast({
-        title: hasUserReviewed ? "Review Updated" : "Review Submitted",
-        description: hasUserReviewed 
-          ? "Your review has been updated successfully!" 
-          : "Thank you for your feedback!",
-      });
     }
     
     return success;
+  };
+
+  const getCurrentReview = (): any => {
+    return currentReviewType === "class" ? classReview : tutorReview;
+  };
+
+  const hasCurrentReview = () => {
+    return currentReviewType === "class" ? hasClassReviewed : hasTutorReviewed;
   };
 
   const getActionButton = () => {
@@ -105,10 +125,10 @@ const ClassCard = ({
           className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
           onClick={(e) => {
             e.stopPropagation();
-            setReviewDialogOpen(true);
+            setReviewTypeDialogOpen(true);
           }}
         >
-          {hasUserReviewed ? "Update Review" : "Submit Review"}
+          {hasClassReviewed || hasTutorReviewed ? "Update Review" : "Submit Review"}
         </Button>
       );
     } else {
@@ -199,13 +219,23 @@ const ClassCard = ({
         </div>
       </Card>
       
+      <ReviewTypeModal
+        isOpen={reviewTypeDialogOpen}
+        onClose={() => setReviewTypeDialogOpen(false)}
+        onSelectType={handleReviewTypeSelect}
+        hasClassReview={hasClassReviewed}
+        hasTutorReview={hasTutorReviewed}
+        tutorName={tutor}
+        className={title}
+      />
+      
       <WriteReviewModal
         isOpen={reviewDialogOpen}
         onClose={() => setReviewDialogOpen(false)}
         onSubmit={handleSubmitReview}
         isSubmitting={isSubmittingReview}
-        existingReview={userReview}
-        isUpdate={hasUserReviewed}
+        existingReview={getCurrentReview()}
+        isUpdate={hasCurrentReview()}
       />
     </>
   );
