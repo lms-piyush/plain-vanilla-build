@@ -65,7 +65,7 @@ const TutorLayoutHeader = ({ onLogout }: TutorLayoutHeaderProps) => {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link to="/tutor/profile" className="cursor-pointer">
-                  Profile
+                  Profile ----------------------------------------------------------
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onLogout} className="cursor-pointer">

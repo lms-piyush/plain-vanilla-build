@@ -22,7 +22,6 @@ const Topbar = () => {
   const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
-  
   const isTutorRoute = location.pathname.startsWith('/tutor');
 
   const handleLogout = async () => {
@@ -184,6 +183,12 @@ const Topbar = () => {
                 <Link to="/tutor/dashboard" className="cursor-pointer">
                   <GraduationCap className="mr-2 h-4 w-4" />
                   <span>Dashboard</span>
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/tutor/profile" className="cursor-pointer">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
