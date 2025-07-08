@@ -10,15 +10,18 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ClassReview } from "@/hooks/use-class-reviews";
+import { TutorReview } from "@/hooks/use-tutor-reviews";
 import StarRating from "./review-modal/StarRating";
 import ReviewTextArea from "./review-modal/ReviewTextArea";
+
+type Review = ClassReview | TutorReview;
 
 interface WriteReviewModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSubmit: (rating: number, reviewText: string) => Promise<boolean>;
   isSubmitting?: boolean;
-  existingReview?: ClassReview | null;
+  existingReview?: Review | null;
   isUpdate?: boolean;
 }
 
@@ -73,8 +76,8 @@ const WriteReviewModal = ({
           </DialogTitle>
           <DialogDescription>
             {isUpdate 
-              ? "Update your experience with this class to help other students."
-              : "Share your experience with this class to help other students."
+              ? "Update your experience to help other students."
+              : "Share your experience to help other students."
             }
           </DialogDescription>
         </DialogHeader>

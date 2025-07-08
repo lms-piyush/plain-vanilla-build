@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -10,7 +10,9 @@ import {
   Star, 
   Users, 
   Globe, 
-  Clock 
+  Clock,
+  Plus,
+  Edit
 } from 'lucide-react';
 import { 
   BarChart, 
@@ -27,12 +29,17 @@ import {
 import { useTutorProfile } from '@/hooks/use-tutor-profile';
 import { useTutorReviews } from '@/hooks/use-tutor-reviews';
 import { useAllClassesWithReviews } from '@/hooks/use-all-classes-with-reviews';
+import { useAuth } from '@/contexts/AuthContext';
 import TutorReviewCard from '@/components/student/class-details/reviews-tab/TutorReviewCard';
+import WriteReviewModal from '@/components/student/class-details/WriteReviewModal';
 import CourseCard from '@/components/dashboard/CourseCard';
 
 const EnhancedTutorProfile = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [isWriteReviewOpen, setIsWriteReviewOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const { 
     profile, 
@@ -44,10 +51,26 @@ const EnhancedTutorProfile = () => {
     reviews,
     reviewStats,
     isLoading: reviewsLoading,
+    hasUserReviewed,
+    userReview,
+    isUserEligible,
+    submitReview,
+    refetch: refetchReviews
   } = useTutorReviews(id || "", 1, 5);
 
   const { data: classesData } = useAllClassesWithReviews();
   const tutorClasses = classesData?.classes?.filter(cls => cls.tutor_id === id) || [];
+
+  const handleSubmitReview = async (rating: number, reviewText: string) => {
+    setIsSubmitting(true);
+    const success = await submitReview(rating, reviewText);
+    setIsSubmitting(false);
+    if (success) {
+      setIsWriteReviewOpen(false);
+      refetchReviews();
+    }
+    return success;
+  };
 
   // Mock data for charts (in real app, this would come from analytics)
   const monthlyEngagement = [
@@ -256,6 +279,83 @@ const EnhancedTutorProfile = () => {
         </Card>
       </div>
       
+      {/* Reviews Section */}
+      <div className="mb-8">
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle>Reviews & Ratings</CardTitle>
+              {user && isUserEligible && (
+                <Button 
+                  onClick={() => setIsWriteReviewOpen(true)}
+                  variant={hasUserReviewed ? "outline" : "default"}
+                  size="sm"
+                >
+                  {hasUserReviewed ? (
+                    <>
+                      <Edit className="mr-2 h-4 w-4" />
+                      Update Review
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Write Review
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            {/* Current User's Review */}
+            {hasUserReviewed && userReview && (
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold mb-4">Your Review</h3>
+                <TutorReviewCard review={userReview} />
+              </div>
+            )}
+            
+            {/* Review Statistics */}
+            <div className="flex items-center gap-4 mb-6">
+              <div className="flex items-center gap-2">
+                <Star className="h-6 w-6 fill-yellow-400 text-yellow-400" />
+                <span className="text-2xl font-bold">
+                  {reviewStats?.averageRating ? reviewStats.averageRating.toFixed(1) : "0.0"}
+                </span>
+              </div>
+              <span className="text-muted-foreground">
+                Based on {reviewStats?.totalReviews || 0} reviews
+              </span>
+            </div>
+
+            {/* Recent Reviews */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Recent Reviews</h3>
+              {reviewsLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                </div>
+              ) : reviews.length > 0 ? (
+                <div className="space-y-4">
+                  {reviews.slice(0, 3).map((review) => (
+                    <TutorReviewCard key={review.id} review={review} />
+                  ))}
+                  {reviews.length > 3 && (
+                    <p className="text-center text-muted-foreground text-sm">
+                      Showing {Math.min(3, reviews.length)} of {reviews.length} reviews
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-center py-4">
+                  No reviews yet. Be the first to review this tutor!
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+      
       {/* Courses by this Tutor Section */}
       <div className="mb-8">
         <h2 className="text-2xl font-bold mb-4">Courses by this Tutor</h2>
@@ -280,6 +380,16 @@ const EnhancedTutorProfile = () => {
           ))}
         </div>
       </div>
+
+      {/* Write Review Modal */}
+      <WriteReviewModal
+        isOpen={isWriteReviewOpen}
+        onClose={() => setIsWriteReviewOpen(false)}
+        onSubmit={handleSubmitReview}
+        isSubmitting={isSubmitting}
+        existingReview={userReview}
+        isUpdate={hasUserReviewed}
+      />
     </div>
   );
 };
