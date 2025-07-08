@@ -46,8 +46,8 @@ const EnhancedTutorProfile = () => {
     isLoading: reviewsLoading,
   } = useTutorReviews(id || "", 1, 5);
 
-  const { classes } = useAllClassesWithReviews();
-  const tutorClasses = classes.filter(cls => cls.tutor_id === id);
+  const { data: classesData } = useAllClassesWithReviews();
+  const tutorClasses = classesData?.classes?.filter(cls => cls.tutor_id === id) || [];
 
   // Mock data for charts (in real app, this would come from analytics)
   const monthlyEngagement = [
@@ -267,7 +267,7 @@ const EnhancedTutorProfile = () => {
               title={course.title}
               tutor={profile.full_name}
               tutorId={profile.id}
-              rating={course.averageRating || 0}
+              rating={course.average_rating || 0}
               image={course.thumbnail_url}
               description={course.description}
               mode={course.delivery_mode}
