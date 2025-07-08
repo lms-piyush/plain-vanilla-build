@@ -40,6 +40,7 @@ import TutorEarnings from "@/pages/tutor/Earnings";
 import TutorMessages from "@/pages/tutor/Messages";
 import TutorFeedback from "@/pages/tutor/Feedback";
 import TutorHelp from "@/pages/tutor/Help";
+import TutorProfilePage from "@/pages/tutor/Profile";
 
 // Student pages
 import StudentDashboardPage from "@/pages/student/Dashboard";
@@ -175,6 +176,10 @@ const AppRoutes = () => {
         <Route 
           path="/tutor/help" 
           element={<ProtectedRoute allowedRoles={["tutor"]}><TutorHelp /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/tutor/profile" 
+          element={<ProtectedRoute allowedRoles={["tutor"]}><TutorProfilePage /></ProtectedRoute>} 
         />
       </Route>
       

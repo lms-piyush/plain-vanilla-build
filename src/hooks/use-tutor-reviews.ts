@@ -20,13 +20,16 @@ export interface TutorReviewStats {
   totalReviews: number;
 }
 
-export const useTutorReviews = (tutorId: string) => {
+export const useTutorReviews = (tutorId: string, page: number = 1, pageSize: number = 10) => {
   const [reviews, setReviews] = useState<TutorReview[]>([]);
   const [reviewStats, setReviewStats] = useState<TutorReviewStats>({ averageRating: 0, totalReviews: 0 });
   const [isLoading, setIsLoading] = useState(true);
   const [hasUserReviewed, setHasUserReviewed] = useState(false);
   const [userReview, setUserReview] = useState<TutorReview | null>(null);
   const [isUserEligible, setIsUserEligible] = useState(false);
+  const [currentPage, setCurrentPage] = useState(page);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalReviewCount, setTotalReviewCount] = useState(0);
   const { user } = useAuth();
   const { toast } = useToast();
 
@@ -36,12 +39,25 @@ export const useTutorReviews = (tutorId: string) => {
     try {
       setIsLoading(true);
       
-      // Fetch reviews 
+      // Get total count first
+      const { count, error: countError } = await supabase
+        .from("tutor_reviews")
+        .select("*", { count: "exact", head: true })
+        .eq("tutor_id", tutorId);
+
+      if (countError) throw countError;
+
+      const totalCount = count || 0;
+      setTotalReviewCount(totalCount);
+      setTotalPages(Math.ceil(totalCount / pageSize));
+      
+      // Fetch paginated reviews 
       const { data: reviewsData, error: reviewsError } = await supabase
         .from("tutor_reviews")
         .select("*")
         .eq("tutor_id", tutorId)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .range((currentPage - 1) * pageSize, currentPage * pageSize - 1);
 
       if (reviewsError) throw reviewsError;
 
@@ -61,10 +77,17 @@ export const useTutorReviews = (tutorId: string) => {
         })
       );
 
-      // Calculate stats
-      const totalReviews = reviewsWithProfiles?.length || 0;
+      // Calculate stats from all reviews
+      const { data: allReviewsData, error: allReviewsError } = await supabase
+        .from("tutor_reviews")
+        .select("rating")
+        .eq("tutor_id", tutorId);
+
+      if (allReviewsError) throw allReviewsError;
+
+      const totalReviews = allReviewsData?.length || 0;
       const averageRating = totalReviews > 0 
-        ? reviewsWithProfiles.reduce((sum, review) => sum + review.rating, 0) / totalReviews 
+        ? allReviewsData.reduce((sum, review) => sum + review.rating, 0) / totalReviews 
         : 0;
 
       setReviews(reviewsWithProfiles || []);
@@ -106,6 +129,10 @@ export const useTutorReviews = (tutorId: string) => {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page);
   };
 
   const submitReview = async (rating: number, reviewText: string) => {
@@ -177,7 +204,7 @@ export const useTutorReviews = (tutorId: string) => {
 
   useEffect(() => {
     loadReviews();
-  }, [tutorId, user]);
+  }, [tutorId, user, currentPage]);
 
   return {
     reviews,
@@ -186,7 +213,11 @@ export const useTutorReviews = (tutorId: string) => {
     hasUserReviewed,
     userReview,
     isUserEligible,
+    currentPage,
+    totalPages,
+    totalReviewCount,
     submitReview,
+    goToPage,
     refetch: loadReviews,
   };
 };

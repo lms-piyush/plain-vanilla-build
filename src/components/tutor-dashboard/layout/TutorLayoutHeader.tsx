@@ -58,6 +58,16 @@ const TutorLayoutHeader = ({ onLogout }: TutorLayoutHeaderProps) => {
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
+              <DropdownMenuItem asChild>
+                <Link to="/tutor/dashboard" className="cursor-pointer">
+                  Dashboard
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link to="/tutor/profile" className="cursor-pointer">
+                  Profile
+                </Link>
+              </DropdownMenuItem>
               <DropdownMenuItem onClick={onLogout} className="cursor-pointer">
                 Log out
               </DropdownMenuItem>
