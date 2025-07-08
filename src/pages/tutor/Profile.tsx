@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { Camera, Clock, Globe, ArrowLeft, BookOpen, Star, Users } from "lucide-react";
+import { Camera, Clock, Globe, ArrowLeft, BookOpen, Star, Users, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,6 +22,7 @@ import {
 import { useTutorProfile } from "@/hooks/use-tutor-profile";
 import { useTutorReviews } from "@/hooks/use-tutor-reviews";
 import TutorReviewCard from "@/components/student/class-details/reviews-tab/TutorReviewCard";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Pagination,
   PaginationContent,
@@ -47,6 +48,7 @@ const TutorProfile = () => {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   
   const { 
     profile, 
@@ -104,6 +106,48 @@ const TutorProfile = () => {
     goToPage(page);
   };
 
+  const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user?.id) return;
+
+    try {
+      setIsUploadingAvatar(true);
+      
+      // Upload file to Supabase Storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+      const filePath = `avatars/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('uploads')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('uploads')
+        .getPublicUrl(filePath);
+
+      // Update profile with new avatar URL
+      await updateProfile({ avatar_url: publicUrl });
+
+      toast({
+        title: "Avatar updated",
+        description: "Your profile picture has been updated successfully.",
+      });
+    } catch (error: any) {
+      console.error("Error uploading avatar:", error);
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload avatar. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingAvatar(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -143,9 +187,22 @@ const TutorProfile = () => {
                       size="icon"
                       variant="secondary"
                       className="absolute -bottom-2 -right-2 h-8 w-8 rounded-full"
+                      disabled={isUploadingAvatar}
+                      onClick={() => document.getElementById('avatar-upload')?.click()}
                     >
-                      <Camera className="h-4 w-4" />
+                      {isUploadingAvatar ? (
+                        <div className="h-4 w-4 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+                      ) : (
+                        <Camera className="h-4 w-4" />
+                      )}
                     </Button>
+                    <input
+                      id="avatar-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={handleAvatarUpload}
+                    />
                   </div>
                   <div className="flex-1">
                     <div className="flex items-start justify-between">

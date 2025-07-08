@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTutorProfile } from "@/hooks/use-tutor-profile";
 
 const Topbar = () => {
   const navigate = useNavigate();
@@ -23,6 +24,7 @@ const Topbar = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const isTutorRoute = location.pathname.startsWith('/tutor');
+  const { profile } = useTutorProfile(isTutorRoute ? user?.id : undefined);
 
   const handleLogout = async () => {
     await logout();
@@ -133,14 +135,14 @@ const Topbar = () => {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="flex items-center space-x-2 text-gray-700 hover:text-gray-900 hover:bg-gray-100 px-3">
                 <Avatar className="h-8 w-8">
-                  <AvatarImage src={user?.avatar} alt={user?.fullName} />
+                  <AvatarImage src={profile?.avatar_url || user?.avatar} alt={profile?.full_name || user?.fullName} />
                   <AvatarFallback className="bg-slate-900 text-white text-sm font-medium">
-                    {user?.fullName?.charAt(0).toUpperCase() || 'T'}
+                    {(profile?.full_name || user?.fullName)?.charAt(0).toUpperCase() || 'T'}
                   </AvatarFallback>
                 </Avatar>
                 <div className="hidden md:block text-left">
-                  <div className="text-sm font-medium text-gray-900">{user?.fullName || 'Tutor'}</div>
-                  <div className="text-xs text-gray-500">Tutor</div>
+                  <div className="text-sm font-medium text-gray-900">{profile?.full_name || user?.fullName || 'Tutor'}</div>
+                  <div className="text-xs text-gray-500">{profile?.position || 'Tutor'}</div>
                 </div>
               </Button>
             </DropdownMenuTrigger>
@@ -148,14 +150,14 @@ const Topbar = () => {
               <DropdownMenuLabel className="font-normal">
                 <div className="flex items-center mb-4">
                   <Avatar className="h-12 w-12">
-                    <AvatarImage src={user?.avatar} alt={user?.fullName} />
+                    <AvatarImage src={profile?.avatar_url || user?.avatar} alt={profile?.full_name || user?.fullName} />
                     <AvatarFallback className="bg-slate-900 text-white text-lg font-medium">
-                      {user?.fullName?.charAt(0).toUpperCase() || 'T'}
+                      {(profile?.full_name || user?.fullName)?.charAt(0).toUpperCase() || 'T'}
                     </AvatarFallback>
                   </Avatar>
                   <div className="ml-3">
-                    <h3 className="font-semibold text-gray-800">{user?.fullName || 'Tutor Name'}</h3>
-                    <p className="text-sm text-gray-500">Math & Science Tutor</p>
+                    <h3 className="font-semibold text-gray-800">{profile?.full_name || user?.fullName || 'Tutor Name'}</h3>
+                    <p className="text-sm text-gray-500">{profile?.position || 'Tutor'}</p>
                   </div>
                 </div>
               </DropdownMenuLabel>
@@ -165,7 +167,7 @@ const Topbar = () => {
                   <User className="h-5 w-5 text-gray-500 mt-0.5" />
                   <div className="ml-3">
                     <p className="text-xs text-gray-500">Full Name</p>
-                    <p className="text-sm font-medium">{user?.fullName || 'Not provided'}</p>
+                    <p className="text-sm font-medium">{profile?.full_name || user?.fullName || 'Not provided'}</p>
                   </div>
                 </div>
                 

@@ -50,7 +50,7 @@ import ClassDetail from "@/pages/student/ClassDetail";
 import Profile from "@/pages/student/Profile";
 import Help from "@/pages/student/Help";
 import StudentMessages from "@/pages/student/Messages";
-import TutorProfile from "@/pages/student/TutorProfile";
+import EnhancedTutorProfile from "@/pages/student/EnhancedTutorProfile";
 import CourseCheckout from "@/pages/student/CourseCheckout";
 
 // Explore Pages
@@ -219,7 +219,7 @@ const AppRoutes = () => {
         />
         <Route 
           path="/student/tutor/:id" 
-          element={<ProtectedRoute allowedRoles={["student", "parent"]}><TutorProfile /></ProtectedRoute>} 
+          element={<ProtectedRoute allowedRoles={["student", "parent"]}><EnhancedTutorProfile /></ProtectedRoute>} 
         />
       </Route>
       

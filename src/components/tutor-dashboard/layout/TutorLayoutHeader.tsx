@@ -12,6 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTutorProfile } from "@/hooks/use-tutor-profile";
 
 interface TutorLayoutHeaderProps {
   onLogout: () => void;
@@ -19,6 +20,7 @@ interface TutorLayoutHeaderProps {
 
 const TutorLayoutHeader = ({ onLogout }: TutorLayoutHeaderProps) => {
   const { user } = useAuth();
+  const { profile } = useTutorProfile(user?.id);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-40 h-16 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -45,16 +47,16 @@ const TutorLayoutHeader = ({ onLogout }: TutorLayoutHeaderProps) => {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="relative h-8 w-8 rounded-full">
                 <Avatar className="h-8 w-8 border border-purple-200">
-                  <AvatarImage src={user?.avatar} alt={user?.fullName} />
-                  <AvatarFallback className="bg-purple-600 text-white">{user?.fullName.charAt(0)}</AvatarFallback>
+                  <AvatarImage src={profile?.avatar_url || user?.avatar} alt={profile?.full_name || user?.fullName} />
+                  <AvatarFallback className="bg-purple-600 text-white">{(profile?.full_name || user?.fullName)?.charAt(0)}</AvatarFallback>
                 </Avatar>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel className="font-normal">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium leading-none">{user?.fullName}</p>
-                  <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                  <p className="text-sm font-medium leading-none">{profile?.full_name || user?.fullName}</p>
+                  <p className="text-xs leading-none text-muted-foreground">{profile?.position || user?.email}</p>
                 </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator />
@@ -65,7 +67,7 @@ const TutorLayoutHeader = ({ onLogout }: TutorLayoutHeaderProps) => {
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
                 <Link to="/tutor/profile" className="cursor-pointer">
-                  Profile ----------------------------------------------------------
+                  Profile
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={onLogout} className="cursor-pointer">
