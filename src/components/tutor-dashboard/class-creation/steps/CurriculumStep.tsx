@@ -8,27 +8,72 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Plus, Trash2, Clock, Calendar, BookOpen } from 'lucide-react';
 import { useClassCreationStore } from '@/hooks/use-class-creation-store';
 
+// Helper function to calculate next session date based on frequency
+const calculateNextSessionDate = (lastDate: Date, frequency: string): Date => {
+  const nextDate = new Date(lastDate);
+  
+  switch (frequency) {
+    case 'daily':
+      nextDate.setDate(nextDate.getDate() + 1);
+      break;
+    case 'weekly':
+      nextDate.setDate(nextDate.getDate() + 7);
+      break;
+    case 'monthly':
+      nextDate.setMonth(nextDate.getMonth() + 1);
+      break;
+    default:
+      nextDate.setDate(nextDate.getDate() + 7); // Default to weekly
+  }
+  
+  return nextDate;
+};
+
 interface CurriculumStepProps {
   onNext: () => void;
   onBack: () => void;
 }
 
 const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
-  const { curriculum, addLesson, updateLesson, removeLesson, editingClassId } = useClassCreationStore();
+  const { 
+    curriculum, 
+    addLesson, 
+    updateLesson, 
+    removeLesson, 
+    editingClassId,
+    startDate,
+    frequency,
+    timeSlots
+  } = useClassCreationStore();
   const [expandedLesson, setExpandedLesson] = useState<number | null>(null);
+
+  // Get default times from schedule step
+  const getDefaultTimes = () => {
+    if (timeSlots && timeSlots.length > 0) {
+      return {
+        startTime: timeSlots[0].startTime,
+        endTime: timeSlots[0].endTime
+      };
+    }
+    return {
+      startTime: '',
+      endTime: ''
+    };
+  };
 
   // Auto-expand first lesson if curriculum is empty (new class)
   useEffect(() => {
     if (curriculum.length === 0) {
-      // Add initial lesson for new classes
+      const defaultTimes = getDefaultTimes();
+      // Add initial lesson for new classes with auto-filled data
       addLesson({
         title: '',
         description: '',
         weekNumber: 1,
         learningObjectives: [],
-        sessionDate: undefined,
-        startTime: '',
-        endTime: '',
+        sessionDate: startDate || undefined,
+        startTime: defaultTimes.startTime,
+        endTime: defaultTimes.endTime,
         status: 'upcoming',
         notes: '',
       });
@@ -37,21 +82,42 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
       // When editing, don't auto-expand any lesson
       setExpandedLesson(null);
     }
-  }, [curriculum.length, addLesson, editingClassId, expandedLesson]);
+  }, [curriculum.length, addLesson, editingClassId, expandedLesson, startDate, timeSlots]);
 
   const handleAddLesson = () => {
     const newWeekNumber = curriculum.length > 0 
       ? Math.max(...curriculum.map(l => l.weekNumber || 1)) + 1 
       : 1;
     
+    const defaultTimes = getDefaultTimes();
+    let nextSessionDate: Date | undefined;
+    
+    // Calculate next session date based on frequency and last session
+    if (curriculum.length > 0 && frequency) {
+      const lastLesson = curriculum[curriculum.length - 1];
+      if (lastLesson.sessionDate) {
+        nextSessionDate = calculateNextSessionDate(lastLesson.sessionDate, frequency);
+      } else if (startDate) {
+        // If last lesson doesn't have a date but we have a start date, calculate from there
+        const sessionIndex = curriculum.length;
+        nextSessionDate = new Date(startDate);
+        for (let i = 0; i < sessionIndex; i++) {
+          nextSessionDate = calculateNextSessionDate(nextSessionDate, frequency);
+        }
+      }
+    } else if (startDate && curriculum.length === 0) {
+      // First session uses the start date
+      nextSessionDate = startDate;
+    }
+    
     addLesson({
       title: '',
       description: '',
       weekNumber: newWeekNumber,
       learningObjectives: [],
-      sessionDate: undefined,
-      startTime: '',
-      endTime: '',
+      sessionDate: nextSessionDate,
+      startTime: defaultTimes.startTime,
+      endTime: defaultTimes.endTime,
       status: 'upcoming',
       notes: '',
     });
@@ -157,26 +223,14 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
 
             {expandedLesson === index && (
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <Label htmlFor={`lesson-${index}-title`}>Session Title *</Label>
-                    <Input
-                      id={`lesson-${index}-title`}
-                      value={lesson.title}
-                      onChange={(e) => handleLessonUpdate(index, 'title', e.target.value)}
-                      placeholder="Enter session title"
-                    />
-                  </div>
-                  <div>
-                    <Label htmlFor={`lesson-${index}-week`}>Week Number</Label>
-                    <Input
-                      id={`lesson-${index}-week`}
-                      type="number"
-                      min="1"
-                      value={lesson.weekNumber || index + 1}
-                      onChange={(e) => handleLessonUpdate(index, 'weekNumber', parseInt(e.target.value))}
-                    />
-                  </div>
+                <div>
+                  <Label htmlFor={`lesson-${index}-title`}>Session Title *</Label>
+                  <Input
+                    id={`lesson-${index}-title`}
+                    value={lesson.title}
+                    onChange={(e) => handleLessonUpdate(index, 'title', e.target.value)}
+                    placeholder="Enter session title"
+                  />
                 </div>
 
                 <div>

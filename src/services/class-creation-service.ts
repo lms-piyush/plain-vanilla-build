@@ -132,8 +132,20 @@ export const saveClass = async (
     }
 
     // Save curriculum data with session dates and times
-    if (formState.syllabus && formState.syllabus.length > 0) {
-      await saveCurriculumToDatabase(finalClassId, formState.syllabus);
+    if (formState.curriculum && formState.curriculum.length > 0) {
+      // Convert curriculum data to the format expected by the database
+      const curriculumData = formState.curriculum.map(lesson => ({
+        title: lesson.title,
+        description: lesson.description,
+        session_date: lesson.sessionDate ? lesson.sessionDate.toISOString().split('T')[0] : undefined,
+        start_time: lesson.startTime || undefined,
+        end_time: lesson.endTime || undefined,
+        week_number: lesson.weekNumber,
+        learning_objectives: lesson.learningObjectives || [],
+        notes: lesson.notes || ''
+      }));
+      
+      await saveCurriculumToDatabase(finalClassId, curriculumData);
     }
 
     return { classId: finalClassId };

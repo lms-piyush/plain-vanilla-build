@@ -8,6 +8,8 @@ export interface LessonData {
   start_time?: string;
   end_time?: string;
   week_number?: number;
+  learning_objectives?: string[];
+  notes?: string;
 }
 
 export const saveCurriculumToDatabase = async (
@@ -30,6 +32,8 @@ export const saveCurriculumToDatabase = async (
       session_date: lesson.session_date || null,
       start_time: lesson.start_time || null,
       end_time: lesson.end_time || null,
+      learning_objectives: lesson.learning_objectives || null,
+      notes: lesson.notes || null,
       status: 'upcoming'
     }));
 
