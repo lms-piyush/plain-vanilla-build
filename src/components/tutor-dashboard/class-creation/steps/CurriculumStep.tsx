@@ -3,12 +3,12 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useClassCreationStore } from '@/hooks/use-class-creation-store';
+import { calculateNextSessionDate } from './curriculum/date-utils';
 import { 
-  calculateNextSessionDate, 
-  getDefaultTimes, 
   generateAllSessions, 
-  generateAdditionalSessions 
-} from './curriculum/enhanced-session-generator';
+  generateAdditionalSessions,
+  getDefaultTimes
+} from './curriculum/session-generator';
 import LessonCard from './curriculum/LessonCard';
 import AutoGenerationControls from './curriculum/AutoGenerationControls';
 
