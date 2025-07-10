@@ -48,17 +48,14 @@ const generateDailySessions = (params: SessionGenerationParams): GeneratedSessio
   while (isValidSessionDate(currentDate, endDate, enrollmentDeadline)) {
     const dayName = getDayName(currentDate);
     
-    // For daily frequency, generate sessions for matching time slots
+    // For daily frequency, generate sessions using all time slots for each day
     timeSlots.forEach(slot => {
-      // Check if this day matches the time slot's day
-      if (slot.dayOfWeek === dayName) {
-        sessions.push({
-          sessionDate: new Date(currentDate),
-          startTime: slot.startTime,
-          endTime: slot.endTime,
-          dayOfWeek: dayName
-        });
-      }
+      sessions.push({
+        sessionDate: new Date(currentDate),
+        startTime: slot.startTime,
+        endTime: slot.endTime,
+        dayOfWeek: dayName
+      });
     });
     
     // Move to next day
