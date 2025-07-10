@@ -33,11 +33,29 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
   } = useClassCreationStore();
   const [expandedLesson, setExpandedLesson] = useState<number | null>(null);
 
-  // Auto-expand first lesson if curriculum is empty (new class)
+  // Auto-generate initial sessions if curriculum is empty (new class)
   useEffect(() => {
     if (curriculum.length === 0) {
+      // Check if we have all data needed for proper session generation
+      if (frequency && startDate && endDate && timeSlots.length > 0) {
+        // Use the same logic as "Generate All" for initial sessions
+        const generatedSessions = generateAllSessions({
+          frequency,
+          startDate,
+          endDate,
+          enrollmentDeadline: enrollmentDeadline || undefined,
+          timeSlots
+        });
+        
+        if (generatedSessions.length > 0) {
+          setCurriculum(generatedSessions);
+          setExpandedLesson(0);
+          return;
+        }
+      }
+      
+      // Fallback: Add single lesson with basic data if generation isn't possible
       const defaultTimes = getDefaultTimes(timeSlots);
-      // Add initial lesson for new classes with auto-filled data
       addLesson({
         title: '',
         description: '',
@@ -54,7 +72,7 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
       // When editing, don't auto-expand any lesson
       setExpandedLesson(null);
     }
-  }, [curriculum.length, addLesson, editingClassId, expandedLesson, startDate, timeSlots]);
+  }, [curriculum.length, addLesson, editingClassId, expandedLesson, startDate, endDate, frequency, timeSlots, enrollmentDeadline, setCurriculum]);
 
   const handleAddLesson = () => {
     const newWeekNumber = curriculum.length > 0 
