@@ -3,8 +3,14 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useClassCreationStore } from '@/hooks/use-class-creation-store';
-import { calculateNextSessionDate, getDefaultTimes } from './curriculum/curriculum-utils';
+import { 
+  calculateNextSessionDate, 
+  getDefaultTimes, 
+  generateAllSessions, 
+  generateAdditionalSessions 
+} from './curriculum/enhanced-session-generator';
 import LessonCard from './curriculum/LessonCard';
+import AutoGenerationControls from './curriculum/AutoGenerationControls';
 
 interface CurriculumStepProps {
   onNext: () => void;
@@ -17,8 +23,11 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
     addLesson, 
     updateLesson, 
     removeLesson, 
+    setCurriculum,
     editingClassId,
     startDate,
+    endDate,
+    enrollmentDeadline,
     frequency,
     timeSlots
   } = useClassCreationStore();
@@ -120,6 +129,50 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
     updateLesson(lessonIndex, { learningObjectives: newObjectives });
   };
 
+  // Auto-generate all sessions based on frequency and schedule
+  const handleAutoGenerate = () => {
+    if (!frequency || !startDate || !endDate || !timeSlots.length) {
+      console.warn('Missing required data for session generation');
+      return;
+    }
+
+    const generatedSessions = generateAllSessions({
+      frequency,
+      startDate,
+      endDate,
+      enrollmentDeadline: enrollmentDeadline || undefined,
+      timeSlots
+    });
+
+    setCurriculum(generatedSessions);
+    setExpandedLesson(0);
+  };
+
+  // Generate additional sessions from existing curriculum
+  const handleExtendSessions = () => {
+    if (!frequency || !startDate || !endDate || !timeSlots.length) {
+      console.warn('Missing required data for session extension');
+      return;
+    }
+
+    const additionalSessions = generateAdditionalSessions(curriculum, {
+      frequency,
+      startDate,
+      endDate,
+      enrollmentDeadline: enrollmentDeadline || undefined,
+      timeSlots
+    });
+
+    setCurriculum([...curriculum, ...additionalSessions]);
+  };
+
+  // Clear all sessions
+  const handleClearAll = () => {
+    setCurriculum([]);
+    setExpandedLesson(null);
+  };
+
+  const canGenerateFromSchedule = frequency && startDate && endDate && timeSlots.length > 0;
   const canProceed = curriculum.length > 0 && curriculum.every(lesson => 
     lesson.title.trim() !== '' && lesson.description.trim() !== ''
   );
@@ -135,6 +188,18 @@ const CurriculumStep = ({ onNext, onBack }: CurriculumStepProps) => {
           }
         </p>
       </div>
+
+      {/* Auto-generation Controls */}
+      <AutoGenerationControls
+        canGenerate={canGenerateFromSchedule}
+        hasSessions={curriculum.length > 0}
+        frequency={frequency || undefined}
+        startDate={startDate || undefined}
+        endDate={endDate || undefined}
+        onAutoGenerate={handleAutoGenerate}
+        onExtendSessions={handleExtendSessions}
+        onClearAll={handleClearAll}
+      />
 
       <div className="space-y-4">
         {curriculum.map((lesson, index) => (
