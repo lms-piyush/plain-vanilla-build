@@ -15,7 +15,7 @@ export const useClassBatchOperations = () => {
         throw new Error("User not authenticated");
       }
 
-      const { data: newClassId, error } = await supabase.rpc(
+      const { data: classId, error } = await supabase.rpc(
         'create_class_batch',
         {
           original_class_id: originalClassId,
@@ -30,15 +30,15 @@ export const useClassBatchOperations = () => {
 
       toast({
         title: "Success",
-        description: "New class batch created successfully! You can now edit and publish it.",
+        description: "Class batch incremented successfully! You can now edit and publish the new batch.",
       });
 
-      return newClassId;
+      return classId;
     } catch (error: any) {
       console.error("Error creating class batch:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to create class batch",
+        description: error.message || "Failed to increment class batch",
         variant: "destructive",
       });
       return null;

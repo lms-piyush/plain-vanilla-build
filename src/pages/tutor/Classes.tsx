@@ -57,14 +57,14 @@ const Classes = () => {
     }
     
     try {
-      const newClassId = await createClassBatch(classItem.id);
-      if (newClassId) {
-        // Refetch classes to get the new batch
+      const classId = await createClassBatch(classItem.id);
+      if (classId) {
+        // Refetch classes to get the updated batch
         await refetch();
-        toast.success('New class batch created! You can now edit and publish it.');
+        toast.success('Class batch incremented! You can now edit and publish the new batch.');
       }
     } catch (error: any) {
-      toast.error(error.message || 'Failed to create new batch');
+      toast.error(error.message || 'Failed to increment batch');
     }
   };
 
