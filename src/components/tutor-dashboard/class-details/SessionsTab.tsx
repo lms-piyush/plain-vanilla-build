@@ -1,7 +1,8 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { ClassDetails } from "@/types/class-details";
+import { fetchClassEnrollments } from "@/utils/class-enrollment-utils";
 import AttendanceDialog from "../AttendanceDialog";
 import SessionsHeader from "./sessions/SessionsHeader";
 import SessionsTable from "./sessions/SessionsTable";
@@ -18,6 +19,20 @@ interface SessionsTabProps {
 const SessionsTab = ({ classDetails, onEditSession, onDeleteSession, onNewSession, onStudentSelect }: SessionsTabProps) => {
   const [attendanceDialogOpen, setAttendanceDialogOpen] = useState(false);
   const [selectedSession, setSelectedSession] = useState<any>(null);
+  const [currentBatchStudents, setCurrentBatchStudents] = useState<any[]>([]);
+
+  useEffect(() => {
+    loadCurrentBatchStudents();
+  }, [classDetails.id, classDetails.batch_number]);
+
+  const loadCurrentBatchStudents = async () => {
+    try {
+      const students = await fetchClassEnrollments(classDetails.id, classDetails.batch_number);
+      setCurrentBatchStudents(students);
+    } catch (error) {
+      console.error('Error loading current batch students:', error);
+    }
+  };
 
   const handleAttendanceClick = (session: any) => {
     setSelectedSession(session);
@@ -81,7 +96,8 @@ const SessionsTab = ({ classDetails, onEditSession, onDeleteSession, onNewSessio
         open={attendanceDialogOpen}
         onOpenChange={setAttendanceDialogOpen}
         session={selectedSession}
-        enrolledStudents={classDetails.enrolled_students || []}
+        enrolledStudents={currentBatchStudents}
+        classDetails={classDetails}
         onStudentClick={handleStudentClick}
       />
     </>

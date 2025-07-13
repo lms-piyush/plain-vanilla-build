@@ -15,6 +15,7 @@ interface AttendanceDialogProps {
   onOpenChange: (open: boolean) => void;
   session: any;
   enrolledStudents: any[];
+  classDetails?: any;
   onStudentClick?: (student: any) => void;
 }
 
@@ -23,7 +24,7 @@ interface AttendanceRecord {
   status: 'present' | 'absent';
 }
 
-const AttendanceDialog = ({ open, onOpenChange, session, enrolledStudents, onStudentClick }: AttendanceDialogProps) => {
+const AttendanceDialog = ({ open, onOpenChange, session, enrolledStudents, classDetails, onStudentClick }: AttendanceDialogProps) => {
   const [attendance, setAttendance] = useState<AttendanceRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
@@ -149,7 +150,7 @@ const AttendanceDialog = ({ open, onOpenChange, session, enrolledStudents, onStu
         <DialogHeader>
           <DialogTitle>Mark Attendance - {session.title || 'Session'}</DialogTitle>
           <div className="text-sm text-muted-foreground mt-2">
-            Managing attendance for students in the latest batch
+            Managing attendance for students in Batch #{classDetails?.batch_number || 'Current'}
           </div>
         </DialogHeader>
         
