@@ -6,6 +6,7 @@ export interface StudentEnrollmentWithReviews {
   id: string;
   student_id: string;
   class_id: string;
+  batch_number: number;
   enrollment_date: string;
   status: 'active' | 'completed' | 'cancelled';
   payment_status: 'pending' | 'paid' | 'failed' | 'refunded';
@@ -25,6 +26,7 @@ export interface StudentEnrollmentWithReviews {
     duration_type: 'recurring' | 'fixed';
     max_students: number | null;
     currency: string | null;
+    batch_number: number;
     tutor_id: string;
     tutor_name: string;
     average_rating: number;
@@ -32,6 +34,7 @@ export interface StudentEnrollmentWithReviews {
     student_count: number;
     created_at: string;
     updated_at: string;
+    is_current_batch: boolean;
     class_schedules: {
       id: string;
       start_date: string | null;
@@ -64,7 +67,7 @@ export const useStudentEnrollmentsWithReviews = () => {
         .from("student_enrollments")
         .select(`
           *,
-          classes (
+          classes!inner (
             *,
             profiles!classes_tutor_id_fkey (
               full_name
@@ -96,6 +99,21 @@ export const useStudentEnrollmentsWithReviews = () => {
 
       console.log("Raw enrollments data:", enrollments);
 
+      // Get latest batch numbers for all classes to determine if student is enrolled in current batch
+      const classIds = enrollments?.map(e => e.class_id) || [];
+      const { data: latestBatches } = await supabase
+        .from("classes")
+        .select("id, batch_number")
+        .in("id", classIds)
+        .order("batch_number", { ascending: false });
+
+      const latestBatchMap = new Map<string, number>();
+      latestBatches?.forEach(batch => {
+        if (!latestBatchMap.has(batch.id) || batch.batch_number > latestBatchMap.get(batch.id)!) {
+          latestBatchMap.set(batch.id, batch.batch_number);
+        }
+      });
+
       const transformedEnrollments: StudentEnrollmentWithReviews[] = enrollments?.map(enrollment => {
         const classData = enrollment.classes;
         const reviews = classData?.class_reviews || [];
@@ -105,6 +123,8 @@ export const useStudentEnrollmentsWithReviews = () => {
           : 0;
 
         const studentCount = classData?.student_enrollments?.length || 0;
+        const latestBatch = latestBatchMap.get(classData.id) || 1;
+        const isCurrentBatch = enrollment.batch_number === latestBatch;
 
         return {
           ...enrollment,
@@ -115,7 +135,8 @@ export const useStudentEnrollmentsWithReviews = () => {
             tutor_name: classData?.profiles?.full_name || "Unknown Tutor",
             average_rating: averageRating,
             total_reviews: totalReviews,
-            student_count: studentCount
+            student_count: studentCount,
+            is_current_batch: isCurrentBatch
           }
         };
       }) || [];

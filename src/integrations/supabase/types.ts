@@ -238,6 +238,7 @@ export type Database = {
       classes: {
         Row: {
           auto_renewal: boolean | null
+          batch_number: number
           class_format: Database["public"]["Enums"]["class_format"]
           class_size: Database["public"]["Enums"]["class_size"]
           created_at: string
@@ -258,6 +259,7 @@ export type Database = {
         }
         Insert: {
           auto_renewal?: boolean | null
+          batch_number?: number
           class_format: Database["public"]["Enums"]["class_format"]
           class_size: Database["public"]["Enums"]["class_size"]
           created_at?: string
@@ -278,6 +280,7 @@ export type Database = {
         }
         Update: {
           auto_renewal?: boolean | null
+          batch_number?: number
           class_format?: Database["public"]["Enums"]["class_format"]
           class_size?: Database["public"]["Enums"]["class_size"]
           created_at?: string
@@ -562,6 +565,7 @@ export type Database = {
       }
       student_enrollments: {
         Row: {
+          batch_number: number
           class_id: string
           created_at: string
           enrollment_date: string
@@ -572,6 +576,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          batch_number?: number
           class_id: string
           created_at?: string
           enrollment_date?: string
@@ -582,6 +587,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          batch_number?: number
           class_id?: string
           created_at?: string
           enrollment_date?: string
@@ -658,6 +664,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_class_batch: {
+        Args: { original_class_id: string; tutor_id_param: string }
+        Returns: string
+      }
+      get_latest_batch_number: {
+        Args: { class_id_param: string }
+        Returns: number
+      }
       is_student_enrolled_in_class: {
         Args: { class_id_param: string; student_id_param: string }
         Returns: boolean

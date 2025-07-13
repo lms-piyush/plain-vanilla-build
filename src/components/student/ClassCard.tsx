@@ -28,6 +28,8 @@ interface ClassCardProps {
   rating: number;
   description: string;
   classSize: string;
+  batchNumber?: number;
+  isCurrentBatch?: boolean;
   onClick: () => void;
   onTutorClick: () => void;
   onMessageTutor: () => void;
@@ -47,6 +49,8 @@ const ClassCard = ({
   rating,
   description,
   classSize,
+  batchNumber,
+  isCurrentBatch = true,
   onClick,
   onTutorClick,
 }: ClassCardProps) => {
@@ -118,6 +122,22 @@ const ClassCard = ({
   };
 
   const getActionButton = () => {
+    // If student is not in current batch, only show review/message options
+    if (!isCurrentBatch) {
+      return (
+        <Button 
+          size="sm" 
+          className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
+          onClick={(e) => {
+            e.stopPropagation();
+            setReviewTypeDialogOpen(true);
+          }}
+        >
+          Update Review
+        </Button>
+      );
+    }
+    
     if (status === "Completed") {
       return (
         <Button 
@@ -155,7 +175,9 @@ const ClassCard = ({
               <h3 className="font-medium text-lg">{title}</h3>
               <div className="flex space-x-2">
                 <span className={`px-2 py-1 rounded-full text-xs ${
-                  status === "Completed" 
+                  status === "Previous Batch"
+                    ? "bg-orange-100 text-orange-800"
+                    : status === "Completed" 
                     ? "bg-gray-100 text-gray-800" 
                     : status === "Enrolled" 
                     ? "bg-blue-100 text-blue-800" 
@@ -163,6 +185,11 @@ const ClassCard = ({
                 }`}>
                   {status}
                 </span>
+                {batchNumber && batchNumber > 1 && (
+                  <span className="px-2 py-1 rounded-full text-xs bg-purple-100 text-purple-800">
+                    Batch {batchNumber}
+                  </span>
+                )}
                 <span className="px-2 py-1 rounded-full text-xs bg-[#E5D0FF] text-[#8A5BB7]">
                   {payment}
                 </span>

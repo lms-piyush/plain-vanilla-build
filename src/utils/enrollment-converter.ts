@@ -28,6 +28,11 @@ export const convertEnrollmentToClassCard = (enrollment: StudentEnrollmentWithRe
   };
 
   const getStatus = () => {
+    // If student is not enrolled in current batch, show different status
+    if (!classData.is_current_batch) {
+      return 'Previous Batch';
+    }
+    
     switch (classData.status) {
       case 'draft': return 'Draft';
       case 'active': return 'Active';
@@ -67,6 +72,8 @@ export const convertEnrollmentToClassCard = (enrollment: StudentEnrollmentWithRe
     enrollmentDate: enrollment.enrollment_date,
     frequency: getFrequency(),
     maxStudents: classData.max_students || 0,
-    subject: classData.subject || 'General'
+    subject: classData.subject || 'General',
+    batchNumber: enrollment.batch_number,
+    isCurrentBatch: classData.is_current_batch
   };
 };

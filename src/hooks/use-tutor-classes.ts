@@ -22,6 +22,7 @@ export interface TutorClass {
   tutor_id: string;
   created_at: string;
   updated_at: string;
+  batch_number: number;
   class_locations?: {
     meeting_link: string | null;
     street: string | null;

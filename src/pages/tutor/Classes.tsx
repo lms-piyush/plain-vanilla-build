@@ -7,6 +7,7 @@ import ClassesGrid from '@/components/tutor-dashboard/ClassesGrid';
 import ClassesPagination from '@/components/tutor-dashboard/ClassesPagination';
 import { useTutorClasses } from '@/hooks/use-tutor-classes';
 import { TutorClass } from '@/hooks/use-tutor-classes';
+import { useClassBatchOperations } from '@/hooks/use-class-batch-operations';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/sonner';
 import { useNavigate } from 'react-router-dom';
@@ -20,6 +21,7 @@ const Classes = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isDeleting, setIsDeleting] = useState(false);
   const [editMode, setEditMode] = useState<'full' | 'upload'>('full');
+  const { createClassBatch, isCreatingBatch } = useClassBatchOperations();
   
   const classesPerPage = 6;
   const { classes, totalCount, isLoading, error, refetch } = useTutorClasses({
@@ -47,16 +49,23 @@ const Classes = () => {
     setCreateClassDialogOpen(true);
   };
 
-  const handleUploadClass = (classItem: TutorClass) => {
+  const handleUploadClass = async (classItem: TutorClass) => {
     // Only allow upload mode for completed classes
     if (classItem.status !== 'completed') {
       toast.error('Upload option is only available for completed classes');
       return;
     }
     
-    setEditingClass(classItem);
-    setEditMode('upload');
-    setCreateClassDialogOpen(true);
+    try {
+      const newClassId = await createClassBatch(classItem.id);
+      if (newClassId) {
+        // Refetch classes to get the new batch
+        await refetch();
+        toast.success('New class batch created! You can now edit and publish it.');
+      }
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to create new batch');
+    }
   };
 
   const handleManageClass = (classItem: TutorClass) => {
