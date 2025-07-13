@@ -1,19 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-export const fetchClassEnrollments = async (classId: string, filterByLatestBatch: boolean = true) => {
-  // First get the class to find the current batch number
-  const { data: classData, error: classError } = await supabase
-    .from('classes')
-    .select('batch_number')
-    .eq('id', classId)
-    .single();
-
-  if (classError) {
-    console.error('Error fetching class data:', classError);
-    throw classError;
-  }
-
+export const fetchClassEnrollments = async (classId: string, batchNumber?: number) => {
   let query = supabase
     .from('student_enrollments')
     .select(`
@@ -26,9 +14,9 @@ export const fetchClassEnrollments = async (classId: string, filterByLatestBatch
     `)
     .eq('class_id', classId);
 
-  // Filter by latest batch if requested
-  if (filterByLatestBatch && classData) {
-    query = query.eq('batch_number', classData.batch_number);
+  // Filter by specific batch if provided
+  if (batchNumber !== undefined) {
+    query = query.eq('batch_number', batchNumber);
   }
 
   const { data: enrollments, error } = await query;
@@ -63,4 +51,21 @@ export const fetchClassEnrollments = async (classId: string, filterByLatestBatch
   });
 
   return enrichedEnrollments;
+};
+
+export const fetchAllBatchNumbers = async (classId: string) => {
+  const { data, error } = await supabase
+    .from('student_enrollments')
+    .select('batch_number')
+    .eq('class_id', classId)
+    .order('batch_number', { ascending: false });
+
+  if (error) {
+    console.error('Error fetching batch numbers:', error);
+    throw error;
+  }
+
+  // Get unique batch numbers
+  const uniqueBatches = [...new Set(data?.map(item => item.batch_number) || [])];
+  return uniqueBatches;
 };
