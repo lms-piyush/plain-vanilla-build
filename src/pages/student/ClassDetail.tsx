@@ -32,6 +32,30 @@ const ClassDetail = () => {
     );
   }
 
+  // Restrict access if student is enrolled in an outdated batch
+  if (classDetails.isEnrolled && !classDetails.isCurrentBatch) {
+    return (
+      <div className="max-w-4xl mx-auto p-6">
+        <ClassDetailHeader 
+          classDetails={classDetails} 
+          averageRating={reviewStats.average_rating}
+          totalReviews={reviewStats.total_reviews}
+        />
+        
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-6 mt-6">
+          <h2 className="text-xl font-semibold text-amber-800 mb-2">
+            Class Updated - Re-enrollment Required
+          </h2>
+          <p className="text-amber-700 mb-4">
+            You are enrolled in batch {classDetails.enrolledBatch}, but this class has been updated to batch {classDetails.batch_number}. 
+            To access the latest content, lessons, and materials, please re-enroll in the new batch.
+          </p>
+          <ClassPurchaseSection classDetails={classDetails} onEnrollmentChange={refetch} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <ClassDetailHeader 

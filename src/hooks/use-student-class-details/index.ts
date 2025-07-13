@@ -34,8 +34,14 @@ export const useStudentClassDetails = (classId: string) => {
 
       // Check if user is enrolled (only if user is logged in)
       let isEnrolled = false;
+      let isCurrentBatch = true;
+      let enrolledBatch: number | undefined;
+      
       if (user) {
-        isEnrolled = await checkEnrollmentStatus(user.id, classId);
+        const enrollmentStatus = await checkEnrollmentStatus(user.id, classId);
+        isEnrolled = enrollmentStatus.isEnrolled;
+        isCurrentBatch = enrollmentStatus.isCurrentBatch;
+        enrolledBatch = enrollmentStatus.enrolledBatch;
       }
 
       // Process lessons data
@@ -45,7 +51,9 @@ export const useStudentClassDetails = (classId: string) => {
         ...classData,
         tutor_name: tutorName,
         lessons: finalLessons,
-        isEnrolled
+        isEnrolled,
+        isCurrentBatch,
+        enrolledBatch
       });
       setError(null);
     } catch (err: any) {

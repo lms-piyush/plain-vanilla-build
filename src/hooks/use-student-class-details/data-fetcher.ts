@@ -93,14 +93,38 @@ export const fetchTutorName = async (tutorId: string): Promise<string> => {
   return tutorName;
 };
 
-export const checkEnrollmentStatus = async (userId: string, classId: string): Promise<boolean> => {
-  const { data: enrollment } = await supabase
+export const checkEnrollmentStatus = async (userId: string, classId: string): Promise<{ isEnrolled: boolean; isCurrentBatch: boolean; enrolledBatch?: number }> => {
+  // Get current class batch number
+  const { data: classData } = await supabase
+    .from('classes')
+    .select('batch_number')
+    .eq('id', classId)
+    .single();
+
+  // Check enrollment status for current batch
+  const { data: currentBatchEnrollment } = await supabase
     .from('student_enrollments')
-    .select('id')
+    .select('batch_number')
     .eq('student_id', userId)
     .eq('class_id', classId)
+    .eq('batch_number', classData?.batch_number || 1)
     .eq('status', 'active')
     .single();
 
-  return !!enrollment;
+  // Check any enrollment for this class
+  const { data: anyEnrollment } = await supabase
+    .from('student_enrollments')
+    .select('batch_number')
+    .eq('student_id', userId)
+    .eq('class_id', classId)
+    .eq('status', 'active')
+    .order('batch_number', { ascending: false })
+    .limit(1)
+    .single();
+
+  return {
+    isEnrolled: !!anyEnrollment,
+    isCurrentBatch: !!currentBatchEnrollment,
+    enrolledBatch: anyEnrollment?.batch_number
+  };
 };

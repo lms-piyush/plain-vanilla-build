@@ -14,6 +14,7 @@ export interface StudentClassDetails {
   max_students: number | null;
   thumbnail_url: string | null;
   tutor_id: string;
+  batch_number: number;
   created_at: string;
   updated_at: string;
   tutor_name: string;
@@ -58,4 +59,6 @@ export interface StudentClassDetails {
     }>;
   }>;
   isEnrolled: boolean;
+  isCurrentBatch: boolean;
+  enrolledBatch?: number;
 }

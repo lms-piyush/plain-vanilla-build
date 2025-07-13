@@ -14,10 +14,10 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
   const [isEnrolling, setIsEnrolling] = useState(false);
 
   const handlePurchase = async () => {
-    if (classDetails?.isEnrolled) {
+    if (classDetails?.isEnrolled && classDetails?.isCurrentBatch) {
       toast({
         title: "Already enrolled",
-        description: "You are already enrolled in this class.",
+        description: "You are already enrolled in the current batch of this class.",
       });
       return;
     }
@@ -37,12 +37,13 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
 
       console.log('Attempting to enroll user:', user.id, 'in class:', classDetails.id);
 
-      // Create enrollment
+      // Create enrollment with current batch number
       const { data, error } = await supabase
         .from('student_enrollments')
         .insert({
           student_id: user.id,
           class_id: classDetails.id,
+          batch_number: classDetails.batch_number,
           status: 'active',
           payment_status: 'paid'
         })
@@ -83,13 +84,27 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
           {classDetails.duration_type === 'recurring' && <span className="text-sm font-normal">/month</span>}
         </span>
       </div>
-      <Button
-        onClick={handlePurchase}
-        disabled={isEnrolling || classDetails.isEnrolled}
-        className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
-      >
-        {isEnrolling ? "Enrolling..." : classDetails.isEnrolled ? "Already Enrolled" : "Purchase Course"}
-      </Button>
+      <div className="flex flex-col gap-2">
+        {classDetails.isEnrolled && !classDetails.isCurrentBatch && (
+          <p className="text-sm text-amber-600 bg-amber-50 p-2 rounded">
+            You are enrolled in batch {classDetails.enrolledBatch}. This class has been updated to batch {classDetails.batch_number}.
+          </p>
+        )}
+        <Button
+          onClick={handlePurchase}
+          disabled={isEnrolling || (classDetails.isEnrolled && classDetails.isCurrentBatch)}
+          className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
+        >
+          {isEnrolling 
+            ? "Enrolling..." 
+            : classDetails.isEnrolled && classDetails.isCurrentBatch 
+              ? "Already Enrolled" 
+              : classDetails.isEnrolled && !classDetails.isCurrentBatch
+                ? "Enroll in New Batch"
+                : "Purchase Course"
+          }
+        </Button>
+      </div>
     </div>
   );
 };
