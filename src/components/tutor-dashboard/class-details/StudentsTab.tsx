@@ -75,7 +75,9 @@ const StudentsTab = ({ classDetails, selectedStudent, onStudentDeselect }: Stude
     <Card className="border-[#1F4E79]/10">
       <CardHeader>
         <CardTitle className="text-lg font-semibold text-[#1F4E79]">Enrolled Students</CardTitle>
-        <CardDescription>Students currently enrolled in this class</CardDescription>
+        <CardDescription>
+          Students currently enrolled in batch {classDetails.batch_number}
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -96,9 +98,9 @@ const StudentsTab = ({ classDetails, selectedStudent, onStudentDeselect }: Stude
                     <p className="text-sm text-muted-foreground">
                       Enrolled: {new Date(enrollment.enrollment_date).toLocaleDateString()}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      Role: {enrollment.profiles?.role || 'student'}
-                    </p>
+                     <p className="text-xs text-muted-foreground">
+                       Role: {enrollment.profiles?.role || 'student'} • Batch: {enrollment.batch_number}
+                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">

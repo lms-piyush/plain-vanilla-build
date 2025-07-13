@@ -148,6 +148,9 @@ const AttendanceDialog = ({ open, onOpenChange, session, enrolledStudents, onStu
       <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Mark Attendance - {session.title || 'Session'}</DialogTitle>
+          <div className="text-sm text-muted-foreground mt-2">
+            Managing attendance for students in the latest batch
+          </div>
         </DialogHeader>
         
         {/* Mark All buttons */}

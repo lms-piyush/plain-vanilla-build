@@ -1,8 +1,20 @@
 
 import { supabase } from "@/integrations/supabase/client";
 
-export const fetchClassEnrollments = async (classId: string) => {
-  const { data: enrollments, error } = await supabase
+export const fetchClassEnrollments = async (classId: string, filterByLatestBatch: boolean = true) => {
+  // First get the class to find the current batch number
+  const { data: classData, error: classError } = await supabase
+    .from('classes')
+    .select('batch_number')
+    .eq('id', classId)
+    .single();
+
+  if (classError) {
+    console.error('Error fetching class data:', classError);
+    throw classError;
+  }
+
+  let query = supabase
     .from('student_enrollments')
     .select(`
       *,
@@ -13,6 +25,13 @@ export const fetchClassEnrollments = async (classId: string) => {
       )
     `)
     .eq('class_id', classId);
+
+  // Filter by latest batch if requested
+  if (filterByLatestBatch && classData) {
+    query = query.eq('batch_number', classData.batch_number);
+  }
+
+  const { data: enrollments, error } = await query;
 
   if (error) {
     console.error('Error fetching enrollments:', error);

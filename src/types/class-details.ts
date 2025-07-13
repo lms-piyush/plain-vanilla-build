@@ -15,6 +15,7 @@ export interface ClassDetails {
   auto_renewal: boolean | null;
   thumbnail_url: string | null;
   tutor_id: string;
+  batch_number: number;
   created_at: string;
   updated_at: string;
   class_locations?: Array<{
@@ -44,6 +45,7 @@ export interface ClassDetails {
     enrollment_date: string;
     status: string;
     payment_status: string;
+    batch_number: number;
     profiles?: {
       full_name: string;
       role: string;
