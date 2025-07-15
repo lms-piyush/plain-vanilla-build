@@ -16,6 +16,8 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTutorProfile } from "@/hooks/use-tutor-profile";
+import { useNotifications } from "@/hooks/use-notifications";
+import NotificationDropdown from "@/components/NotificationDropdown";
 
 const Topbar = () => {
   const navigate = useNavigate();
@@ -23,8 +25,10 @@ const Topbar = () => {
   const { user, logout } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [notificationOpen, setNotificationOpen] = useState(false);
   const isTutorRoute = location.pathname.startsWith('/tutor');
   const { profile } = useTutorProfile(isTutorRoute ? user?.id : undefined);
+  const { unreadCount } = useNotifications();
 
   const handleLogout = async () => {
     await logout();
@@ -82,53 +86,24 @@ const Topbar = () => {
           </Button>
 
           {/* Notification Button */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="relative text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-              >
-                <Bell className="h-5 w-5" />
-                <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-blue-500"></span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 bg-white border-gray-200">
-              <div className="p-3 font-medium border-b border-gray-200 text-gray-900">Notifications</div>
-              <DropdownMenuItem className="p-3 cursor-pointer hover:bg-gray-50">
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-green-500">✅</span>
-                    <span className="font-medium text-gray-900">Class Completed</span>
-                  </div>
-                  <p className="text-sm text-gray-600">Your 'Advanced Algebra' class session was completed successfully.</p>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="p-3 cursor-pointer hover:bg-gray-50">
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-blue-500">💰</span>
-                    <span className="font-medium text-gray-900">Payment Received</span>
-                  </div>
-                  <p className="text-sm text-gray-600">You received payment for 3 completed sessions this week.</p>
-                </div>
-              </DropdownMenuItem>
-              <DropdownMenuItem className="p-3 cursor-pointer hover:bg-gray-50">
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-center gap-2">
-                    <span className="text-yellow-500">⭐</span>
-                    <span className="font-medium text-gray-900">New Review</span>
-                  </div>
-                  <p className="text-sm text-gray-600">Sarah left a 5-star review for your Physics class.</p>
-                </div>
-              </DropdownMenuItem>
-              <div className="p-2 border-t border-gray-200">
-                <Button variant="ghost" className="w-full text-blue-600 hover:bg-gray-50">
-                  View all notifications
-                </Button>
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
+          <div className="relative">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="relative text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              onClick={() => setNotificationOpen(!notificationOpen)}
+            >
+              <Bell className="h-5 w-5" />
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 h-3 w-3 rounded-full bg-blue-500 text-white text-xs flex items-center justify-center">
+                  {unreadCount > 9 ? '9+' : unreadCount}
+                </span>
+              )}
+            </Button>
+            {notificationOpen && (
+              <NotificationDropdown onClose={() => setNotificationOpen(false)} />
+            )}
+          </div>
           
           {/* Profile Button with detailed dropdown */}
           <DropdownMenu>
@@ -277,53 +252,22 @@ const Topbar = () => {
         </Button>
 
         {/* Notification Button */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="relative border border-gray-200 hover:bg-[#E5D0FF] hover:text-black active:bg-[#8A5BB7] active:text-white focus:bg-[#8A5BB7] focus:text-white"
-            >
-              <Bell className="h-5 w-5" />
+        <div className="relative">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="relative border border-gray-200 hover:bg-[#E5D0FF] hover:text-black active:bg-[#8A5BB7] active:text-white focus:bg-[#8A5BB7] focus:text-white"
+            onClick={() => setNotificationOpen(!notificationOpen)}
+          >
+            <Bell className="h-5 w-5" />
+            {unreadCount > 0 && (
               <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-[#BA8DF1]"></span>
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80">
-            <div className="p-2 font-medium border-b">Notifications</div>
-            <DropdownMenuItem className="p-3 cursor-pointer">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-green-500">✅</span>
-                  <span className="font-medium">Payment Successful</span>
-                </div>
-                <p className="text-sm text-gray-500">Your payment for 'Advanced Algebra' class was successful.</p>
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="p-3 cursor-pointer">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-orange-500">🔥</span>
-                  <span className="font-medium">New Popular Classes</span>
-                </div>
-                <p className="text-sm text-gray-500">New popular classes have been curated just for you. Check them out now!</p>
-              </div>
-            </DropdownMenuItem>
-            <DropdownMenuItem className="p-3 cursor-pointer">
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-blue-500">📅</span>
-                  <span className="font-medium">Class Reminder</span>
-                </div>
-                <p className="text-sm text-gray-500">Reminder: Your 'Physics Class' starts in 30 minutes.</p>
-              </div>
-            </DropdownMenuItem>
-            <div className="p-2 border-t">
-              <Button variant="ghost" className="w-full text-[#8A5BB7]">
-                View all notifications
-              </Button>
-            </div>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            )}
+          </Button>
+          {notificationOpen && (
+            <NotificationDropdown onClose={() => setNotificationOpen(false)} />
+          )}
+        </div>
         
         {/* Profile Button with User Info */}
         <DropdownMenu>

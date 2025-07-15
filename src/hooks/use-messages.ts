@@ -2,6 +2,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Message } from "./use-conversations";
+import { notificationService } from "@/services/notification-service";
 
 export const useMessages = (conversationId: string) => {
   return useQuery({
@@ -56,9 +57,26 @@ export const useSendMessage = () => {
         .select()
         .single();
 
-      if (messageError) {
-        console.error("Error sending message:", messageError);
-        throw messageError;
+      if (messageError) throw messageError;
+
+      // Send notification to recipient
+      try {
+        const { data: senderProfile } = await supabase
+          .from("profiles")
+          .select("full_name, role")
+          .eq("id", user.id)
+          .single();
+
+        if (senderProfile) {
+          await notificationService.notifyNewMessage(
+            user.id,
+            recipientId,
+            senderProfile.full_name,
+            senderProfile.role as 'student' | 'tutor'
+          );
+        }
+      } catch (notificationError) {
+        console.error("Failed to send message notification:", notificationError);
       }
 
       // Update conversation's last message

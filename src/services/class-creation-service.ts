@@ -2,6 +2,7 @@
 import { supabase } from "@/integrations/supabase/client";
 import { ClassCreationState } from "@/hooks/use-class-creation-store";
 import { saveCurriculumToDatabase } from "./curriculum-service";
+import { notificationService } from "./notification-service";
 
 export const saveClass = async (
   formState: ClassCreationState, 
@@ -146,6 +147,21 @@ export const saveClass = async (
       }));
       
       await saveCurriculumToDatabase(finalClassId, curriculumData);
+    }
+
+    // Trigger notification for class creation (only for new classes)
+    if (!classId) {
+      try {
+        await notificationService.notifyClassCreated(
+          finalClassId,
+          user.id,
+          formState.title,
+          status
+        );
+      } catch (notificationError) {
+        console.error('Failed to send class creation notification:', notificationError);
+        // Don't throw error as the class was created successfully
+      }
     }
 
     return { classId: finalClassId };
