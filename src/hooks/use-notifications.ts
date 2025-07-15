@@ -169,14 +169,17 @@ export const useNotifications = () => {
 
   // Set up real-time subscription
   useEffect(() => {
-    if (!user) return;
+    if (!user?.id) return;
 
     fetchNotifications();
     fetchUnreadCount();
 
+    // Create a unique channel name based on user ID
+    const channelName = `notifications-${user.id}`;
+    
     // Subscribe to real-time changes
     const channel = supabase
-      .channel('notifications')
+      .channel(channelName)
       .on(
         'postgres_changes',
         {
@@ -213,7 +216,7 @@ export const useNotifications = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [user]);
+  }, [user?.id]); // Only depend on user.id, not the full user object
 
   return {
     notifications,
