@@ -1,3 +1,4 @@
+
 import { supabase } from "@/integrations/supabase/client";
 import { notificationService } from "@/services/notification-service";
 
@@ -12,7 +13,8 @@ export const enrollStudentInClass = async (classId: string, studentId: string) =
 
     if (!classData) throw new Error("Class not found");
 
-    // Create enrollment
+    // Create enrollment with current timestamp
+    const enrollmentTimestamp = new Date().toISOString();
     const { error } = await supabase
       .from("student_enrollments")
       .insert({
@@ -21,11 +23,12 @@ export const enrollStudentInClass = async (classId: string, studentId: string) =
         batch_number: classData.batch_number,
         status: "active",
         payment_status: "paid",
+        enrollment_date: enrollmentTimestamp,
       });
 
     if (error) throw error;
 
-    // Send notification to tutor
+    // Send notification to tutor with timestamp
     try {
       const { data: studentData } = await supabase
         .from("profiles")
@@ -39,7 +42,7 @@ export const enrollStudentInClass = async (classId: string, studentId: string) =
           classData.tutor_id,
           studentData.full_name,
           classData.title,
-          new Date().toISOString()
+          enrollmentTimestamp
         );
       }
     } catch (notificationError) {

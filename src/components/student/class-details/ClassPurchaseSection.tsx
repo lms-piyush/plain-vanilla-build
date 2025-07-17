@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { StudentClassDetails } from "@/hooks/use-student-class-details";
+import { enrollStudentInClass } from "@/hooks/use-student-enrollment";
 
 interface ClassPurchaseSectionProps {
   classDetails: StudentClassDetails;
@@ -37,24 +38,10 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
 
       console.log('Attempting to enroll user:', user.id, 'in class:', classDetails.id);
 
-      // Create enrollment with current batch number
-      const { data, error } = await supabase
-        .from('student_enrollments')
-        .insert({
-          student_id: user.id,
-          class_id: classDetails.id,
-          batch_number: classDetails.batch_number,
-          status: 'active',
-          payment_status: 'paid'
-        })
-        .select();
+      // Use the existing enrollment function that includes notification logic
+      await enrollStudentInClass(classDetails.id, user.id);
 
-      if (error) {
-        console.error('Enrollment error:', error);
-        throw error;
-      }
-
-      console.log('Enrollment successful:', data);
+      console.log('Enrollment successful with notifications');
       
       toast({
         title: "Successfully enrolled!",
