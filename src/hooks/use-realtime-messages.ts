@@ -66,5 +66,5 @@ export const useRealtimeMessages = (conversationId: string) => {
       console.log("Cleaning up realtime subscription for conversation:", conversationId);
       supabase.removeChannel(channel);
     };
-  }, [conversationId, queryClient]);
+  }, [conversationId]); // Remove queryClient from deps to prevent multiple subscriptions
 };
