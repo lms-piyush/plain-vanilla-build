@@ -77,13 +77,13 @@ const Topbar = () => {
           </Button>
 
           {/* Help Button */}
-          <Button 
+          {/* <Button 
             variant="ghost" 
             size="icon" 
             className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
           >
             <HelpCircle className="h-5 w-5" />
-          </Button>
+          </Button> */}
 
           {/* Notification Button */}
           <div className="relative">
@@ -313,7 +313,8 @@ const Topbar = () => {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </div>
+      </div> 
+      
     </div>
   );
 };
