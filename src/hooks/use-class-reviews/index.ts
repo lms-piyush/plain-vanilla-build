@@ -69,14 +69,14 @@ export const useClassReviews = (classId: string) => {
       return false;
     }
 
-    if (!isUserEnrolled) {
-      toast({
-        title: "Enrollment Required",
-        description: "You must be enrolled in this class to submit a review.",
-        variant: "destructive",
-      });
-      return false;
-    }
+    // if (!isUserEnrolled) {
+    //   toast({
+    //     title: "Enrollment Required",
+    //     description: "You must be enrolled in this class to submit a review.",
+    //     variant: "destructive",
+    //   });
+    //   return false;
+    // }
 
     try {
       await submitReviewApi(classId, user.id, rating, reviewText, userReview);
