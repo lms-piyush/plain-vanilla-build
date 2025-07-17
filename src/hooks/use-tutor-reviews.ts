@@ -1,7 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { notificationService } from "@/services/notification-service";
 
 export interface TutorReview {
   id: string;
@@ -166,6 +167,27 @@ export const useTutorReviews = (tutorId: string, page: number = 1, pageSize: num
           .eq("id", userReview.id);
 
         if (error) throw error;
+
+        // Send notification to tutor for updated review
+        try {
+          const { data: studentData } = await supabase
+            .from("profiles")
+            .select("full_name")
+            .eq("id", user.id)
+            .single();
+
+          if (studentData) {
+            await notificationService.notifyTutorReview(
+              tutorId,
+              studentData.full_name,
+              rating,
+              reviewText,
+              true // isUpdate = true
+            );
+          }
+        } catch (notificationError) {
+          console.error("Failed to send updated tutor review notification:", notificationError);
+        }
       } else {
         // Create new review
         const { error } = await supabase
@@ -178,6 +200,27 @@ export const useTutorReviews = (tutorId: string, page: number = 1, pageSize: num
           });
 
         if (error) throw error;
+
+        // Send notification to tutor for new review
+        try {
+          const { data: studentData } = await supabase
+            .from("profiles")
+            .select("full_name")
+            .eq("id", user.id)
+            .single();
+
+          if (studentData) {
+            await notificationService.notifyTutorReview(
+              tutorId,
+              studentData.full_name,
+              rating,
+              reviewText,
+              false // isUpdate = false
+            );
+          }
+        } catch (notificationError) {
+          console.error("Failed to send tutor review notification:", notificationError);
+        }
       }
 
       toast({

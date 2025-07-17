@@ -34,9 +34,11 @@ const NotificationDropdown = ({ onClose }: NotificationDropdownProps) => {
         navigate('/tutor/messages');
         break;
       case 'class_review':
+      case 'class_review_updated':
         navigate(`/tutor/classes/${notification.reference_id}`);
         break;
       case 'tutor_review':
+      case 'tutor_review_updated':
         navigate('/tutor/feedback');
         break;
       case 'session_reminder':
@@ -58,8 +60,10 @@ const NotificationDropdown = ({ onClose }: NotificationDropdownProps) => {
       case 'message_received':
         return '💬';
       case 'class_review':
+      case 'class_review_updated':
         return '⭐';
       case 'tutor_review':
+      case 'tutor_review_updated':
         return '🌟';
       case 'session_reminder':
         return '⏰';

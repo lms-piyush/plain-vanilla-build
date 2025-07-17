@@ -38,10 +38,12 @@ export const notificationService = {
   },
 
   // Notification for student enrollment
-  async notifyStudentEnrollment(classId: string, tutorId: string, studentName: string, className: string) {
+  async notifyStudentEnrollment(classId: string, tutorId: string, studentName: string, className: string, enrollmentDate?: string) {
+    const timestamp = enrollmentDate ? new Date(enrollmentDate).toLocaleDateString() : 'today';
+    
     await this.createNotification({
       title: 'New Student Enrollment',
-      description: `${studentName} has enrolled in your class "${className}".`,
+      description: `${studentName} has enrolled in your class "${className}" on ${timestamp}.`,
       user_id: tutorId,
       notification_type: 'student_enrollment',
       reference_id: classId,
@@ -62,24 +64,28 @@ export const notificationService = {
   },
 
   // Notification for class review
-  async notifyClassReview(classId: string, tutorId: string, studentName: string, className: string, rating: number) {
+  async notifyClassReview(classId: string, tutorId: string, studentName: string, className: string, rating: number, reviewText?: string, isUpdate = false) {
+    const reviewPreview = reviewText ? ` "${reviewText.substring(0, 50)}${reviewText.length > 50 ? '...' : ''}"` : '';
+    
     await this.createNotification({
-      title: 'New Class Review',
-      description: `${studentName} left a ${rating}-star review for your class "${className}".`,
+      title: isUpdate ? 'Review Updated' : 'New Review Received',
+      description: `${studentName} ${isUpdate ? 'updated their' : 'left a'} ${rating}-star review for your class "${className}".${reviewPreview}`,
       user_id: tutorId,
-      notification_type: 'class_review',
+      notification_type: isUpdate ? 'class_review_updated' : 'class_review',
       reference_id: classId,
       reference_table: 'class_reviews',
     });
   },
 
   // Notification for tutor review
-  async notifyTutorReview(tutorId: string, studentName: string, rating: number) {
+  async notifyTutorReview(tutorId: string, studentName: string, rating: number, reviewText?: string, isUpdate = false) {
+    const reviewPreview = reviewText ? ` "${reviewText.substring(0, 50)}${reviewText.length > 50 ? '...' : ''}"` : '';
+    
     await this.createNotification({
-      title: 'New Tutor Review',
-      description: `${studentName} left a ${rating}-star review for your teaching.`,
+      title: isUpdate ? 'Review Updated' : 'New Review Received',
+      description: `${studentName} ${isUpdate ? 'updated their' : 'left a'} ${rating}-star review for your teaching.${reviewPreview}`,
       user_id: tutorId,
-      notification_type: 'tutor_review',
+      notification_type: isUpdate ? 'tutor_review_updated' : 'tutor_review',
       reference_table: 'tutor_reviews',
     });
   },

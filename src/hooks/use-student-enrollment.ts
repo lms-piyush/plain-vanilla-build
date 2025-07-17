@@ -38,7 +38,8 @@ export const enrollStudentInClass = async (classId: string, studentId: string) =
           classId,
           classData.tutor_id,
           studentData.full_name,
-          classData.title
+          classData.title,
+          new Date().toISOString()
         );
       }
     } catch (notificationError) {
