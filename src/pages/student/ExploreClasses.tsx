@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Tabs } from "@/components/ui/tabs";
 import ExploreClassesHeader from "@/components/explore/ExploreClassesHeader";
-import FilterSheet from "@/components/explore/FilterSheet";
+import FilterSheet from "@/components/student/FilterSheet";
 import ClassesList from "@/components/explore/ClassesList";
 import ClassesPagination from "@/components/explore/ClassesPagination";
 import SearchInput from "@/components/student/SearchInput";
@@ -14,6 +14,8 @@ import { useFilterEffects } from "@/hooks/use-filter-effects";
 import { useSearchResults } from "@/hooks/use-search-results";
 import { convertToClassCard } from "@/utils/class-converter";
 import { getSavedClasses } from "@/utils/class-filters";
+import ActiveFilterDisplay from "@/components/common/ActiveFilterDisplay";
+import { useFilterState } from "@/hooks/use-filter-state";
 
 const ExploreClasses = () => {
   const navigate = useNavigate();
@@ -32,11 +34,25 @@ const ExploreClasses = () => {
   // Wishlist management
   const { wishlistedCourses, toggleWishlist } = useWishlist();
   
-  // Filter states
-  const [classMode, setClassMode] = useState<"online" | "offline">("online");
-  const [classFormat, setClassFormat] = useState<"live" | "recorded" | "inbound" | "outbound">("live");
-  const [classSize, setClassSize] = useState<"group" | "1-on-1">("group");
-  const [classDuration, setClassDuration] = useState<"finite" | "infinite">("finite");
+  // Use enhanced filter state management
+  const {
+    classMode,
+    classFormat, 
+    classSize,
+    classDuration,
+    paymentModel,
+    setClassMode,
+    setClassFormat,
+    setClassSize,
+    setClassDuration,
+    setPaymentModel,
+    filtersApplied,
+    setFiltersApplied,
+    activeFilters,
+    removeFilter,
+    clearAllFilters,
+    getFilterValues
+  } = useFilterState();
   
   const classesPerPage = 9;
 
@@ -47,10 +63,11 @@ const ExploreClasses = () => {
     classDuration,
     setClassFormat,
     setClassSize,
-    setPaymentModel: () => {} // Not used in explore classes
+    setPaymentModel
   });
 
   // Use filtered classes hook with server-side filtering and sorting
+  const filterValues = getFilterValues();
   const { 
     data: queryResult, 
     isLoading,
@@ -59,10 +76,7 @@ const ExploreClasses = () => {
   } = useFilteredClasses({
     page: currentPage,
     pageSize: classesPerPage,
-    classMode: filterOpen ? classMode : undefined,
-    classFormat: filterOpen ? classFormat : undefined,
-    classSize: filterOpen ? classSize : undefined,
-    classDuration: filterOpen ? (classDuration === "finite" ? "fixed" : "recurring") : undefined,
+    ...filterValues,
     sortBy: sortBy as "popular" | "rating" | "newest"
   });
 
@@ -119,6 +133,11 @@ const ExploreClasses = () => {
     searchClassesAndTutors(query);
   };
 
+  const handleApplyFilters = () => {
+    setFiltersApplied(true);
+    setCurrentPage(1); // Reset to first page when applying filters
+  };
+
   // Show error state if there's an error
   if (error) {
     return (
@@ -155,6 +174,15 @@ const ExploreClasses = () => {
           query={searchQuery}
         />
       </div>
+
+      {/* Active Filters Display */}
+      <div className="mb-6">
+        <ActiveFilterDisplay
+          filters={activeFilters}
+          onRemoveFilter={removeFilter}
+          onClearAll={clearAllFilters}
+        />
+      </div>
       
       <div className="flex flex-col md:flex-row gap-6">
         <div className="w-full">
@@ -168,6 +196,8 @@ const ExploreClasses = () => {
             setFilterOpen={setFilterOpen}
           >
             <FilterSheet
+              filterOpen={filterOpen}
+              setFilterOpen={setFilterOpen}
               classMode={classMode}
               setClassMode={setClassMode}
               classFormat={classFormat}
@@ -176,7 +206,9 @@ const ExploreClasses = () => {
               setClassSize={setClassSize}
               classDuration={classDuration}
               setClassDuration={setClassDuration}
-              setFilterOpen={setFilterOpen}
+              paymentModel={paymentModel}
+              setPaymentModel={setPaymentModel}
+              onApplyFilters={handleApplyFilters}
             />
           </ExploreClassesHeader>
           

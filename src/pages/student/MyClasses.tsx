@@ -17,19 +17,34 @@ import { useFilteredClasses } from "@/hooks/use-filtered-classes";
 import { convertEnrollmentToClassCard } from "@/utils/enrollment-converter";
 import ClassCard from "@/components/student/ClassCard";
 import FilterSheet from "@/components/student/FilterSheet";
+import ActiveFilterDisplay from "@/components/common/ActiveFilterDisplay";
+import { useFilterState } from "@/hooks/use-filter-state";
 
 const MyClasses = () => {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("all");
   const [filterOpen, setFilterOpen] = useState(false);
-  
-  // Filter states
-  const [classMode, setClassMode] = useState<"online" | "offline">("online");
-  const [classFormat, setClassFormat] = useState<"live" | "recorded" | "inbound" | "outbound">("live");
-  const [classSize, setClassSize] = useState<"group" | "1-on-1">("group");
-  const [classDuration, setClassDuration] = useState<"finite" | "infinite">("finite");
-  const [paymentModel, setPaymentModel] = useState<"one-time" | "subscription">("one-time");
   const [searchQuery, setSearchQuery] = useState("");
+  
+  // Use enhanced filter state management
+  const {
+    classMode,
+    classFormat, 
+    classSize,
+    classDuration,
+    paymentModel,
+    setClassMode,
+    setClassFormat,
+    setClassSize,
+    setClassDuration,
+    setPaymentModel,
+    filtersApplied,
+    setFiltersApplied,
+    activeFilters,
+    removeFilter,
+    clearAllFilters,
+    getFilterValues
+  } = useFilterState();
   
   // Search functionality
   const { results: searchResults, isLoading: searchLoading, error: searchError, searchClassesAndTutors } = useSearchResults();
@@ -41,13 +56,11 @@ const MyClasses = () => {
   const enrolledClassIds = enrollments?.map(enrollment => enrollment.class_id) || [];
   
   // Use filtered classes hook with server-side filtering
+  const filterValues = getFilterValues();
   const { data: filteredData, isLoading: isFilteredLoading, error: filteredError } = useFilteredClasses({
     enrolledOnly: true,
     enrolledClasses: enrolledClassIds,
-    classMode: filterOpen ? classMode : undefined,
-    classFormat: filterOpen ? classFormat : undefined,
-    classSize: filterOpen ? classSize : undefined,
-    classDuration: filterOpen ? (classDuration === "finite" ? "fixed" : "recurring") : undefined,
+    ...filterValues
   });
 
   const isLoading = enrollmentsLoading || isFilteredLoading;
@@ -128,6 +141,10 @@ const MyClasses = () => {
     searchClassesAndTutors(query);
   };
 
+  const handleApplyFilters = () => {
+    setFiltersApplied(true);
+  };
+
   if (isLoading) {
     return (
       <div className="text-center py-12">
@@ -171,6 +188,15 @@ const MyClasses = () => {
           query={searchQuery}
         />
       </div>
+
+      {/* Active Filters Display */}
+      <div className="mb-6">
+        <ActiveFilterDisplay
+          filters={activeFilters}
+          onRemoveFilter={removeFilter}
+          onClearAll={clearAllFilters}
+        />
+      </div>
       
       <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
         <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
@@ -198,6 +224,7 @@ const MyClasses = () => {
               setClassDuration={setClassDuration}
               paymentModel={paymentModel}
               setPaymentModel={setPaymentModel}
+              onApplyFilters={handleApplyFilters}
             />
           </div>
           
@@ -233,7 +260,7 @@ const MyClasses = () => {
                   )}
                   {enrollments.length > 0 && filteredClasses.length === 0 && (
                     <Button 
-                      onClick={() => setFilterOpen(false)}
+                      onClick={clearAllFilters}
                       variant="outline"
                       className="mr-2"
                     >

@@ -28,6 +28,7 @@ interface FilterSheetProps {
   setClassDuration: (duration: "finite" | "infinite") => void;
   paymentModel: "one-time" | "subscription";
   setPaymentModel: (model: "one-time" | "subscription") => void;
+  onApplyFilters: () => void;
 }
 
 const FilterSheet = ({
@@ -43,7 +44,13 @@ const FilterSheet = ({
   setClassDuration,
   paymentModel,
   setPaymentModel,
+  onApplyFilters,
 }: FilterSheetProps) => {
+  
+  const handleSaveFilters = () => {
+    onApplyFilters();
+    setFilterOpen(false);
+  };
   return (
     <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
       <SheetTrigger asChild>
@@ -182,9 +189,9 @@ const FilterSheet = ({
           <div className="flex justify-end pt-4">
             <Button 
               className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
-              onClick={() => setFilterOpen(false)}
+              onClick={handleSaveFilters}
             >
-              Save Filters
+              Apply Filters
             </Button>
           </div>
         </div>
