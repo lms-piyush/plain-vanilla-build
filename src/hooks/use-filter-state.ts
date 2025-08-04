@@ -66,17 +66,30 @@ export const useFilterState = (): UseFilterStateReturn => {
   const [paymentModel, setPaymentModel] = useState<"one-time" | "subscription">("one-time");
   const [filtersApplied, setFiltersApplied] = useState(false);
 
-  // Generate active filters array
+  // Generate active filters array - only show non-default values
   const activeFilters = useMemo(() => {
     if (!filtersApplied) return [];
     
-    return [
-      { key: "classMode", label: FILTER_LABELS.classMode, value: VALUE_LABELS[classMode] },
-      { key: "classFormat", label: FILTER_LABELS.classFormat, value: VALUE_LABELS[classFormat] },
-      { key: "classSize", label: FILTER_LABELS.classSize, value: VALUE_LABELS[classSize] },
-      { key: "classDuration", label: FILTER_LABELS.classDuration, value: VALUE_LABELS[classDuration] },
-      { key: "paymentModel", label: FILTER_LABELS.paymentModel, value: VALUE_LABELS[paymentModel] }
-    ];
+    const filters = [];
+    
+    // Only add filters that are not at their default values
+    if (classMode !== "online") {
+      filters.push({ key: "classMode", label: FILTER_LABELS.classMode, value: VALUE_LABELS[classMode] });
+    }
+    if (classFormat !== "live") {
+      filters.push({ key: "classFormat", label: FILTER_LABELS.classFormat, value: VALUE_LABELS[classFormat] });
+    }
+    if (classSize !== "group") {
+      filters.push({ key: "classSize", label: FILTER_LABELS.classSize, value: VALUE_LABELS[classSize] });
+    }
+    if (classDuration !== "finite") {
+      filters.push({ key: "classDuration", label: FILTER_LABELS.classDuration, value: VALUE_LABELS[classDuration] });
+    }
+    if (paymentModel !== "one-time") {
+      filters.push({ key: "paymentModel", label: FILTER_LABELS.paymentModel, value: VALUE_LABELS[paymentModel] });
+    }
+    
+    return filters;
   }, [filtersApplied, classMode, classFormat, classSize, classDuration, paymentModel]);
 
   // Remove individual filter
@@ -98,20 +111,9 @@ export const useFilterState = (): UseFilterStateReturn => {
         setPaymentModel("one-time");
         break;
     }
-    
-    // Check if all filters are now at default values
-    const isAtDefaults = (
-      (key === "classMode" || classMode === "online") &&
-      (key === "classFormat" || classFormat === "live") &&
-      (key === "classSize" || classSize === "group") &&
-      (key === "classDuration" || classDuration === "finite") &&
-      (key === "paymentModel" || paymentModel === "one-time")
-    );
-    
-    if (isAtDefaults) {
-      setFiltersApplied(false);
-    }
-  }, [classMode, classFormat, classSize, classDuration, paymentModel]);
+    // Keep filters applied - we only removed one specific filter
+    // The query will rerun with the remaining active filters
+  }, []);
 
   // Clear all filters
   const clearAllFilters = useCallback(() => {
@@ -128,13 +130,24 @@ export const useFilterState = (): UseFilterStateReturn => {
     console.log("getFilterValues called, filtersApplied:", filtersApplied);
     if (!filtersApplied) return {};
     
-    const filters: ClassFilters = {
-      classMode,
-      classFormat,
-      classSize,
-      classDuration: classDuration === "finite" ? "fixed" as const : "recurring" as const,
-      paymentModel
-    };
+    const filters: ClassFilters = {};
+    
+    // Only include filters that are not at their default values
+    if (classMode !== "online") {
+      filters.classMode = classMode;
+    }
+    if (classFormat !== "live") {
+      filters.classFormat = classFormat;
+    }
+    if (classSize !== "group") {
+      filters.classSize = classSize;
+    }
+    if (classDuration !== "finite") {
+      filters.classDuration = "recurring" as const;
+    }
+    if (paymentModel !== "one-time") {
+      filters.paymentModel = paymentModel;
+    }
     
     console.log("Returning filter values:", filters);
     return filters;
