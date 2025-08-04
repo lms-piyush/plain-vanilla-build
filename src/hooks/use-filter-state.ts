@@ -98,7 +98,20 @@ export const useFilterState = (): UseFilterStateReturn => {
         setPaymentModel("one-time");
         break;
     }
-  }, []);
+    
+    // Check if all filters are now at default values
+    const isAtDefaults = (
+      (key === "classMode" || classMode === "online") &&
+      (key === "classFormat" || classFormat === "live") &&
+      (key === "classSize" || classSize === "group") &&
+      (key === "classDuration" || classDuration === "finite") &&
+      (key === "paymentModel" || paymentModel === "one-time")
+    );
+    
+    if (isAtDefaults) {
+      setFiltersApplied(false);
+    }
+  }, [classMode, classFormat, classSize, classDuration, paymentModel]);
 
   // Clear all filters
   const clearAllFilters = useCallback(() => {
@@ -112,15 +125,19 @@ export const useFilterState = (): UseFilterStateReturn => {
 
   // Get current filter values for queries
   const getFilterValues = useCallback((): ClassFilters => {
+    console.log("getFilterValues called, filtersApplied:", filtersApplied);
     if (!filtersApplied) return {};
     
-    return {
+    const filters: ClassFilters = {
       classMode,
       classFormat,
       classSize,
-      classDuration: classDuration === "finite" ? "fixed" : "recurring",
+      classDuration: classDuration === "finite" ? "fixed" as const : "recurring" as const,
       paymentModel
     };
+    
+    console.log("Returning filter values:", filters);
+    return filters;
   }, [filtersApplied, classMode, classFormat, classSize, classDuration, paymentModel]);
 
   return {
