@@ -174,8 +174,8 @@ export const useNotifications = () => {
     fetchNotifications();
     fetchUnreadCount();
 
-    // Create a unique channel name based on user ID
-    const channelName = `notifications-${user.id}`;
+    // Create a unique channel name based on user ID and timestamp to avoid conflicts
+    const channelName = `notifications-${user.id}-${Date.now()}`;
     
     // Subscribe to real-time changes
     const channel = supabase
@@ -214,9 +214,10 @@ export const useNotifications = () => {
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      // Properly unsubscribe from the channel
+      channel.unsubscribe();
     };
-  }, [user?.id]); // Only depend on user.id, not the full user object
+  }, [user?.id]);
 
   return {
     notifications,
