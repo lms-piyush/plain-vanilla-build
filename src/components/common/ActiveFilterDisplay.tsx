@@ -29,8 +29,13 @@ const ActiveFilterDisplay = ({ filters, onRemoveFilter, onClearAll }: ActiveFilt
           <Button
             variant="ghost"
             size="sm"
-            className="h-auto p-0 ml-1"
-            onClick={() => onRemoveFilter(filter.key)}
+            className="h-auto p-0 ml-1 hover:bg-destructive/10"
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log("Removing filter:", filter.key);
+              onRemoveFilter(filter.key);
+            }}
           >
             <X className="h-3 w-3" />
           </Button>
@@ -40,7 +45,12 @@ const ActiveFilterDisplay = ({ filters, onRemoveFilter, onClearAll }: ActiveFilt
       <Button
         variant="outline"
         size="sm"
-        onClick={onClearAll}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          console.log("Clearing all filters");
+          onClearAll();
+        }}
         className="text-xs h-6"
       >
         Clear All

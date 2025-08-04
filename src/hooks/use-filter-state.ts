@@ -84,20 +84,26 @@ export const useFilterState = (): UseFilterStateReturn => {
 
   // Remove individual filter
   const removeFilter = useCallback((key: string) => {
+    console.log("removeFilter called with key:", key);
     switch (key) {
       case "classMode":
+        console.log("Resetting classMode to online");
         setClassMode("online");
         break;
       case "classFormat":
+        console.log("Resetting classFormat to live");
         setClassFormat("live");
         break;
       case "classSize":
+        console.log("Resetting classSize to group");
         setClassSize("group");
         break;
       case "classDuration":
+        console.log("Resetting classDuration to finite");
         setClassDuration("finite");
         break;
       case "paymentModel":
+        console.log("Resetting paymentModel to one-time");
         setPaymentModel("one-time");
         break;
     }
