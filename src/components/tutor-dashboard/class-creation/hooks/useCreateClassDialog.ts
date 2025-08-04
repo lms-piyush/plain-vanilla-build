@@ -63,6 +63,12 @@ export const useCreateClassDialog = (
         title: editingClass ? "Class updated and published!" : "Class published!",
         description: editingClass ? "Your class changes have been saved and published." : "Your class is now live and students can enroll.",
       });
+      
+      // Clear state only after successful publishing for new classes
+      if (!editingClass) {
+        store.reset();
+      }
+      
       onClassCreated?.();
       onOpenChange(false);
     } catch (error: any) {

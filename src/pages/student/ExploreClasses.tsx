@@ -6,9 +6,12 @@ import ExploreClassesHeader from "@/components/explore/ExploreClassesHeader";
 import FilterSheet from "@/components/explore/FilterSheet";
 import ClassesList from "@/components/explore/ClassesList";
 import ClassesPagination from "@/components/explore/ClassesPagination";
+import SearchInput from "@/components/student/SearchInput";
+import SearchResults from "@/components/student/SearchResults";
 import { useAllClassesWithReviews } from "@/hooks/use-all-classes-with-reviews";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useFilterEffects } from "@/hooks/use-filter-effects";
+import { useSearchResults } from "@/hooks/use-search-results";
 import { convertToClassCard } from "@/utils/class-converter";
 import { getFilteredClasses, getSavedClasses } from "@/utils/class-filters";
 
@@ -21,6 +24,10 @@ const ExploreClasses = () => {
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState("popular");
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  
+  // Search functionality
+  const { results: searchResults, isLoading: searchLoading, error: searchError, searchClassesAndTutors } = useSearchResults();
   
   // Wishlist management
   const { wishlistedCourses, toggleWishlist } = useWishlist();
@@ -107,6 +114,11 @@ const ExploreClasses = () => {
     setCurrentPage(page);
   };
 
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    searchClassesAndTutors(query);
+  };
+
   // Show error state if there's an error
   if (error) {
     return (
@@ -128,6 +140,21 @@ const ExploreClasses = () => {
   return (
     <>
       <h1 className="text-2xl font-bold mb-6">Explore Classes</h1>
+      
+      {/* Search Section */}
+      <div className="mb-6">
+        <SearchInput
+          onSearch={handleSearch}
+          placeholder="Search classes and tutors..."
+          className="max-w-md"
+        />
+        <SearchResults
+          results={searchResults}
+          isLoading={searchLoading}
+          error={searchError}
+          query={searchQuery}
+        />
+      </div>
       
       <div className="flex flex-col md:flex-row gap-6">
         <div className="w-full">

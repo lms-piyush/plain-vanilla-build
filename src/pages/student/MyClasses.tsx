@@ -8,8 +8,11 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import SearchInput from "@/components/student/SearchInput";
+import SearchResults from "@/components/student/SearchResults";
 import { useStudentEnrollmentsWithReviews } from "@/hooks/use-student-enrollments-with-reviews";
 import { useFilterEffects } from "@/hooks/use-filter-effects";
+import { useSearchResults } from "@/hooks/use-search-results";
 import { convertEnrollmentToClassCard } from "@/utils/enrollment-converter";
 import ClassCard from "@/components/student/ClassCard";
 import FilterSheet from "@/components/student/FilterSheet";
@@ -25,6 +28,10 @@ const MyClasses = () => {
   const [classSize, setClassSize] = useState<"group" | "1-on-1">("group");
   const [classDuration, setClassDuration] = useState<"finite" | "infinite">("finite");
   const [paymentModel, setPaymentModel] = useState<"one-time" | "subscription">("one-time");
+  const [searchQuery, setSearchQuery] = useState("");
+  
+  // Search functionality
+  const { results: searchResults, isLoading: searchLoading, error: searchError, searchClassesAndTutors } = useSearchResults();
   
   // Fetch enrolled classes with review data from database
   const { data: enrollments = [], isLoading, error, refetch } = useStudentEnrollmentsWithReviews();
@@ -91,6 +98,11 @@ const MyClasses = () => {
 
   console.log("My Classes - Filtered classes:", filteredClasses.length);
 
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+    searchClassesAndTutors(query);
+  };
+
   if (isLoading) {
     return (
       <div className="text-center py-12">
@@ -119,6 +131,21 @@ const MyClasses = () => {
   return (
     <>
       <h1 className="text-2xl font-bold mb-6">My Classes</h1>
+      
+      {/* Search Section */}
+      <div className="mb-6">
+        <SearchInput
+          onSearch={handleSearch}
+          placeholder="Search your classes and tutors..."
+          className="max-w-md"
+        />
+        <SearchResults
+          results={searchResults}
+          isLoading={searchLoading}
+          error={searchError}
+          query={searchQuery}
+        />
+      </div>
       
       <div className="flex flex-col md:flex-row justify-between gap-4 mb-6">
         <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
