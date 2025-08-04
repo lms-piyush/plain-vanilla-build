@@ -37,7 +37,7 @@ export const enrollStudentInClass = async (classId: string, studentId: string) =
 
     console.log("Enrollment created successfully, sending notification...");
 
-    // Send notification to tutor with timestamp
+    // Send notifications
     try {
       const { data: studentData } = await supabase
         .from("profiles")
@@ -45,10 +45,18 @@ export const enrollStudentInClass = async (classId: string, studentId: string) =
         .eq("id", studentId)
         .single();
 
+      const { data: tutorData } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", classData.tutor_id)
+        .single();
+
       console.log("Student data for notification:", studentData);
+      console.log("Tutor data for notification:", tutorData);
 
       if (studentData) {
-        console.log("Calling notification service with:", {
+        // Notify tutor about enrollment
+        console.log("Calling tutor notification service with:", {
           classId,
           tutorId: classData.tutor_id,
           studentName: studentData.full_name,
@@ -64,12 +72,31 @@ export const enrollStudentInClass = async (classId: string, studentId: string) =
           enrollmentTimestamp
         );
         
-        console.log("Notification sent successfully");
+        console.log("Tutor notification sent successfully");
+
+        // Notify student about successful enrollment
+        if (tutorData) {
+          console.log("Calling student notification service with:", {
+            classId,
+            studentId,
+            className: classData.title,
+            tutorName: tutorData.full_name
+          });
+
+          await notificationService.notifyStudentEnrollmentSuccess(
+            classId,
+            studentId,
+            classData.title,
+            tutorData.full_name
+          );
+          
+          console.log("Student notification sent successfully");
+        }
       } else {
         console.warn("No student data found for notification");
       }
     } catch (notificationError) {
-      console.error("Failed to send enrollment notification:", notificationError);
+      console.error("Failed to send enrollment notifications:", notificationError);
     }
   } catch (error) {
     console.error("Error enrolling student:", error);

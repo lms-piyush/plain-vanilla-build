@@ -22,7 +22,11 @@ const NotificationDropdown = ({ onClose }: NotificationDropdownProps) => {
       markAsRead(notification.id);
     }
 
-    // Navigate based on notification type
+    // Navigate based on notification type and user role
+    const currentPath = window.location.pathname;
+    const isStudentRoute = currentPath.startsWith('/student');
+    const isTutorRoute = currentPath.startsWith('/tutor');
+
     switch (notification.notification_type) {
       case 'class_created':
         navigate(`/tutor/classes/${notification.reference_id}`);
@@ -30,8 +34,21 @@ const NotificationDropdown = ({ onClose }: NotificationDropdownProps) => {
       case 'student_enrollment':
         navigate(`/tutor/classes/${notification.reference_id}`);
         break;
+      case 'enrollment_success':
+        if (isStudentRoute) {
+          navigate(`/student/classes/${notification.reference_id}`);
+        } else {
+          navigate(`/student/classes/${notification.reference_id}`);
+        }
+        break;
       case 'message_received':
-        navigate('/tutor/messages');
+        if (isStudentRoute) {
+          navigate('/student/messages');
+        } else if (isTutorRoute) {
+          navigate('/tutor/messages');
+        } else {
+          navigate('/tutor/messages');
+        }
         break;
       case 'class_review':
       case 'class_review_updated':
@@ -43,6 +60,13 @@ const NotificationDropdown = ({ onClose }: NotificationDropdownProps) => {
         break;
       case 'session_reminder':
         navigate(`/tutor/classes/${notification.reference_id}`);
+        break;
+      case 'student_session_reminder':
+        if (isStudentRoute) {
+          navigate(`/student/classes/${notification.reference_id}`);
+        } else {
+          navigate(`/student/classes/${notification.reference_id}`);
+        }
         break;
       default:
         break;
@@ -57,6 +81,8 @@ const NotificationDropdown = ({ onClose }: NotificationDropdownProps) => {
         return '🎓';
       case 'student_enrollment':
         return '👨‍🎓';
+      case 'enrollment_success':
+        return '✅';
       case 'message_received':
         return '💬';
       case 'class_review':
@@ -66,6 +92,7 @@ const NotificationDropdown = ({ onClose }: NotificationDropdownProps) => {
       case 'tutor_review_updated':
         return '🌟';
       case 'session_reminder':
+      case 'student_session_reminder':
         return '⏰';
       default:
         return '📢';

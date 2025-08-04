@@ -102,6 +102,30 @@ export const notificationService = {
     });
   },
 
+  // Notification for student when they successfully enroll in a class
+  async notifyStudentEnrollmentSuccess(classId: string, studentId: string, className: string, tutorName: string) {
+    await this.createNotification({
+      title: 'Enrollment Successful',
+      description: `You have successfully enrolled in "${className}" with tutor ${tutorName}. Your learning journey begins now!`,
+      user_id: studentId,
+      notification_type: 'enrollment_success',
+      reference_id: classId,
+      reference_table: 'classes',
+    });
+  },
+
+  // Notification for student session reminder
+  async notifyStudentSessionReminder(classId: string, studentId: string, sessionTitle: string, sessionDate: string, sessionTime: string) {
+    await this.createNotification({
+      title: 'Upcoming Session',
+      description: `You have an upcoming session "${sessionTitle}" scheduled for ${sessionDate} at ${sessionTime}.`,
+      user_id: studentId,
+      notification_type: 'student_session_reminder',
+      reference_id: classId,
+      reference_table: 'class_syllabus',
+    });
+  },
+
   // Get notifications for a user with pagination
   async getNotifications(userId: string, page = 1, limit = 5) {
     const from = (page - 1) * limit;
