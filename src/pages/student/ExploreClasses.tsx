@@ -134,9 +134,25 @@ const ExploreClasses = () => {
   };
 
   const handleApplyFilters = () => {
+    console.log("ExploreClasses - Applying filters:", {
+      classMode,
+      classFormat,
+      classSize,
+      classDuration,
+      paymentModel
+    });
     setFiltersApplied(true);
     setCurrentPage(1); // Reset to first page when applying filters
   };
+
+  console.log("ExploreClasses - Current filter state:", {
+    classMode,
+    classFormat,
+    classSize,
+    classDuration,
+    paymentModel,
+    filtersApplied
+  });
 
   // Show error state if there's an error
   if (error) {

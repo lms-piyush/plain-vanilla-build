@@ -48,9 +48,24 @@ const FilterSheet = ({
 }: FilterSheetProps) => {
   
   const handleSaveFilters = () => {
+    console.log("FilterSheet - Saving filters:", {
+      classMode,
+      classFormat,
+      classSize,
+      classDuration,
+      paymentModel
+    });
     onApplyFilters();
     setFilterOpen(false);
   };
+
+  console.log("FilterSheet - Current filter values:", {
+    classMode,
+    classFormat,
+    classSize,
+    classDuration,
+    paymentModel
+  });
   return (
     <Sheet open={filterOpen} onOpenChange={setFilterOpen}>
       <SheetTrigger asChild>
