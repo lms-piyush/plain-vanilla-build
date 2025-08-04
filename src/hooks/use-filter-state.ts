@@ -72,22 +72,12 @@ export const useFilterState = (): UseFilterStateReturn => {
     
     const filters = [];
     
-    // Only add filters that are not at their default values
-    if (classMode !== "online") {
-      filters.push({ key: "classMode", label: FILTER_LABELS.classMode, value: VALUE_LABELS[classMode] });
-    }
-    if (classFormat !== "live") {
-      filters.push({ key: "classFormat", label: FILTER_LABELS.classFormat, value: VALUE_LABELS[classFormat] });
-    }
-    if (classSize !== "group") {
-      filters.push({ key: "classSize", label: FILTER_LABELS.classSize, value: VALUE_LABELS[classSize] });
-    }
-    if (classDuration !== "finite") {
-      filters.push({ key: "classDuration", label: FILTER_LABELS.classDuration, value: VALUE_LABELS[classDuration] });
-    }
-    if (paymentModel !== "one-time") {
-      filters.push({ key: "paymentModel", label: FILTER_LABELS.paymentModel, value: VALUE_LABELS[paymentModel] });
-    }
+    // Always show all applied filters, even if they match defaults
+    filters.push({ key: "classMode", label: FILTER_LABELS.classMode, value: VALUE_LABELS[classMode] });
+    filters.push({ key: "classFormat", label: FILTER_LABELS.classFormat, value: VALUE_LABELS[classFormat] });
+    filters.push({ key: "classSize", label: FILTER_LABELS.classSize, value: VALUE_LABELS[classSize] });
+    filters.push({ key: "classDuration", label: FILTER_LABELS.classDuration, value: VALUE_LABELS[classDuration] });
+    filters.push({ key: "paymentModel", label: FILTER_LABELS.paymentModel, value: VALUE_LABELS[paymentModel] });
     
     return filters;
   }, [filtersApplied, classMode, classFormat, classSize, classDuration, paymentModel]);
@@ -130,24 +120,13 @@ export const useFilterState = (): UseFilterStateReturn => {
     console.log("getFilterValues called, filtersApplied:", filtersApplied);
     if (!filtersApplied) return {};
     
-    const filters: ClassFilters = {};
-    
-    // Only include filters that are not at their default values
-    if (classMode !== "online") {
-      filters.classMode = classMode;
-    }
-    if (classFormat !== "live") {
-      filters.classFormat = classFormat;
-    }
-    if (classSize !== "group") {
-      filters.classSize = classSize;
-    }
-    if (classDuration !== "finite") {
-      filters.classDuration = "recurring" as const;
-    }
-    if (paymentModel !== "one-time") {
-      filters.paymentModel = paymentModel;
-    }
+    const filters: ClassFilters = {
+      classMode,
+      classFormat,
+      classSize,
+      classDuration: classDuration === "finite" ? "fixed" as const : "recurring" as const,
+      paymentModel
+    };
     
     console.log("Returning filter values:", filters);
     return filters;
