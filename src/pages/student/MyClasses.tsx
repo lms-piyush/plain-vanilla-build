@@ -13,6 +13,7 @@ import SearchResults from "@/components/student/SearchResults";
 import { useStudentEnrollmentsWithReviews } from "@/hooks/use-student-enrollments-with-reviews";
 import { useFilterEffects } from "@/hooks/use-filter-effects";
 import { useSearchResults } from "@/hooks/use-search-results";
+import { useFilteredClasses } from "@/hooks/use-filtered-classes";
 import { convertEnrollmentToClassCard } from "@/utils/enrollment-converter";
 import ClassCard from "@/components/student/ClassCard";
 import FilterSheet from "@/components/student/FilterSheet";
@@ -34,7 +35,23 @@ const MyClasses = () => {
   const { results: searchResults, isLoading: searchLoading, error: searchError, searchClassesAndTutors } = useSearchResults();
   
   // Fetch enrolled classes with review data from database
-  const { data: enrollments = [], isLoading, error, refetch } = useStudentEnrollmentsWithReviews();
+  const { data: enrollments = [], isLoading: enrollmentsLoading, error: enrollmentsError, refetch } = useStudentEnrollmentsWithReviews();
+
+  // Get enrolled class IDs for filtering
+  const enrolledClassIds = enrollments?.map(enrollment => enrollment.class_id) || [];
+  
+  // Use filtered classes hook with server-side filtering
+  const { data: filteredData, isLoading: isFilteredLoading, error: filteredError } = useFilteredClasses({
+    enrolledOnly: true,
+    enrolledClasses: enrolledClassIds,
+    classMode: filterOpen ? classMode : undefined,
+    classFormat: filterOpen ? classFormat : undefined,
+    classSize: filterOpen ? classSize : undefined,
+    classDuration: filterOpen ? (classDuration === "finite" ? "fixed" : "recurring") : undefined,
+  });
+
+  const isLoading = enrollmentsLoading || isFilteredLoading;
+  const error = enrollmentsError || filteredError;
 
   // Filter effects
   useFilterEffects({
@@ -51,48 +68,56 @@ const MyClasses = () => {
     refetch();
   }, [refetch]);
   
-  // Convert enrollments to class cards
-  const classes = enrollments.map(convertEnrollmentToClassCard);
+  // Use filtered data when available, fallback to enrollments data
+  const classes = (filteredData?.classes || enrollments)?.map(enrollment => {
+    // Check if this is from filtered classes (has class_reviews) or enrollments (has class)
+    if ('class' in enrollment) {
+      // This is from enrollments - use the converter
+      return convertEnrollmentToClassCard(enrollment);
+    } else {
+      // This is from filtered classes - convert directly
+      return {
+        id: enrollment.id,
+        className: enrollment.title,
+        title: enrollment.title,
+        tutor: enrollment.tutor_name,
+        tutorId: enrollment.tutor_id,
+        image: enrollment.thumbnail_url || "",
+        rating: enrollment.average_rating || 0,
+        reviewCount: enrollment.total_reviews || 0,
+        price: enrollment.price || 0,
+        duration: 60,
+        nextDate: "2024-01-15",
+        tags: [],
+        lectureType: enrollment.delivery_mode === "online" ? "online" : "offline" as const,
+        classId: enrollment.id,
+        status: "Active", // Default status for filtered classes
+        type: enrollment.delivery_mode === "online" ? "Online" : "Offline",
+        format: enrollment.class_format === "live" ? "Live" : 
+                enrollment.class_format === "recorded" ? "Recorded" :
+                enrollment.class_format === "inbound" ? "Inbound" : "Outbound",
+        classSize: enrollment.class_size === "group" ? "Group" : "1-on-1",
+        payment: "One-time", // Default payment
+        batchNumber: 1,
+        isCurrentBatch: true,
+        students: enrollment.student_count || 0,
+        description: enrollment.description || ""
+      };
+    }
+  }) || [];
   
   console.log("My Classes - Total enrollments:", enrollments.length);
   console.log("My Classes - Converted classes:", classes.length);
   console.log("My Classes - Sample enrollment data:", enrollments[0]);
   console.log("My Classes - Sample converted class:", classes[0]);
   
+  // Apply tab filtering (active/completed)
   const filteredClasses = classes.filter(cls => {
-    // Filter by tab first
     if (activeTab === "active") {
       return cls.status === "Active" || cls.status === "Enrolled";
     } else if (activeTab === "completed") {
       return cls.status === "Completed";
     }
-    // For "all" tab, include all classes
-    return true;
-  }).filter(cls => {
-    // Apply additional filters only if filter drawer has been opened
-    if (!filterOpen) return true;
-    
-    // Apply mode filter
-    if (classMode === "online" && cls.type !== "Online") return false;
-    if (classMode === "offline" && cls.type !== "Offline") return false;
-    
-    // Apply format filter
-    if (classMode === "online") {
-      if (classFormat === "live" && cls.format !== "Live") return false;
-      if (classFormat === "recorded" && cls.format !== "Recorded") return false;
-    } else {
-      if (classFormat === "inbound" && cls.format !== "Inbound") return false;
-      if (classFormat === "outbound" && cls.format !== "Outbound") return false;
-    }
-    
-    // Apply size filter
-    if (classSize === "group" && cls.classSize !== "Group") return false;
-    if (classSize === "1-on-1" && cls.classSize !== "1-on-1") return false;
-    
-    // Apply duration filter
-    if (classDuration === "finite" && cls.payment === "Subscription") return false;
-    if (classDuration === "infinite" && cls.payment !== "Subscription") return false;
-    
     return true;
   });
 

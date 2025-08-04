@@ -8,12 +8,12 @@ import ClassesList from "@/components/explore/ClassesList";
 import ClassesPagination from "@/components/explore/ClassesPagination";
 import SearchInput from "@/components/student/SearchInput";
 import SearchResults from "@/components/student/SearchResults";
-import { useAllClassesWithReviews } from "@/hooks/use-all-classes-with-reviews";
+import { useFilteredClasses } from "@/hooks/use-filtered-classes";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useFilterEffects } from "@/hooks/use-filter-effects";
 import { useSearchResults } from "@/hooks/use-search-results";
 import { convertToClassCard } from "@/utils/class-converter";
-import { getFilteredClasses, getSavedClasses } from "@/utils/class-filters";
+import { getSavedClasses } from "@/utils/class-filters";
 
 const ExploreClasses = () => {
   const navigate = useNavigate();
@@ -50,19 +50,25 @@ const ExploreClasses = () => {
     setPaymentModel: () => {} // Not used in explore classes
   });
 
-  // Fetch all classes with review data for both tabs
+  // Use filtered classes hook with server-side filtering and sorting
   const { 
     data: queryResult, 
     isLoading,
     error,
     refetch 
-  } = useAllClassesWithReviews({
-    page: 1,
-    pageSize: 1000 // Get all classes for proper filtering
+  } = useFilteredClasses({
+    page: currentPage,
+    pageSize: classesPerPage,
+    classMode: filterOpen ? classMode : undefined,
+    classFormat: filterOpen ? classFormat : undefined,
+    classSize: filterOpen ? classSize : undefined,
+    classDuration: filterOpen ? (classDuration === "finite" ? "fixed" : "recurring") : undefined,
+    sortBy: sortBy as "popular" | "rating" | "newest"
   });
 
   // Extract classes and totalCount from the query result
   const allClasses = queryResult?.classes || [];
+  const totalCount = queryResult?.totalCount || 0;
 
   // Debug logging
   useEffect(() => {
@@ -86,28 +92,22 @@ const ExploreClasses = () => {
   }, [refetch]);
 
   // Apply filtering based on active tab
-  let filteredClasses = [];
+  let displayedClasses = [];
+  let totalPages = 1;
   
   if (activeTab === "saved") {
-    filteredClasses = getSavedClasses(allClasses, wishlistedCourses);
+    const savedClasses = getSavedClasses(allClasses, wishlistedCourses);
+    const startIndex = (currentPage - 1) * classesPerPage;
+    const endIndex = startIndex + classesPerPage;
+    displayedClasses = savedClasses.slice(startIndex, endIndex);
+    totalPages = Math.ceil(savedClasses.length / classesPerPage);
   } else {
-    filteredClasses = getFilteredClasses(allClasses, {
-      classMode,
-      classFormat,
-      classSize,
-      classDuration,
-      sortBy,
-      filterOpen
-    });
+    // For "all" tab, use server-side filtered and paginated results
+    displayedClasses = allClasses;
+    totalPages = Math.ceil(totalCount / classesPerPage);
   }
 
-  // Apply pagination to filtered results
-  const startIndex = (currentPage - 1) * classesPerPage;
-  const endIndex = startIndex + classesPerPage;
-  const displayedClasses = filteredClasses.slice(startIndex, endIndex);
-  const totalPages = Math.ceil(filteredClasses.length / classesPerPage);
-
-  console.log("Filtered classes:", filteredClasses.length);
+  console.log("All classes:", allClasses.length);
   console.log("Displayed classes:", displayedClasses.length);
 
   const handlePageChange = (page: number) => {
