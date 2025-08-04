@@ -68,3 +68,6 @@ port = 54328
 
 [functions.update-class-status]
 verify_jwt = false
+
+[functions.session-reminder-cron]
+verify_jwt = false

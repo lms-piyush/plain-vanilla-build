@@ -479,6 +479,30 @@ export type Database = {
           },
         ]
       }
+      notification_tracking: {
+        Row: {
+          created_at: string
+          id: string
+          notification_type: string
+          sent_at: string
+          session_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notification_type: string
+          sent_at?: string
+          session_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notification_type?: string
+          sent_at?: string
+          session_id?: string
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string
