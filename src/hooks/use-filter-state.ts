@@ -72,12 +72,22 @@ export const useFilterState = (): UseFilterStateReturn => {
     
     const filters = [];
     
-    // Always show all applied filters, even if they match defaults
-    filters.push({ key: "classMode", label: FILTER_LABELS.classMode, value: VALUE_LABELS[classMode] });
-    filters.push({ key: "classFormat", label: FILTER_LABELS.classFormat, value: VALUE_LABELS[classFormat] });
-    filters.push({ key: "classSize", label: FILTER_LABELS.classSize, value: VALUE_LABELS[classSize] });
-    filters.push({ key: "classDuration", label: FILTER_LABELS.classDuration, value: VALUE_LABELS[classDuration] });
-    filters.push({ key: "paymentModel", label: FILTER_LABELS.paymentModel, value: VALUE_LABELS[paymentModel] });
+    // Only show filters that are not at their default values
+    if (classMode !== "online") {
+      filters.push({ key: "classMode", label: FILTER_LABELS.classMode, value: VALUE_LABELS[classMode] });
+    }
+    if (classFormat !== "live") {
+      filters.push({ key: "classFormat", label: FILTER_LABELS.classFormat, value: VALUE_LABELS[classFormat] });
+    }
+    if (classSize !== "group") {
+      filters.push({ key: "classSize", label: FILTER_LABELS.classSize, value: VALUE_LABELS[classSize] });
+    }
+    if (classDuration !== "finite") {
+      filters.push({ key: "classDuration", label: FILTER_LABELS.classDuration, value: VALUE_LABELS[classDuration] });
+    }
+    if (paymentModel !== "one-time") {
+      filters.push({ key: "paymentModel", label: FILTER_LABELS.paymentModel, value: VALUE_LABELS[paymentModel] });
+    }
     
     return filters;
   }, [filtersApplied, classMode, classFormat, classSize, classDuration, paymentModel]);
@@ -107,9 +117,24 @@ export const useFilterState = (): UseFilterStateReturn => {
         setPaymentModel("one-time");
         break;
     }
-    // Keep filters applied - we only removed one specific filter
-    // The query will rerun with the remaining active filters
-  }, []);
+    
+    // Check if all filters are now back to defaults after this removal
+    setTimeout(() => {
+      const allDefaults = (
+        (key === "classMode" ? "online" : classMode) === "online" &&
+        (key === "classFormat" ? "live" : classFormat) === "live" &&
+        (key === "classSize" ? "group" : classSize) === "group" &&
+        (key === "classDuration" ? "finite" : classDuration) === "finite" &&
+        (key === "paymentModel" ? "one-time" : paymentModel) === "one-time"
+      );
+      
+      console.log("All filters at defaults after removal:", allDefaults);
+      if (allDefaults) {
+        console.log("All filters are at defaults, setting filtersApplied to false");
+        setFiltersApplied(false);
+      }
+    }, 0);
+  }, [classMode, classFormat, classSize, classDuration, paymentModel]);
 
   // Clear all filters
   const clearAllFilters = useCallback(() => {
@@ -126,13 +151,24 @@ export const useFilterState = (): UseFilterStateReturn => {
     console.log("getFilterValues called, filtersApplied:", filtersApplied);
     if (!filtersApplied) return {};
     
-    const filters: ClassFilters = {
-      classMode,
-      classFormat,
-      classSize,
-      classDuration: classDuration === "finite" ? "fixed" as const : "recurring" as const,
-      paymentModel
-    };
+    const filters: ClassFilters = {};
+    
+    // Only include filters that are different from default values
+    if (classMode !== "online") {
+      filters.classMode = classMode;
+    }
+    if (classFormat !== "live") {
+      filters.classFormat = classFormat;
+    }
+    if (classSize !== "group") {
+      filters.classSize = classSize;
+    }
+    if (classDuration !== "finite") {
+      filters.classDuration = "recurring" as const;
+    }
+    if (paymentModel !== "one-time") {
+      filters.paymentModel = paymentModel;
+    }
     
     console.log("Returning filter values:", filters);
     return filters;
