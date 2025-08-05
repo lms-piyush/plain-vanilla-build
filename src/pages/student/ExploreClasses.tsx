@@ -9,6 +9,7 @@ import ClassesPagination from "@/components/explore/ClassesPagination";
 import SearchInput from "@/components/student/SearchInput";
 import SearchResults from "@/components/student/SearchResults";
 import { useFilteredClasses } from "@/hooks/use-filtered-classes";
+import { useSavedClassesFiltered } from "@/hooks/use-saved-classes-filtered";
 import { useSavedClasses } from "@/hooks/use-saved-classes";
 import { useFilterEffects } from "@/hooks/use-filter-effects";
 import { useSearchResults } from "@/hooks/use-search-results";
@@ -66,23 +67,43 @@ const ExploreClasses = () => {
     setPaymentModel
   });
 
-  // Use filtered classes hook - for saved tab, we need all classes without pagination
+  // Use filtered classes hook for "all" tab
   const filterValues = getFilterValues();
   const { 
-    data: queryResult, 
-    isLoading,
-    error,
-    refetch 
+    data: allClassesResult, 
+    isLoading: isAllClassesLoading,
+    error: allClassesError,
+    refetch: refetchAllClasses 
   } = useFilteredClasses({
-    page: activeTab === "saved" ? 1 : currentPage, // Always page 1 for saved to get all
-    pageSize: activeTab === "saved" ? 1000 : classesPerPage, // Get all classes for saved tab
-    ...(activeTab === "all" ? filterValues : {}), // Only apply filters for "all" tab
+    page: currentPage,
+    pageSize: classesPerPage,
+    ...filterValues,
     sortBy: sortBy as "popular" | "rating" | "newest"
   });
 
-  // Extract classes and totalCount from the query result
-  const allClasses = queryResult?.classes || [];
-  const totalCount = queryResult?.totalCount || 0;
+  // Use saved classes hook for "saved" tab
+  const { 
+    data: savedClassesResult, 
+    isLoading: isSavedClassesLoading,
+    error: savedClassesError,
+    refetch: refetchSavedClasses 
+  } = useSavedClassesFiltered({
+    page: currentPage,
+    pageSize: classesPerPage,
+    sortBy: sortBy as "popular" | "rating" | "newest"
+  });
+
+  // Select the appropriate data based on active tab
+  const isLoading = activeTab === "saved" ? isSavedClassesLoading : isAllClassesLoading;
+  const error = activeTab === "saved" ? savedClassesError : allClassesError;
+  const refetch = activeTab === "saved" ? refetchSavedClasses : refetchAllClasses;
+  
+  const allClasses = activeTab === "saved" 
+    ? (savedClassesResult?.classes || [])
+    : (allClassesResult?.classes || []);
+  const totalCount = activeTab === "saved" 
+    ? (savedClassesResult?.totalCount || 0)
+    : (allClassesResult?.totalCount || 0);
 
   // Debug logging
   useEffect(() => {
@@ -105,23 +126,9 @@ const ExploreClasses = () => {
     refetch();
   }, [refetch]);
 
-  // Apply filtering based on active tab
-  let displayedClasses = [];
-  let totalPages = 1;
-  
-  if (activeTab === "saved") {
-    // For saved classes, we need to get all classes first, then filter client-side
-    // Use a different query hook that doesn't apply filters, just gets all classes
-    const savedClasses = getSavedClasses(allClasses, savedClassIds);
-    const startIndex = (currentPage - 1) * classesPerPage;
-    const endIndex = startIndex + classesPerPage;
-    displayedClasses = savedClasses.slice(startIndex, endIndex);
-    totalPages = Math.ceil(savedClasses.length / classesPerPage);
-  } else {
-    // For "all" tab, use server-side filtered and paginated results
-    displayedClasses = allClasses;
-    totalPages = Math.ceil(totalCount / classesPerPage);
-  }
+  // Use the classes directly from the appropriate query
+  const displayedClasses = allClasses;
+  const totalPages = Math.ceil(totalCount / classesPerPage);
 
   console.log("All classes:", allClasses.length);
   console.log("Displayed classes:", displayedClasses.length);
