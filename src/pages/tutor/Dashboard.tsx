@@ -127,7 +127,7 @@ const Dashboard = () => {
         todaysSessionsCount={getTodaysSessionsCount()}
       />
       
-      <TeachingProgressChart />
+      {/* <TeachingProgressChart /> */}
       
       <SessionsSection
         sessionFilter={sessionFilter}
