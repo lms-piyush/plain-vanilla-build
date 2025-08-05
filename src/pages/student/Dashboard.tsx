@@ -7,9 +7,11 @@ import ClassesTable from "@/components/dashboard/ClassesTable";
 import { Button } from "@/components/ui/button";
 import { Calendar, Book, Star, BookOpen } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { useNewCourses } from "@/hooks/use-new-courses";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { data: newCourses = [], isLoading: isNewCoursesLoading } = useNewCourses();
 
   // Sample data for stats
   const stats = [
@@ -49,30 +51,6 @@ const Dashboard = () => {
   // Calculate total courses for chart center
   const totalCourses = chartData.reduce((sum, item) => sum + item.value, 0);
 
-  // Sample data for new courses (limited to 3)
-  const newCourses = [
-    {
-      id: "course1",
-      title: "Introduction to Python",
-      tutor: "Dr. Smith",
-      rating: 4.8,
-      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=300"
-    },
-    {
-      id: "course2",
-      title: "Advanced Mathematics",
-      tutor: "Prof. Johnson",
-      rating: 4.6,
-      image: "https://images.unsplash.com/photo-1518495973542-4542c06a5843?auto=format&fit=crop&w=300"
-    },
-    {
-      id: "course3",
-      title: "Web Development",
-      tutor: "Sarah Lee",
-      rating: 4.9,
-      image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=300"
-    }
-  ];
 
   // Sample data for today's classes - UPDATED to only show non-completed classes for today
   const todaysClasses = [
@@ -137,27 +115,42 @@ const Dashboard = () => {
             <Button 
               variant="outline" 
               className="text-[#8A5BB7] border-[#8A5BB7]"
-              onClick={() => navigate("/explore?filter=new")}
+              onClick={() => navigate("/student/explore")}
             >
               View All Courses
             </Button>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-grow">
-            {newCourses.map((course) => (
-              <CourseCard
-                key={course.id}
-                {...course}
-                onClick={() => navigate(`/classes/${course.id}`)}
-              />
-            ))}
+            {isNewCoursesLoading ? (
+              // Loading skeleton
+              [...Array(3)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-gray-200 h-40 rounded-lg mb-4"></div>
+                  <div className="bg-gray-200 h-4 rounded mb-2"></div>
+                  <div className="bg-gray-200 h-4 rounded w-3/4"></div>
+                </div>
+              ))
+            ) : (
+              newCourses.map((course) => (
+                <CourseCard
+                  key={course.id}
+                  id={course.id}
+                  title={course.title}
+                  tutor={course.tutor_name}
+                  rating={course.average_rating}
+                  image={course.thumbnail_url || "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=300"}
+                  onClick={() => navigate(`/student/classes/${course.id}`)}
+                />
+              ))
+            )}
           </div>
 
           <div className="mt-auto">
             <Button 
               variant="outline" 
               className="w-full mt-4 text-[#8A5BB7] border-[#8A5BB7] md:hidden"
-              onClick={() => navigate("/explore?filter=new")}
+              onClick={() => navigate("/student/explore")}
             >
               View All Courses
             </Button>
@@ -182,7 +175,7 @@ const Dashboard = () => {
               <p className="text-gray-500">Enjoy your day or explore new courses!</p>
               <Button 
                 className="mt-6 bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
-                onClick={() => navigate("/explore")}
+                onClick={() => navigate("/student/explore")}
               >
                 Explore Courses
               </Button>

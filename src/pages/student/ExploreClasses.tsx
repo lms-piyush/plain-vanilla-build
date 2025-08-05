@@ -3,17 +3,19 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Tabs } from "@/components/ui/tabs";
 import ExploreClassesHeader from "@/components/explore/ExploreClassesHeader";
-import FilterSheet from "@/components/explore/FilterSheet";
+import FilterSheet from "@/components/student/FilterSheet";
 import ClassesList from "@/components/explore/ClassesList";
 import ClassesPagination from "@/components/explore/ClassesPagination";
 import SearchInput from "@/components/student/SearchInput";
 import SearchResults from "@/components/student/SearchResults";
-import { useAllClassesWithReviews } from "@/hooks/use-all-classes-with-reviews";
+import { useFilteredClasses } from "@/hooks/use-filtered-classes";
 import { useWishlist } from "@/hooks/use-wishlist";
 import { useFilterEffects } from "@/hooks/use-filter-effects";
 import { useSearchResults } from "@/hooks/use-search-results";
 import { convertToClassCard } from "@/utils/class-converter";
-import { getFilteredClasses, getSavedClasses } from "@/utils/class-filters";
+import { getSavedClasses } from "@/utils/class-filters";
+import ActiveFilterDisplay from "@/components/common/ActiveFilterDisplay";
+import { useFilterState } from "@/hooks/use-filter-state";
 
 const ExploreClasses = () => {
   const navigate = useNavigate();
@@ -32,11 +34,25 @@ const ExploreClasses = () => {
   // Wishlist management
   const { wishlistedCourses, toggleWishlist } = useWishlist();
   
-  // Filter states
-  const [classMode, setClassMode] = useState<"online" | "offline">("online");
-  const [classFormat, setClassFormat] = useState<"live" | "recorded" | "inbound" | "outbound">("live");
-  const [classSize, setClassSize] = useState<"group" | "1-on-1">("group");
-  const [classDuration, setClassDuration] = useState<"finite" | "infinite">("finite");
+  // Use enhanced filter state management
+  const {
+    classMode,
+    classFormat, 
+    classSize,
+    classDuration,
+    paymentModel,
+    setClassMode,
+    setClassFormat,
+    setClassSize,
+    setClassDuration,
+    setPaymentModel,
+    filtersApplied,
+    setFiltersApplied,
+    activeFilters,
+    removeFilter,
+    clearAllFilters,
+    getFilterValues
+  } = useFilterState();
   
   const classesPerPage = 9;
 
@@ -47,22 +63,26 @@ const ExploreClasses = () => {
     classDuration,
     setClassFormat,
     setClassSize,
-    setPaymentModel: () => {} // Not used in explore classes
+    setPaymentModel
   });
 
-  // Fetch all classes with review data for both tabs
+  // Use filtered classes hook with server-side filtering and sorting
+  const filterValues = getFilterValues();
   const { 
     data: queryResult, 
     isLoading,
     error,
     refetch 
-  } = useAllClassesWithReviews({
-    page: 1,
-    pageSize: 1000 // Get all classes for proper filtering
+  } = useFilteredClasses({
+    page: currentPage,
+    pageSize: classesPerPage,
+    ...filterValues,
+    sortBy: sortBy as "popular" | "rating" | "newest"
   });
 
   // Extract classes and totalCount from the query result
   const allClasses = queryResult?.classes || [];
+  const totalCount = queryResult?.totalCount || 0;
 
   // Debug logging
   useEffect(() => {
@@ -86,28 +106,22 @@ const ExploreClasses = () => {
   }, [refetch]);
 
   // Apply filtering based on active tab
-  let filteredClasses = [];
+  let displayedClasses = [];
+  let totalPages = 1;
   
   if (activeTab === "saved") {
-    filteredClasses = getSavedClasses(allClasses, wishlistedCourses);
+    const savedClasses = getSavedClasses(allClasses, wishlistedCourses);
+    const startIndex = (currentPage - 1) * classesPerPage;
+    const endIndex = startIndex + classesPerPage;
+    displayedClasses = savedClasses.slice(startIndex, endIndex);
+    totalPages = Math.ceil(savedClasses.length / classesPerPage);
   } else {
-    filteredClasses = getFilteredClasses(allClasses, {
-      classMode,
-      classFormat,
-      classSize,
-      classDuration,
-      sortBy,
-      filterOpen
-    });
+    // For "all" tab, use server-side filtered and paginated results
+    displayedClasses = allClasses;
+    totalPages = Math.ceil(totalCount / classesPerPage);
   }
 
-  // Apply pagination to filtered results
-  const startIndex = (currentPage - 1) * classesPerPage;
-  const endIndex = startIndex + classesPerPage;
-  const displayedClasses = filteredClasses.slice(startIndex, endIndex);
-  const totalPages = Math.ceil(filteredClasses.length / classesPerPage);
-
-  console.log("Filtered classes:", filteredClasses.length);
+  console.log("All classes:", allClasses.length);
   console.log("Displayed classes:", displayedClasses.length);
 
   const handlePageChange = (page: number) => {
@@ -118,6 +132,27 @@ const ExploreClasses = () => {
     setSearchQuery(query);
     searchClassesAndTutors(query);
   };
+
+  const handleApplyFilters = () => {
+    console.log("ExploreClasses - Applying filters:", {
+      classMode,
+      classFormat,
+      classSize,
+      classDuration,
+      paymentModel
+    });
+    setFiltersApplied(true);
+    setCurrentPage(1); // Reset to first page when applying filters
+  };
+
+  console.log("ExploreClasses - Current filter state:", {
+    classMode,
+    classFormat,
+    classSize,
+    classDuration,
+    paymentModel,
+    filtersApplied
+  });
 
   // Show error state if there's an error
   if (error) {
@@ -155,6 +190,15 @@ const ExploreClasses = () => {
           query={searchQuery}
         />
       </div>
+
+      {/* Active Filters Display */}
+      <div className="mb-6">
+        <ActiveFilterDisplay
+          filters={activeFilters}
+          onRemoveFilter={removeFilter}
+          onClearAll={clearAllFilters}
+        />
+      </div>
       
       <div className="flex flex-col md:flex-row gap-6">
         <div className="w-full">
@@ -168,6 +212,8 @@ const ExploreClasses = () => {
             setFilterOpen={setFilterOpen}
           >
             <FilterSheet
+              filterOpen={filterOpen}
+              setFilterOpen={setFilterOpen}
               classMode={classMode}
               setClassMode={setClassMode}
               classFormat={classFormat}
@@ -176,7 +222,9 @@ const ExploreClasses = () => {
               setClassSize={setClassSize}
               classDuration={classDuration}
               setClassDuration={setClassDuration}
-              setFilterOpen={setFilterOpen}
+              paymentModel={paymentModel}
+              setPaymentModel={setPaymentModel}
+              onApplyFilters={handleApplyFilters}
             />
           </ExploreClassesHeader>
           
