@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import SimpleCreateClassDialog from '@/components/tutor-dashboard/SimpleCreateClassDialog';
+import CreateClassDialog from '@/components/tutor-dashboard/class-creation/CreateClassDialog';
 import WelcomeSection from '@/components/tutor-dashboard/WelcomeSection';
 import StatsGrid from '@/components/tutor-dashboard/StatsGrid';
 import TeachingProgressChart from '@/components/tutor-dashboard/TeachingProgressChart';
@@ -115,7 +115,7 @@ const Dashboard = () => {
       <WelcomeSection onCreateClass={handleCreateClass} />
       
       {/* Create Class Dialog */}
-      <SimpleCreateClassDialog
+      <CreateClassDialog
         open={createClassDialogOpen}
         onOpenChange={setCreateClassDialogOpen}
         onClassCreated={handleClassCreated}

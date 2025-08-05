@@ -9,7 +9,7 @@ import ClassesPagination from "@/components/explore/ClassesPagination";
 import SearchInput from "@/components/student/SearchInput";
 import SearchResults from "@/components/student/SearchResults";
 import { useFilteredClasses } from "@/hooks/use-filtered-classes";
-import { useWishlist } from "@/hooks/use-wishlist";
+import { useSavedClasses } from "@/hooks/use-saved-classes";
 import { useFilterEffects } from "@/hooks/use-filter-effects";
 import { useSearchResults } from "@/hooks/use-search-results";
 import { convertToClassCard } from "@/utils/class-converter";
@@ -31,8 +31,8 @@ const ExploreClasses = () => {
   // Search functionality
   const { results: searchResults, isLoading: searchLoading, error: searchError, searchClassesAndTutors } = useSearchResults();
   
-  // Wishlist management
-  const { wishlistedCourses, toggleWishlist } = useWishlist();
+  // Saved classes management
+  const { savedClassIds, toggleSaveClass, isClassSaved } = useSavedClasses();
   
   // Use enhanced filter state management
   const {
@@ -110,7 +110,7 @@ const ExploreClasses = () => {
   let totalPages = 1;
   
   if (activeTab === "saved") {
-    const savedClasses = getSavedClasses(allClasses, wishlistedCourses);
+    const savedClasses = getSavedClasses(allClasses, savedClassIds);
     const startIndex = (currentPage - 1) * classesPerPage;
     const endIndex = startIndex + classesPerPage;
     displayedClasses = savedClasses.slice(startIndex, endIndex);
@@ -207,7 +207,7 @@ const ExploreClasses = () => {
             setActiveTab={setActiveTab}
             sortBy={sortBy}
             setSortBy={setSortBy}
-            wishlistedCourses={wishlistedCourses}
+            wishlistedCourses={savedClassIds}
             filterOpen={filterOpen}
             setFilterOpen={setFilterOpen}
           >
@@ -233,9 +233,9 @@ const ExploreClasses = () => {
               activeTab={activeTab}
               isLoading={isLoading}
               displayedClasses={displayedClasses}
-              convertToClassCard={(tutorClass) => convertToClassCard(tutorClass, wishlistedCourses)}
+              convertToClassCard={(tutorClass) => convertToClassCard(tutorClass, savedClassIds)}
               navigate={navigate}
-              toggleWishlist={toggleWishlist}
+              toggleWishlist={toggleSaveClass}
               setActiveTab={setActiveTab}
             />
             

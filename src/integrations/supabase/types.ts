@@ -599,6 +599,30 @@ export type Database = {
         }
         Relationships: []
       }
+      saved_classes: {
+        Row: {
+          class_id: string
+          created_at: string | null
+          id: string
+          student_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          class_id: string
+          created_at?: string | null
+          id?: string
+          student_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          class_id?: string
+          created_at?: string | null
+          id?: string
+          student_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       session_attendance: {
         Row: {
           created_at: string

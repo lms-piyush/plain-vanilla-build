@@ -7,7 +7,7 @@ interface ClassEntry {
   id: string;
   name: string;
   type: "Online" | "Offline";
-  status: "Ongoing" | "Completed";
+  status: "Ongoing" | "Completed" | "Upcoming";
   format: "Inbound" | "Outbound" | "Live" | "Recorded";
   time: string;
   isStartable: boolean;
@@ -49,6 +49,8 @@ const ClassesTable = ({ classes, onStartSession }: ClassesTableProps) => {
                 <span className={`px-2 py-1 rounded-full text-xs ${
                   classItem.status === "Ongoing" 
                     ? "bg-green-100 text-green-800" 
+                    : classItem.status === "Upcoming"
+                    ? "bg-blue-100 text-blue-800"
                     : "bg-gray-100 text-gray-800"
                 }`}>
                   {classItem.status}
@@ -64,7 +66,8 @@ const ClassesTable = ({ classes, onStartSession }: ClassesTableProps) => {
                   onClick={() => handleStartSession(classItem.id, classItem.isStartable)}
                   className={classItem.isStartable ? "bg-[#8A5BB7] hover:bg-[#8A5BB7]/90" : ""}
                 >
-                  {classItem.status === "Completed" ? "Review" : "Start Session"}
+                  {classItem.status === "Completed" ? "Review" : 
+                   classItem.status === "Upcoming" ? "Join Soon" : "Start Session"}
                 </Button>
               </TableCell>
             </TableRow>

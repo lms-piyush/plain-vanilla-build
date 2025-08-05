@@ -8,18 +8,20 @@ import { Button } from "@/components/ui/button";
 import { Calendar, Book, Star, BookOpen } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useNewCourses } from "@/hooks/use-new-courses";
+import { useStudentTodayClasses } from "@/hooks/use-student-today-classes";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { data: newCourses = [], isLoading: isNewCoursesLoading } = useNewCourses();
+  const { data: todayClasses = [], isLoading: isTodayClassesLoading } = useStudentTodayClasses();
 
-  // Sample data for stats
+  // Calculate stats from real data
   const stats = [
     {
       title: "Today's Classes",
-      value: 2,
+      value: todayClasses.length,
       icon: <Calendar className="h-5 w-5" />,
-      delta: { value: 50, isPositive: true },
+      delta: { value: 0, isPositive: true },
       onClick: () => {
         // Scroll to today's classes section
         document.getElementById("todaysClasses")?.scrollIntoView({ behavior: "smooth" });
@@ -52,30 +54,8 @@ const Dashboard = () => {
   const totalCourses = chartData.reduce((sum, item) => sum + item.value, 0);
 
 
-  // Sample data for today's classes - UPDATED to only show non-completed classes for today
-  const todaysClasses = [
-    {
-      id: "class1",
-      name: "Calculus",
-      type: "Online" as const,
-      status: "Ongoing" as const,
-      format: "Live" as const,
-      time: "10:00 AM - 11:30 AM",
-      isStartable: true
-    },
-    {
-      id: "class3",
-      name: "Chemistry Lab",
-      type: "Offline" as const,
-      status: "Ongoing" as const,
-      format: "Inbound" as const,
-      time: "02:00 PM - 04:00 PM",
-      isStartable: false
-    }
-  ];
-
-  // Filter out completed classes - fixed type comparison
-  const ongoingTodaysClasses = todaysClasses.filter(cls => cls.status === "Ongoing");
+  // Filter out completed classes for display
+  const ongoingTodaysClasses = todayClasses.filter(cls => cls.status !== "Completed");
 
   const handleStartSession = (classId: string) => {
     // In a real app, this would navigate to the class session
@@ -162,7 +142,14 @@ const Dashboard = () => {
       <div id="todaysClasses" className="mb-8">
         <h2 className="text-xl font-semibold mb-4">Today's Classes</h2>
         
-        {ongoingTodaysClasses.length > 0 ? (
+        {isTodayClassesLoading ? (
+          <div className="bg-white border border-gray-200 rounded-md p-8 text-center">
+            <div className="animate-pulse">
+              <div className="bg-gray-200 h-4 rounded mb-4"></div>
+              <div className="bg-gray-200 h-4 rounded w-3/4 mx-auto"></div>
+            </div>
+          </div>
+        ) : ongoingTodaysClasses.length > 0 ? (
           <ClassesTable 
             classes={ongoingTodaysClasses} 
             onStartSession={handleStartSession}
