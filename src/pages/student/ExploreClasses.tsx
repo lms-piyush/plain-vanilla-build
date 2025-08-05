@@ -66,7 +66,7 @@ const ExploreClasses = () => {
     setPaymentModel
   });
 
-  // Use filtered classes hook with server-side filtering and sorting
+  // Use filtered classes hook with server-side filtering and sorting only for "all" tab
   const filterValues = getFilterValues();
   const { 
     data: queryResult, 
@@ -74,9 +74,9 @@ const ExploreClasses = () => {
     error,
     refetch 
   } = useFilteredClasses({
-    page: currentPage,
-    pageSize: classesPerPage,
-    ...filterValues,
+    page: activeTab === "all" ? currentPage : 1,
+    pageSize: activeTab === "all" ? classesPerPage : 1000, // Get all classes for saved tab
+    ...(activeTab === "all" ? filterValues : {}), // Only apply filters for "all" tab
     sortBy: sortBy as "popular" | "rating" | "newest"
   });
 
@@ -110,6 +110,8 @@ const ExploreClasses = () => {
   let totalPages = 1;
   
   if (activeTab === "saved") {
+    // For saved classes, we need to get all classes first, then filter client-side
+    // Use a different query hook that doesn't apply filters, just gets all classes
     const savedClasses = getSavedClasses(allClasses, savedClassIds);
     const startIndex = (currentPage - 1) * classesPerPage;
     const endIndex = startIndex + classesPerPage;

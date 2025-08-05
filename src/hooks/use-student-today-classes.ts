@@ -29,8 +29,8 @@ export const useStudentTodayClasses = () => {
       const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
       console.log('Fetching today\'s classes for date:', today);
 
-      // Query enrolled classes with syllabus for today's sessions
-      const { data: todayClasses, error } = await supabase
+      // First get student enrollments
+      const { data: enrollments, error: enrollmentError } = await supabase
         .from('student_enrollments')
         .select(`
           id,
@@ -43,93 +43,107 @@ export const useStudentTodayClasses = () => {
             status,
             profiles!classes_tutor_id_fkey (
               full_name
-            ),
-            class_syllabus!inner (
-              id,
-              title,
-              session_date,
-              start_time,
-              end_time,
-              status
             )
           )
         `)
         .eq('student_id', user.id)
         .eq('status', 'active')
-        .eq('classes.class_syllabus.session_date', today);
+        .eq('classes.status', 'active');
 
-      if (error) {
-        console.error('Error fetching today\'s classes:', error);
-        throw error;
+      if (enrollmentError) {
+        console.error('Error fetching enrollments:', enrollmentError);
+        throw enrollmentError;
       }
 
-      console.log('Raw today\'s classes data:', todayClasses);
+      console.log('Found enrollments:', enrollments?.length);
+
+      if (!enrollments || enrollments.length === 0) {
+        console.log('No active enrollments found');
+        return [];
+      }
+
+      // Then get today's syllabus for these classes
+      const classIds = enrollments.map(e => e.class_id);
+      
+      const { data: todaySyllabus, error: syllabusError } = await supabase
+        .from('class_syllabus')
+        .select('*')
+        .in('class_id', classIds)
+        .eq('session_date', today);
+
+      if (syllabusError) {
+        console.error('Error fetching today\'s syllabus:', syllabusError);
+        throw syllabusError;
+      }
+
+      console.log('Found today\'s syllabus:', todaySyllabus?.length);
 
       // Transform the data
-      const transformedClasses: TodayClass[] = todayClasses
-        ?.flatMap(enrollment => {
+      const transformedClasses: TodayClass[] = [];
+
+      if (todaySyllabus && todaySyllabus.length > 0) {
+        for (const syllabus of todaySyllabus) {
+          // Find the corresponding enrollment and class
+          const enrollment = enrollments.find(e => e.class_id === syllabus.class_id);
+          if (!enrollment) continue;
+
           const classData = enrollment.classes;
-          if (!classData?.class_syllabus || !Array.isArray(classData.class_syllabus)) {
-            return [];
+          
+          const now = new Date();
+          const currentTime = now.getHours() * 60 + now.getMinutes(); // Minutes since midnight
+          
+          // Parse session time
+          const [startHour, startMinute] = syllabus.start_time?.split(':').map(Number) || [0, 0];
+          const [endHour, endMinute] = syllabus.end_time?.split(':').map(Number) || [0, 0];
+          const sessionStart = startHour * 60 + startMinute;
+          const sessionEnd = endHour * 60 + endMinute;
+
+          // Determine status and if startable
+          let status: 'Ongoing' | 'Completed' | 'Upcoming' = 'Upcoming';
+          let isStartable = false;
+
+          if (currentTime >= sessionStart && currentTime <= sessionEnd) {
+            status = 'Ongoing';
+            isStartable = true;
+          } else if (currentTime > sessionEnd) {
+            status = 'Completed';
+            isStartable = false;
+          } else {
+            status = 'Upcoming';
+            isStartable = false;
           }
 
-          return classData.class_syllabus.map(syllabus => {
-            const now = new Date();
-            const currentTime = now.getHours() * 60 + now.getMinutes(); // Minutes since midnight
-            
-            // Parse session time
-            const [startHour, startMinute] = syllabus.start_time?.split(':').map(Number) || [0, 0];
-            const [endHour, endMinute] = syllabus.end_time?.split(':').map(Number) || [0, 0];
-            const sessionStart = startHour * 60 + startMinute;
-            const sessionEnd = endHour * 60 + endMinute;
+          // Format time display
+          const formatTime = (time: string) => {
+            const [hour, minute] = time.split(':');
+            const hourNum = parseInt(hour);
+            const period = hourNum >= 12 ? 'PM' : 'AM';
+            const displayHour = hourNum === 0 ? 12 : hourNum > 12 ? hourNum - 12 : hourNum;
+            return `${displayHour}:${minute} ${period}`;
+          };
 
-            // Determine status and if startable
-            let status: 'Ongoing' | 'Completed' | 'Upcoming' = 'Upcoming';
-            let isStartable = false;
+          const timeDisplay = syllabus.start_time && syllabus.end_time 
+            ? `${formatTime(syllabus.start_time)} - ${formatTime(syllabus.end_time)}`
+            : 'Time TBD';
 
-            if (currentTime >= sessionStart && currentTime <= sessionEnd) {
-              status = 'Ongoing';
-              isStartable = true;
-            } else if (currentTime > sessionEnd) {
-              status = 'Completed';
-              isStartable = false;
-            } else {
-              status = 'Upcoming';
-              isStartable = false;
-            }
-
-            // Format time display
-            const formatTime = (time: string) => {
-              const [hour, minute] = time.split(':');
-              const hourNum = parseInt(hour);
-              const period = hourNum >= 12 ? 'PM' : 'AM';
-              const displayHour = hourNum === 0 ? 12 : hourNum > 12 ? hourNum - 12 : hourNum;
-              return `${displayHour}:${minute} ${period}`;
-            };
-
-            const timeDisplay = syllabus.start_time && syllabus.end_time 
-              ? `${formatTime(syllabus.start_time)} - ${formatTime(syllabus.end_time)}`
-              : 'Time TBD';
-
-            return {
-              id: syllabus.id,
-              name: syllabus.title || classData.title,
-              type: classData.delivery_mode === 'online' ? 'Online' : 'Offline',
-              status,
-              format: classData.class_format === 'live' ? 'Live' : 
-                      classData.class_format === 'recorded' ? 'Recorded' :
-                      classData.class_format === 'inbound' ? 'Inbound' : 'Outbound',
-              time: timeDisplay,
-              isStartable,
-              class_id: classData.id,
-              tutor_name: classData.profiles?.full_name || 'Unknown Tutor',
-              session_date: syllabus.session_date,
-              start_time: syllabus.start_time || '',
-              end_time: syllabus.end_time || '',
-            } as TodayClass;
+          transformedClasses.push({
+            id: syllabus.id,
+            name: syllabus.title || classData.title,
+            type: classData.delivery_mode === 'online' ? 'Online' : 'Offline',
+            status,
+            format: classData.class_format === 'live' ? 'Live' : 
+                    classData.class_format === 'recorded' ? 'Recorded' :
+                    classData.class_format === 'inbound' ? 'Inbound' : 'Outbound',
+            time: timeDisplay,
+            isStartable,
+            class_id: classData.id,
+            tutor_name: classData.profiles?.full_name || 'Unknown Tutor',
+            session_date: syllabus.session_date,
+            start_time: syllabus.start_time || '',
+            end_time: syllabus.end_time || '',
           });
-        })
-        ?.filter(Boolean) || [];
+        }
+      }
 
       console.log('Transformed today\'s classes:', transformedClasses);
       return transformedClasses;
