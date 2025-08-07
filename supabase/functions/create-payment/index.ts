@@ -33,7 +33,7 @@ serve(async (req) => {
 
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { amount, description, customerInfo } = await req.json();
+    const { amount, description, customerInfo, classId } = await req.json();
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
@@ -80,16 +80,18 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/student?payment=success`,
+      success_url: `${req.headers.get("origin")}/student?payment=success&session_id=${session.id}`,
       cancel_url: `${req.headers.get("origin")}/student?payment=cancelled`,
     });
 
-    // Store order in database
+    // Store order and payment enrollment in database
     const supabaseService = createClient(
       Deno.env.get("SUPABASE_URL") ?? "",
       Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
       { auth: { persistSession: false } }
     );
+
+    
 
     await supabaseService.from("orders").insert({
       user_id: user.id,
@@ -99,6 +101,19 @@ serve(async (req) => {
       status: "pending",
       created_at: new Date().toISOString()
     });
+
+    // Track payment enrollment for automatic enrollment after payment success
+    if (classId) {
+      await supabaseService.from("payment_enrollments").insert({
+        user_id: user.id,
+        class_id: classId,
+        stripe_session_id: session.id,
+        amount: amount,
+        currency: "inr",
+        status: "pending",
+        enrollment_completed: false
+      });
+    }
 
     logStep("Payment session created and order stored", { sessionId: session.id, amount });
 

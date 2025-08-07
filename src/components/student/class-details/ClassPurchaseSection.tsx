@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { StudentClassDetails } from "@/hooks/use-student-class-details";
 import { enrollStudentInClass } from "@/hooks/use-student-enrollment";
 import PaymentButton from "@/components/payment/PaymentButton";
+import { usePaymentSuccess } from "@/hooks/use-payment-success";
 
 interface ClassPurchaseSectionProps {
   classDetails: StudentClassDetails;
@@ -14,6 +15,9 @@ interface ClassPurchaseSectionProps {
 
 const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchaseSectionProps) => {
   const [isEnrolling, setIsEnrolling] = useState(false);
+
+  // Handle payment success from URL parameters
+  usePaymentSuccess(onEnrollmentChange);
 
   const handleFreeEnrollment = async () => {
     if (classDetails?.isEnrolled && classDetails?.isCurrentBatch) {
@@ -99,6 +103,8 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
             amount={Math.round((typeof classDetails.price === 'string' ? parseFloat(classDetails.price) : classDetails.price) * 100)} // Convert to paisa
             description={`Course: ${classDetails.title}`}
             className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
+            classId={classDetails.id}
+            onSuccess={handlePaymentSuccess}
           />
         ) : (
           <Button

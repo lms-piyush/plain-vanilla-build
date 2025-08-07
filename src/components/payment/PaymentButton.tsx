@@ -10,9 +10,11 @@ interface PaymentButtonProps {
   description: string;
   className?: string;
   variant?: "default" | "outline" | "secondary" | "ghost" | "link" | "destructive";
+  classId?: string;
+  onSuccess?: () => void;
 }
 
-const PaymentButton = ({ amount, description, className, variant = "default" }: PaymentButtonProps) => {
+const PaymentButton = ({ amount, description, className, variant = "default", classId, onSuccess }: PaymentButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [showAddressModal, setShowAddressModal] = useState(false);
 
@@ -28,7 +30,8 @@ const PaymentButton = ({ amount, description, className, variant = "default" }: 
         body: {
           amount,
           description,
-          customerInfo
+          customerInfo,
+          classId
         }
       });
 

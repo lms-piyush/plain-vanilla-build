@@ -593,6 +593,45 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_enrollments: {
+        Row: {
+          amount: number
+          class_id: string
+          created_at: string
+          currency: string | null
+          enrollment_completed: boolean | null
+          id: string
+          status: string
+          stripe_session_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          class_id: string
+          created_at?: string
+          currency?: string | null
+          enrollment_completed?: boolean | null
+          id?: string
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          class_id?: string
+          created_at?: string
+          currency?: string | null
+          enrollment_completed?: boolean | null
+          id?: string
+          status?: string
+          stripe_session_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
