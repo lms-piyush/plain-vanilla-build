@@ -5,6 +5,7 @@ import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { StudentClassDetails } from "@/hooks/use-student-class-details";
 import { enrollStudentInClass } from "@/hooks/use-student-enrollment";
+import PaymentButton from "@/components/payment/PaymentButton";
 
 interface ClassPurchaseSectionProps {
   classDetails: StudentClassDetails;
@@ -14,7 +15,7 @@ interface ClassPurchaseSectionProps {
 const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchaseSectionProps) => {
   const [isEnrolling, setIsEnrolling] = useState(false);
 
-  const handlePurchase = async () => {
+  const handleFreeEnrollment = async () => {
     if (classDetails?.isEnrolled && classDetails?.isCurrentBatch) {
       toast({
         title: "Already enrolled",
@@ -63,6 +64,22 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
     }
   };
 
+  const handlePaymentSuccess = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        await enrollStudentInClass(classDetails.id, user.id);
+        toast({
+          title: "Payment successful!",
+          description: "You have been enrolled in this class.",
+        });
+        onEnrollmentChange();
+      }
+    } catch (error: any) {
+      console.error('Error enrolling after payment:', error);
+    }
+  };
+
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t border-gray-100">
       <div>
@@ -77,20 +94,28 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
             You are enrolled in batch {classDetails.enrolledBatch}. This class has been updated to batch {classDetails.batch_number}.
           </p>
         )}
-        <Button
-          onClick={handlePurchase}
-          disabled={isEnrolling || (classDetails.isEnrolled && classDetails.isCurrentBatch)}
-          className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
-        >
-          {isEnrolling 
-            ? "Enrolling..." 
-            : classDetails.isEnrolled && classDetails.isCurrentBatch 
-              ? "Already Enrolled" 
-              : classDetails.isEnrolled && !classDetails.isCurrentBatch
-                ? "Enroll in New Batch"
-                : "Purchase Course"
-          }
-        </Button>
+        {classDetails.price && (typeof classDetails.price === 'string' ? parseFloat(classDetails.price) : classDetails.price) > 0 ? (
+          <PaymentButton
+            amount={Math.round((typeof classDetails.price === 'string' ? parseFloat(classDetails.price) : classDetails.price) * 100)} // Convert to paisa
+            description={`Course: ${classDetails.title}`}
+            className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
+          />
+        ) : (
+          <Button
+            onClick={handleFreeEnrollment}
+            disabled={isEnrolling || (classDetails.isEnrolled && classDetails.isCurrentBatch)}
+            className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
+          >
+            {isEnrolling 
+              ? "Enrolling..." 
+              : classDetails.isEnrolled && classDetails.isCurrentBatch 
+                ? "Already Enrolled" 
+                : classDetails.isEnrolled && !classDetails.isCurrentBatch
+                  ? "Enroll in New Batch"
+                  : "Enroll Free"
+            }
+          </Button>
+        )}
       </div>
     </div>
   );

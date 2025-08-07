@@ -10,6 +10,9 @@ import Dashboard from "@/pages/Dashboard";
 import StudentEntry from "@/pages/StudentEntry";
 import TutorEntry from "@/pages/TutorEntry";
 
+// Stripe Demo
+import StripeDemo from "@/pages/StripeDemo";
+
 // Layouts
 import Layout from "@/components/layout/Layout";
 
@@ -84,6 +87,9 @@ const AppRoutes = () => {
     <Routes>
       {/* Landing page with complete experience */}
       <Route path="/" element={<Index />} />
+      
+      {/* Stripe Demo */}
+      <Route path="/stripe-demo" element={<StripeDemo />} />
       
       {/* Dashboard selection page */}
       <Route path="/dashboard" element={<Dashboard />} />
