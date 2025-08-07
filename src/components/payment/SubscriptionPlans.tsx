@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
+import BillingAddressModal from "@/components/student/BillingAddressModal";
 
 interface SubscriptionPlan {
   name: string;
@@ -56,13 +57,23 @@ const plans: SubscriptionPlan[] = [
 ];
 
 const SubscriptionPlans = () => {
-  const handleSubscribe = async (plan: SubscriptionPlan) => {
+  const [showAddressModal, setShowAddressModal] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<SubscriptionPlan | null>(null);
+
+  const handleSubscribe = (plan: SubscriptionPlan) => {
+    setSelectedPlan(plan);
+    setShowAddressModal(true);
+  };
+
+  const handleAddressSubmit = async (customerInfo: any) => {
+    if (!selectedPlan) return;
     try {
       const { data, error } = await supabase.functions.invoke('create-checkout', {
         body: {
-          priceAmount: plan.price,
-          priceTier: plan.name,
-          isSubscription: true
+          priceAmount: selectedPlan.price,
+          priceTier: selectedPlan.name,
+          isSubscription: true,
+          customerInfo
         }
       });
 
@@ -125,6 +136,13 @@ const SubscriptionPlans = () => {
           </Card>
         ))}
       </div>
+      
+      <BillingAddressModal
+        open={showAddressModal}
+        onClose={() => setShowAddressModal(false)}
+        onSubmit={handleAddressSubmit}
+        title="Billing Address Required for Subscription"
+      />
     </div>
   );
 };

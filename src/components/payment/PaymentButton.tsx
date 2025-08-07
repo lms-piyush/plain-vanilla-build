@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { CreditCard } from "lucide-react";
+import BillingAddressModal from "@/components/student/BillingAddressModal";
 
 interface PaymentButtonProps {
   amount: number; // in paisa
@@ -13,15 +14,21 @@ interface PaymentButtonProps {
 
 const PaymentButton = ({ amount, description, className, variant = "default" }: PaymentButtonProps) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [showAddressModal, setShowAddressModal] = useState(false);
 
-  const handlePayment = async () => {
+  const handlePayment = () => {
+    setShowAddressModal(true);
+  };
+
+  const handleAddressSubmit = async (customerInfo: any) => {
     setIsLoading(true);
     
     try {
       const { data, error } = await supabase.functions.invoke('create-payment', {
         body: {
           amount,
-          description
+          description,
+          customerInfo
         }
       });
 
@@ -47,15 +54,24 @@ const PaymentButton = ({ amount, description, className, variant = "default" }: 
   const displayAmount = `₹${(amount / 100).toFixed(0)}`;
 
   return (
-    <Button 
-      onClick={handlePayment}
-      disabled={isLoading}
-      variant={variant}
-      className={className}
-    >
-      <CreditCard className="h-4 w-4 mr-2" />
-      {isLoading ? "Processing..." : `Pay ${displayAmount}`}
-    </Button>
+    <>
+      <Button 
+        onClick={handlePayment}
+        disabled={isLoading}
+        variant={variant}
+        className={className}
+      >
+        <CreditCard className="h-4 w-4 mr-2" />
+        {isLoading ? "Processing..." : `Pay ${displayAmount}`}
+      </Button>
+      
+      <BillingAddressModal
+        open={showAddressModal}
+        onClose={() => setShowAddressModal(false)}
+        onSubmit={handleAddressSubmit}
+        title="Billing Address Required"
+      />
+    </>
   );
 };
 

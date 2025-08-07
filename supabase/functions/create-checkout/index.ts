@@ -33,25 +33,42 @@ serve(async (req) => {
 
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { priceAmount, priceTier, isSubscription } = await req.json();
+    const { priceAmount, priceTier, isSubscription, customerInfo } = await req.json();
     
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
     });
 
-    // Check if customer exists
+    // Check if customer exists or create new one with billing address
     const customers = await stripe.customers.list({ email: user.email, limit: 1 });
     let customerId;
     if (customers.data.length > 0) {
       customerId = customers.data[0].id;
       logStep("Existing customer found", { customerId });
+      
+      // Update customer with billing address if provided
+      if (customerInfo?.address) {
+        await stripe.customers.update(customerId, {
+          name: customerInfo.name || user.email,
+          address: customerInfo.address
+        });
+        logStep("Updated customer with billing address");
+      }
     } else {
-      logStep("Creating new customer");
+      // Create new customer with required information
+      const customer = await stripe.customers.create({
+        email: user.email,
+        name: customerInfo?.name || user.email,
+        ...(customerInfo?.address && { address: customerInfo.address })
+      });
+      customerId = customer.id;
+      logStep("Created new customer with billing address", { customerId });
     }
 
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       customer_email: customerId ? undefined : user.email,
+      billing_address_collection: 'required',
       line_items: [
         {
           price_data: {
