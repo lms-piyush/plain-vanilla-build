@@ -31,9 +31,12 @@ const PaymentButton = ({ amount, description, className, variant = "default" }: 
         window.open(data.url, '_blank');
       }
     } catch (error: any) {
+      console.error('Payment error:', error);
+      const errorMessage = error.message || "Failed to initiate payment";
+      
       toast({
         title: "Payment Error",
-        description: error.message || "Failed to initiate payment",
+        description: errorMessage,
         variant: "destructive"
       });
     } finally {

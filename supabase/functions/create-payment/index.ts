@@ -88,7 +88,21 @@ serve(async (req) => {
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     logStep("ERROR in create-payment", { message: errorMessage });
-    return new Response(JSON.stringify({ error: errorMessage }), {
+    
+    // Handle specific Stripe configuration errors
+    let userFriendlyMessage = errorMessage;
+    if (errorMessage.includes("account or business name")) {
+      userFriendlyMessage = "Stripe account setup incomplete. Please configure your business details in Stripe Dashboard.";
+    } else if (errorMessage.includes("No such price")) {
+      userFriendlyMessage = "Invalid price configuration. Please check your Stripe price settings.";
+    } else if (errorMessage.includes("Invalid currency")) {
+      userFriendlyMessage = "Currency not supported. Please enable INR in your Stripe account.";
+    }
+    
+    return new Response(JSON.stringify({ 
+      error: userFriendlyMessage,
+      details: errorMessage 
+    }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 500,
     });

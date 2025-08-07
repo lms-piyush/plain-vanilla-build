@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import SubscriptionPlans from "@/components/payment/SubscriptionPlans";
 import SubscriptionStatus from "@/components/payment/SubscriptionStatus";
 import PaymentButton from "@/components/payment/PaymentButton";
+import StripeSetupGuide from "@/components/payment/StripeSetupGuide";
 import { Separator } from "@/components/ui/separator";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const StripeDemo = () => {
   return (
@@ -16,39 +18,52 @@ const StripeDemo = () => {
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <SubscriptionPlans />
-          </div>
-          <div className="space-y-6">
-            <SubscriptionStatus />
-            
-            <Card>
-              <CardHeader>
-                <CardTitle>One-Time Payments</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <PaymentButton
-                  amount={199900} // ₹1999
-                  description="Premium Course Bundle"
-                  className="w-full"
-                />
-                <PaymentButton
-                  amount={49900} // ₹499
-                  description="Individual Course"
-                  variant="outline"
-                  className="w-full"
-                />
-                <PaymentButton
-                  amount={9900} // ₹99
-                  description="Study Material"
-                  variant="secondary"
-                  className="w-full"
-                />
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+        <Tabs defaultValue="payment" className="w-full">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="payment">Payment Integration</TabsTrigger>
+            <TabsTrigger value="setup">Setup Guide</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="payment" className="space-y-8">
+            <div className="grid lg:grid-cols-3 gap-8">
+              <div className="lg:col-span-2">
+                <SubscriptionPlans />
+              </div>
+              <div className="space-y-6">
+                <SubscriptionStatus />
+                
+                <Card>
+                  <CardHeader>
+                    <CardTitle>One-Time Payments</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <PaymentButton
+                      amount={199900} // ₹1999
+                      description="Premium Course Bundle"
+                      className="w-full"
+                    />
+                    <PaymentButton
+                      amount={49900} // ₹499
+                      description="Individual Course"
+                      variant="outline"
+                      className="w-full"
+                    />
+                    <PaymentButton
+                      amount={9900} // ₹99
+                      description="Study Material"
+                      variant="secondary"
+                      className="w-full"
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="setup">
+            <StripeSetupGuide />
+          </TabsContent>
+        </Tabs>
 
         <Separator />
 

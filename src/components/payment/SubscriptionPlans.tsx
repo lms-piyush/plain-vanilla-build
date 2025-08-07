@@ -72,9 +72,12 @@ const SubscriptionPlans = () => {
         window.open(data.url, '_blank');
       }
     } catch (error: any) {
+      console.error('Subscription error:', error);
+      const errorMessage = error.message || "Failed to create checkout session";
+      
       toast({
-        title: "Error",
-        description: error.message || "Failed to create checkout session",
+        title: "Subscription Error", 
+        description: errorMessage,
         variant: "destructive"
       });
     }
