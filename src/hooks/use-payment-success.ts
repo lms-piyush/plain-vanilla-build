@@ -43,13 +43,22 @@ export const usePaymentSuccess = (onSuccess?: () => void) => {
         return;
       }
 
-      if (data?.success) {
+      if (data?.success && data?.enrolled) {
         toast({
           title: "Payment successful!",
           description: "You have been enrolled in the class. Welcome aboard!",
         });
         
         // Call success callback if provided
+        if (onSuccess) {
+          onSuccess();
+        }
+      } else if (data?.success && !data?.enrolled) {
+        toast({
+          title: "Payment successful!",
+          description: "Payment processed successfully.",
+        });
+        
         if (onSuccess) {
           onSuccess();
         }

@@ -80,8 +80,14 @@ serve(async (req) => {
         },
       ],
       mode: "payment",
-      success_url: `${req.headers.get("origin")}/student?payment=success&session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${req.headers.get("origin")}/student/classes/${classId}?payment=success&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${req.headers.get("origin")}/student?payment=cancelled`,
+      // Add metadata for tracking enrollment information
+      metadata: {
+        user_id: user.id,
+        class_id: classId || '',
+        user_email: user.email
+      }
     });
 
     // Store order and payment enrollment in database

@@ -69,19 +69,9 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
   };
 
   const handlePaymentSuccess = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (user) {
-        await enrollStudentInClass(classDetails.id, user.id);
-        toast({
-          title: "Payment successful!",
-          description: "You have been enrolled in this class.",
-        });
-        onEnrollmentChange();
-      }
-    } catch (error: any) {
-      console.error('Error enrolling after payment:', error);
-    }
+    // Enrollment is now handled automatically by the process-payment-enrollment edge function
+    // Just trigger the refetch to update UI
+    onEnrollmentChange();
   };
 
   return (
