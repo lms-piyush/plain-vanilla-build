@@ -78,8 +78,16 @@ export const useFilteredClasses = (params: UseFilteredClassesParams = {}) => {
       }
 
       // Apply enrollment filter
-      if (enrolledOnly && enrolledClasses.length > 0) {
-        query = query.in("id", enrolledClasses);
+      if (enrolledOnly) {
+        if (enrolledClasses.length > 0) {
+          query = query.in("id", enrolledClasses);
+        } else {
+          // If enrolled only is requested but no enrolled classes exist, return empty result
+          return {
+            classes: [],
+            totalCount: 0
+          };
+        }
       }
 
       // Apply sorting
