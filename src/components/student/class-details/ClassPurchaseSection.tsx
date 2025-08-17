@@ -6,7 +6,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { StudentClassDetails } from "@/hooks/use-student-class-details";
 import { enrollStudentInClass } from "@/hooks/use-student-enrollment";
 import PaymentButton from "@/components/payment/PaymentButton";
+import SubscriptionButton from "@/components/subscription/SubscriptionButton";
 import { usePaymentSuccess } from "@/hooks/use-payment-success";
+import { useSubscriptionPlans, useSubscriptionStatus } from "@/hooks/use-subscription";
 
 interface ClassPurchaseSectionProps {
   classDetails: StudentClassDetails;
@@ -15,6 +17,8 @@ interface ClassPurchaseSectionProps {
 
 const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchaseSectionProps) => {
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const { data: subscriptionPlans } = useSubscriptionPlans();
+  const { data: subscriptionStatus } = useSubscriptionStatus();
 
   // Handle payment success from URL parameters
   usePaymentSuccess(onEnrollmentChange);
@@ -88,23 +92,34 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
             You are enrolled in batch {classDetails.enrolledBatch}. This class has been updated to batch {classDetails.batch_number}.
           </p>
         )}
-        {classDetails.price && (typeof classDetails.price === 'string' ? parseFloat(classDetails.price) : classDetails.price) > 0 ? (
-          classDetails.isEnrolled && classDetails.isCurrentBatch ? (
-            <Button
-              disabled={true}
-              className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
-            >
-              Already Enrolled
+        {classDetails.pricing_model === 'subscription' ? (
+          // Subscription-based class
+          subscriptionStatus?.subscribed ? (
+            <Button disabled className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90">
+              Access with {subscriptionStatus.subscription_tier} Plan
             </Button>
           ) : (
-            <PaymentButton
-              amount={Math.round((typeof classDetails.price === 'string' ? parseFloat(classDetails.price) : classDetails.price) * 100)} // Convert to paisa
-              description={`Course: ${classDetails.title}`}
-              className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
-              classId={classDetails.id}
-              onSuccess={handlePaymentSuccess}
-            />
+            subscriptionPlans && subscriptionPlans.length > 0 && (
+              <SubscriptionButton
+                plan={subscriptionPlans[0]}
+                classId={classDetails.id}
+                className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
+              />
+            )
           )
+        ) : classDetails.isEnrolled && classDetails.isCurrentBatch ? (
+          <Button disabled className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90">
+            Already Enrolled
+          </Button>
+        ) : (
+          <PaymentButton
+            amount={Math.round((typeof classDetails.price === 'string' ? parseFloat(classDetails.price) : classDetails.price) * 100)}
+            description={`Course: ${classDetails.title}`}
+            className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
+            classId={classDetails.id}
+            onSuccess={handlePaymentSuccess}
+          />
+        )}
         ) : (
           <Button
             onClick={handleFreeEnrollment}

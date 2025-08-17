@@ -8,6 +8,8 @@ export interface StudentClassDetails {
   class_format: 'live' | 'recorded' | 'inbound' | 'outbound';
   class_size: 'group' | 'one-on-one';
   duration_type: 'recurring' | 'fixed';
+  pricing_model?: string;
+  required_subscription_tier?: string;
   status: 'draft' | 'active' | 'inactive' | 'completed' | 'running';
   price: number | null;
   currency: string | null;

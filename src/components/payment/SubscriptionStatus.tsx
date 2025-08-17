@@ -2,16 +2,20 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { useSubscription } from "@/hooks/use-subscription";
+import { useSubscriptionStatus, useCheckSubscription } from "@/hooks/use-subscription";
 import { Calendar, CreditCard, RefreshCw } from "lucide-react";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const SubscriptionStatus = () => {
-  const { subscriptionStatus, isLoading, checkSubscription, openCustomerPortal } = useSubscription();
+  const { data: subscriptionStatus, isLoading } = useSubscriptionStatus();
+  const checkSubscription = useCheckSubscription();
 
   const handleManageSubscription = async () => {
     try {
-      await openCustomerPortal();
+      const { data, error } = await supabase.functions.invoke("customer-portal");
+      if (error) throw error;
+      window.open(data.url, '_blank');
     } catch (error: any) {
       toast({
         title: "Error",
@@ -22,7 +26,7 @@ const SubscriptionStatus = () => {
   };
 
   const handleRefreshStatus = () => {
-    checkSubscription();
+    checkSubscription.mutate();
     toast({
       title: "Refreshing...",
       description: "Checking your subscription status"
@@ -60,19 +64,19 @@ const SubscriptionStatus = () => {
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
           <span>Status:</span>
-          <Badge variant={subscriptionStatus.subscribed ? "default" : "secondary"}>
-            {subscriptionStatus.subscribed ? "Active" : "Inactive"}
+          <Badge variant={subscriptionStatus?.subscribed ? "default" : "secondary"}>
+            {subscriptionStatus?.subscribed ? "Active" : "Inactive"}
           </Badge>
         </div>
 
-        {subscriptionStatus.subscription_tier && (
+        {subscriptionStatus?.subscription_tier && (
           <div className="flex items-center justify-between">
             <span>Plan:</span>
             <Badge variant="outline">{subscriptionStatus.subscription_tier}</Badge>
           </div>
         )}
 
-        {subscriptionStatus.subscription_end && (
+        {subscriptionStatus?.subscription_end && (
           <div className="flex items-center justify-between">
             <span>Expires:</span>
             <div className="flex items-center text-sm text-muted-foreground">
@@ -82,7 +86,7 @@ const SubscriptionStatus = () => {
           </div>
         )}
 
-        {subscriptionStatus.subscribed && (
+        {subscriptionStatus?.subscribed && (
           <Button 
             onClick={handleManageSubscription}
             variant="outline"

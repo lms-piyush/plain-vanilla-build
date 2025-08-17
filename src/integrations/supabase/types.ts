@@ -250,6 +250,8 @@ export type Database = {
           id: string
           max_students: number | null
           price: number | null
+          pricing_model: string | null
+          required_subscription_tier: string | null
           status: Database["public"]["Enums"]["class_status"]
           subject: string | null
           thumbnail_url: string | null
@@ -271,6 +273,8 @@ export type Database = {
           id?: string
           max_students?: number | null
           price?: number | null
+          pricing_model?: string | null
+          required_subscription_tier?: string | null
           status?: Database["public"]["Enums"]["class_status"]
           subject?: string | null
           thumbnail_url?: string | null
@@ -292,6 +296,8 @@ export type Database = {
           id?: string
           max_students?: number | null
           price?: number | null
+          pricing_model?: string | null
+          required_subscription_tier?: string | null
           status?: Database["public"]["Enums"]["class_status"]
           subject?: string | null
           thumbnail_url?: string | null
@@ -746,10 +752,12 @@ export type Database = {
           class_id: string
           created_at: string
           enrollment_date: string
+          enrollment_type: string | null
           id: string
           payment_status: string
           status: string
           student_id: string
+          subscription_id: string | null
           updated_at: string
         }
         Insert: {
@@ -757,10 +765,12 @@ export type Database = {
           class_id: string
           created_at?: string
           enrollment_date?: string
+          enrollment_type?: string | null
           id?: string
           payment_status?: string
           status?: string
           student_id: string
+          subscription_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -768,10 +778,12 @@ export type Database = {
           class_id?: string
           created_at?: string
           enrollment_date?: string
+          enrollment_type?: string | null
           id?: string
           payment_status?: string
           status?: string
           student_id?: string
+          subscription_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -794,36 +806,138 @@ export type Database = {
       subscribers: {
         Row: {
           created_at: string
+          current_period_end: string | null
+          current_period_start: string | null
           email: string
           id: string
           stripe_customer_id: string | null
           subscribed: boolean
           subscription_end: string | null
+          subscription_id: string | null
+          subscription_price_id: string | null
+          subscription_status: string | null
           subscription_tier: string | null
           updated_at: string
           user_id: string | null
         }
         Insert: {
           created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
           email: string
           id?: string
           stripe_customer_id?: string | null
           subscribed?: boolean
           subscription_end?: string | null
+          subscription_id?: string | null
+          subscription_price_id?: string | null
+          subscription_status?: string | null
           subscription_tier?: string | null
           updated_at?: string
           user_id?: string | null
         }
         Update: {
           created_at?: string
+          current_period_end?: string | null
+          current_period_start?: string | null
           email?: string
           id?: string
           stripe_customer_id?: string | null
           subscribed?: boolean
           subscription_end?: string | null
+          subscription_id?: string | null
+          subscription_price_id?: string | null
+          subscription_status?: string | null
           subscription_tier?: string | null
           updated_at?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      subscription_history: {
+        Row: {
+          amount: number
+          billing_period_end: string
+          billing_period_start: string
+          created_at: string
+          currency: string | null
+          id: string
+          paid_at: string | null
+          status: string
+          stripe_invoice_id: string | null
+          subscription_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          billing_period_end: string
+          billing_period_start: string
+          created_at?: string
+          currency?: string | null
+          id?: string
+          paid_at?: string | null
+          status: string
+          stripe_invoice_id?: string | null
+          subscription_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          billing_period_end?: string
+          billing_period_start?: string
+          created_at?: string
+          currency?: string | null
+          id?: string
+          paid_at?: string | null
+          status?: string
+          stripe_invoice_id?: string | null
+          subscription_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      subscription_plans: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string | null
+          description: string | null
+          features: string[] | null
+          id: string
+          interval_type: string
+          is_active: boolean | null
+          name: string
+          stripe_price_id: string
+          updated_at: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          features?: string[] | null
+          id?: string
+          interval_type: string
+          is_active?: boolean | null
+          name: string
+          stripe_price_id: string
+          updated_at?: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string | null
+          description?: string | null
+          features?: string[] | null
+          id?: string
+          interval_type?: string
+          is_active?: boolean | null
+          name?: string
+          stripe_price_id?: string
+          updated_at?: string
         }
         Relationships: []
       }
