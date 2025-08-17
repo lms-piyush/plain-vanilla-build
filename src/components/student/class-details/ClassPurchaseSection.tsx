@@ -89,13 +89,22 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
           </p>
         )}
         {classDetails.price && (typeof classDetails.price === 'string' ? parseFloat(classDetails.price) : classDetails.price) > 0 ? (
-          <PaymentButton
-            amount={Math.round((typeof classDetails.price === 'string' ? parseFloat(classDetails.price) : classDetails.price) * 100)} // Convert to paisa
-            description={`Course: ${classDetails.title}`}
-            className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
-            classId={classDetails.id}
-            onSuccess={handlePaymentSuccess}
-          />
+          classDetails.isEnrolled && classDetails.isCurrentBatch ? (
+            <Button
+              disabled={true}
+              className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
+            >
+              Already Enrolled
+            </Button>
+          ) : (
+            <PaymentButton
+              amount={Math.round((typeof classDetails.price === 'string' ? parseFloat(classDetails.price) : classDetails.price) * 100)} // Convert to paisa
+              description={`Course: ${classDetails.title}`}
+              className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
+              classId={classDetails.id}
+              onSuccess={handlePaymentSuccess}
+            />
+          )
         ) : (
           <Button
             onClick={handleFreeEnrollment}
