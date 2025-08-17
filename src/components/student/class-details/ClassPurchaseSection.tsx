@@ -132,7 +132,7 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
                 <SubscriptionButton
                   plan={subscriptionPlans[0]}
                   classId={classDetails.id}
-                  classCount={classDetails.total_sessions || classDetails.class_schedules?.[0]?.total_sessions || 1}
+                  classCount={1} // Fixed to 1 for subscriptions
                   className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
                 />
               )
@@ -142,7 +142,7 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
                 <SubscriptionButton
                   plan={subscriptionPlans[0]}
                   classId={classDetails.id}
-                  classCount={classDetails.total_sessions || classDetails.class_schedules?.[0]?.total_sessions || 1}
+                  classCount={1} // Fixed to 1 for subscriptions
                   className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
                 />
               )

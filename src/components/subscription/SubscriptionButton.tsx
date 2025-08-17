@@ -33,7 +33,7 @@ const SubscriptionButton = ({ plan, classId, classCount = 1, className, disabled
     createCheckout.mutate({
       priceId,
       classId,
-      classCount,
+      classCount: 1, // Always use 1 for subscriptions - no multiplication
     });
   };
 

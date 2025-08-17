@@ -20,7 +20,8 @@ import {
   ThumbsUp,
   Users,
   BarChart3,
-  Settings
+  Settings,
+  CreditCard
 } from "lucide-react";
 
 const Sidebar = () => {
@@ -33,6 +34,7 @@ const Sidebar = () => {
     { icon: LayoutDashboard, label: "Dashboard", path: "/student/dashboard" },
     { icon: Book, label: "My Classes", path: "/student/my-classes" },
     { icon: Compass, label: "Explore Classes", path: "/student/explore" },
+    { icon: CreditCard, label: "Subscription", path: "/student/subscription" },
     { icon: MessagesSquare, label: "Messages", path: "/student/messages" },
     { icon: HelpCircle, label: "Help", path: "/student/help" },
   ];

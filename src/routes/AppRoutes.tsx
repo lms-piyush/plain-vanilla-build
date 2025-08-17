@@ -54,6 +54,7 @@ import Profile from "@/pages/student/Profile";
 import Help from "@/pages/student/Help";
 import StudentMessages from "@/pages/student/Messages";
 import SubscriptionSuccess from "@/pages/student/SubscriptionSuccess";
+import Subscription from "@/pages/student/Subscription";
 import EnhancedTutorProfile from "@/pages/student/EnhancedTutorProfile";
 import CourseCheckout from "@/pages/student/CourseCheckout";
 
@@ -228,6 +229,10 @@ const AppRoutes = () => {
         <Route 
           path="/student/tutor/:id" 
           element={<ProtectedRoute allowedRoles={["student", "parent"]}><EnhancedTutorProfile /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/student/subscription" 
+          element={<ProtectedRoute allowedRoles={["student", "parent"]}><Subscription /></ProtectedRoute>} 
         />
         <Route 
           path="/student/subscription-success" 
