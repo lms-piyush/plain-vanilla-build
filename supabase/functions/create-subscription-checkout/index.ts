@@ -62,13 +62,72 @@ serve(async (req) => {
       logStep("New customer created", { customerId });
     }
 
+    // Resolve the provided identifier to a real Stripe price ID
+    let resolvedPriceId: string | null = null;
+
+    // Case 1: Already a real price id
+    if (typeof priceId === 'string' && priceId.startsWith('price_')) {
+      resolvedPriceId = priceId;
+      logStep("Using provided price id", { priceId: resolvedPriceId });
+    }
+
+    // Case 2: A Stripe product id (use its default price or pick any recurring active price)
+    if (!resolvedPriceId && typeof priceId === 'string' && priceId.startsWith('prod_')) {
+      const product = await stripe.products.retrieve(priceId);
+      const defaultPrice = product.default_price as (string | { id: string } | null);
+      if (typeof defaultPrice === 'string') {
+        resolvedPriceId = defaultPrice;
+        logStep("Resolved price from product default_price (string)", { resolvedPriceId });
+      } else if (defaultPrice && typeof defaultPrice === 'object' && 'id' in defaultPrice) {
+        resolvedPriceId = defaultPrice.id;
+        logStep("Resolved price from product default_price (object)", { resolvedPriceId });
+      }
+      if (!resolvedPriceId) {
+        const pricesForProduct = await stripe.prices.list({ product: priceId, active: true, limit: 10 });
+        const recurringPrice = pricesForProduct.data.find(p => p.recurring);
+        const anyPrice = pricesForProduct.data[0];
+        resolvedPriceId = (recurringPrice || anyPrice)?.id ?? null;
+        logStep("Resolved price by listing product prices", { resolvedPriceId });
+      }
+    }
+
+    // Case 3: Treat as a lookup_key (e.g. "price_basic_monthly")
+    if (!resolvedPriceId && typeof priceId === 'string') {
+      try {
+        // Prefer search API when available
+        // Example query: active:'true' AND lookup_key:'price_basic_monthly'
+        // @ts-ignore - search may not be in all type defs for this env
+        const searchResult = await stripe.prices.search({
+          // Quote the lookup_key to avoid parsing issues
+          query: `active:'true' AND lookup_key:'${priceId.replace(/'/g, "\\'")}'`,
+          limit: 1,
+        });
+        if (searchResult?.data?.length) {
+          resolvedPriceId = searchResult.data[0].id;
+          logStep("Resolved price via search on lookup_key", { resolvedPriceId });
+        }
+      } catch (_err) {
+        // Fallback: list and filter by lookup_key
+        const list = await stripe.prices.list({ active: true, limit: 100 });
+        const match = list.data.find(p => p.lookup_key === priceId);
+        if (match) {
+          resolvedPriceId = match.id;
+          logStep("Resolved price via list+filter on lookup_key", { resolvedPriceId });
+        }
+      }
+    }
+
+    if (!resolvedPriceId) {
+      throw new Error("Could not resolve a valid Stripe price from the provided identifier. Ensure the value is a Price ID, Product ID with default price, or a Price lookup_key.");
+    }
+
     // Create checkout session for subscription
     const origin = req.headers.get("origin") || "http://localhost:3000";
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [
         {
-          price: priceId,
+          price: resolvedPriceId,
           quantity: 1,
         },
       ],
