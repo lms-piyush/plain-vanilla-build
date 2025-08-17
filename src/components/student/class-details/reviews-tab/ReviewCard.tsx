@@ -23,7 +23,7 @@ const ReviewCard = ({ review }: ReviewCardProps) => {
         <div className="flex items-start justify-between mb-3">
           <div>
             <p className="font-medium">
-              {review.profiles?.full_name || `Student ${review.student_id.slice(-4)}`}
+              Anonymous Student
             </p>
             <p className="text-sm text-muted-foreground">
               {formatDate(review.created_at)}

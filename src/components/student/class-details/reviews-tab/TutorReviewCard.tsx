@@ -16,16 +16,12 @@ const TutorReviewCard = ({ review }: TutorReviewCardProps) => {
     });
   };
 
-  const getStudentName = () => {
-    return review.student_profile?.full_name || `Student ${review.student_id.slice(-4)}`;
-  };
-
   return (
     <Card>
       <CardContent className="pt-4">
         <div className="flex items-start justify-between mb-3">
           <div>
-            <p className="font-medium">{getStudentName()}</p>
+            <p className="font-medium">Anonymous Student</p>
             <p className="text-sm text-muted-foreground">
               {formatDate(review.created_at)}
             </p>

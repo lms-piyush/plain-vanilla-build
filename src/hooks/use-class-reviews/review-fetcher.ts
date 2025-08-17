@@ -26,19 +26,15 @@ export const fetchReviews = async (
     throw countError;
   }
 
-  // Fetch reviews with profile data using proper join syntax
+  // Fetch reviews without exposing student identities
   const { data: reviewsData, error: reviewsError } = await supabase
     .from("class_reviews")
     .select(`
       id,
       class_id,
-      student_id,
       rating,
       review_text,
-      created_at,
-      profiles (
-        full_name
-      )
+      created_at
     `)
     .eq("class_id", classId)
     .order("created_at", { ascending: false })
@@ -49,15 +45,15 @@ export const fetchReviews = async (
     throw reviewsError;
   }
 
-  // Process reviews to ensure type safety
+  // Process reviews to ensure type safety (no student identity exposure)
   const processedReviews: ClassReview[] = (reviewsData || []).map(review => ({
     id: review.id,
     class_id: review.class_id,
-    student_id: review.student_id,
+    student_id: '', // Don't expose student ID
     rating: review.rating,
     review_text: review.review_text,
     created_at: review.created_at,
-    profiles: review.profiles ? { full_name: review.profiles.full_name } : null
+    profiles: null // Don't expose profile data
   }));
 
   const totalCount = count || 0;
