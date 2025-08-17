@@ -8,7 +8,7 @@ import { enrollStudentInClass } from "@/hooks/use-student-enrollment";
 import PaymentButton from "@/components/payment/PaymentButton";
 import SubscriptionButton from "@/components/subscription/SubscriptionButton";
 import { usePaymentSuccess } from "@/hooks/use-payment-success";
-import { useSubscriptionPlans, useSubscriptionStatus, useCreatePaymentCheckout } from "@/hooks/use-subscription";
+import { useSubscriptionPlans, useSubscriptionStatus, useCreatePaymentCheckout, useCreateClassSubscriptionCheckout } from "@/hooks/use-subscription";
 
 interface ClassPurchaseSectionProps {
   classDetails: StudentClassDetails;
@@ -20,6 +20,7 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
   const { data: subscriptionPlans } = useSubscriptionPlans();
   const { data: subscriptionStatus } = useSubscriptionStatus();
   const createPaymentCheckout = useCreatePaymentCheckout();
+  const createClassSubscription = useCreateClassSubscriptionCheckout();
 
   // Handle payment success from URL parameters
   usePaymentSuccess(onEnrollmentChange);
@@ -96,6 +97,24 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
     });
   };
 
+  const handleCreateClassSubscription = () => {
+    if (!classDetails.monthly_charges) {
+      toast({
+        title: "Error",
+        description: "Monthly subscription amount not available for this class.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    createClassSubscription.mutate({
+      classId: classDetails.id,
+      monthlyAmount: Math.round(classDetails.monthly_charges * 100), // Convert to paise/cents
+      className: classDetails.title,
+      currency: "inr"
+    });
+  };
+
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t border-gray-100">
       <div>
@@ -121,32 +140,14 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
               Already Enrolled
             </Button>
           ) : classDetails.duration_type === 'recurring' ? (
-            // Recurring classes use subscription flow
-            classDetails.pricing_model === 'subscription' ? (
-              subscriptionStatus?.subscribed ? (
-                <Button disabled className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90">
-                  Access with {subscriptionStatus.subscription_tier} Plan
-                </Button>
-              ) : (
-              subscriptionPlans && subscriptionPlans.length > 0 && (
-                <SubscriptionButton
-                  plan={subscriptionPlans[0]}
-                  classId={classDetails.id}
-                  classCount={1} // Fixed to 1 for subscriptions
-                  className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
-                />
-              )
-              )
-            ) : (
-              subscriptionPlans && subscriptionPlans.length > 0 && (
-                <SubscriptionButton
-                  plan={subscriptionPlans[0]}
-                  classId={classDetails.id}
-                  classCount={1} // Fixed to 1 for subscriptions
-                  className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
-                />
-              )
-            )
+            // Recurring classes with monthly charges - create dynamic subscription
+            <Button
+              onClick={() => handleCreateClassSubscription()}
+              disabled={createClassSubscription.isPending}
+              className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
+            >
+              {createClassSubscription.isPending ? "Processing..." : `Subscribe ₹${displayPrice}/month`}
+            </Button>
           ) : (
             // Fixed duration classes use enhanced one-time payment
             <Button

@@ -243,6 +243,38 @@ export const useProcessEnhancedEnrollment = () => {
   });
 };
 
+export const useCreateClassSubscriptionCheckout = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ classId, monthlyAmount, className, currency = "inr" }: { 
+      classId: string; 
+      monthlyAmount: number; 
+      className: string; 
+      currency?: string; 
+    }) => {
+      const { data, error } = await supabase.functions.invoke("create-class-subscription-checkout", {
+        body: { classId, monthlyAmount, className, currency },
+      });
+
+      if (error) throw error;
+      return data;
+    },
+    onSuccess: (data) => {
+      // Open Stripe checkout in a new tab
+      window.open(data.url, '_blank');
+    },
+    onError: (error: any) => {
+      console.error("Error creating class subscription checkout:", error);
+      toast({
+        title: "Error",
+        description: "Failed to create subscription checkout. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+};
+
 export const useCheckSubscription = () => {
   const queryClient = useQueryClient();
 

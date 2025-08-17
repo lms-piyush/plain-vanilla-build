@@ -60,18 +60,37 @@ serve(async (req) => {
       currentPeriodEnd 
     });
 
-    // Get subscription plan details
+    // Get subscription plan details - handle both platform plans and class-specific subscriptions
     const { data: planData, error: planError } = await supabaseService
       .from("subscription_plans")
       .select("*")
       .eq("stripe_price_id", priceId)
       .single();
 
+    let subscriptionTier = 'basic';
+    
     if (planError) {
-      logStep("Plan not found, using default tier", { priceId });
+      // Check if this is a class-specific subscription by looking at metadata
+      const price = await stripe.prices.retrieve(priceId);
+      if (price.metadata?.type === 'class_subscription') {
+        subscriptionTier = `Class: ${price.metadata?.class_name || 'Class Subscription'}`;
+        logStep("Class-specific subscription detected", { className: price.metadata?.class_name });
+      } else {
+        // Determine tier based on amount for legacy subscriptions
+        const unitAmount = price.unit_amount || 0;
+        if (unitAmount <= 99900) { // ₹999
+          subscriptionTier = 'basic';
+        } else if (unitAmount <= 199900) { // ₹1999
+          subscriptionTier = 'premium';
+        } else {
+          subscriptionTier = 'enterprise';
+        }
+        logStep("Legacy subscription tier determined by amount", { unitAmount, tier: subscriptionTier });
+      }
+    } else {
+      subscriptionTier = planData.name.toLowerCase();
+      logStep("Platform subscription plan found", { planName: planData.name });
     }
-
-    const subscriptionTier = planData?.name.toLowerCase() || 'basic';
 
     // Update subscribers table
     const { error: subscriberError } = await supabaseService
@@ -116,21 +135,43 @@ serve(async (req) => {
 
     // If classId is provided, create enrollment
     if (classId) {
-      const { error: enrollmentError } = await supabaseService
+      // Check if already enrolled in this class
+      const { data: existingEnrollment } = await supabaseService
         .from("student_enrollments")
-        .insert({
-          student_id: userId,
-          class_id: classId,
-          enrollment_type: 'subscription',
-          subscription_id: subscriptionId,
-          status: 'active',
-          payment_status: 'paid',
-        });
+        .select("id")
+        .eq("student_id", userId)
+        .eq("class_id", classId)
+        .single();
 
-      if (enrollmentError) {
-        logStep("Error creating enrollment", { error: enrollmentError });
+      if (!existingEnrollment) {
+        // Get the latest batch number for this class
+        const { data: classData } = await supabaseService
+          .from("classes")
+          .select("batch_number")
+          .eq("id", classId)
+          .single();
+
+        const batchNumber = classData?.batch_number || 1;
+
+        const { error: enrollmentError } = await supabaseService
+          .from("student_enrollments")
+          .insert({
+            student_id: userId,
+            class_id: classId,
+            batch_number: batchNumber,
+            enrollment_type: 'subscription',
+            subscription_id: subscriptionId,
+            status: 'active',
+            payment_status: 'paid',
+          });
+
+        if (enrollmentError) {
+          logStep("Error creating enrollment", { error: enrollmentError });
+        } else {
+          logStep("Enrollment created successfully", { classId, batchNumber });
+        }
       } else {
-        logStep("Enrollment created successfully");
+        logStep("Student already enrolled in class", { classId });
       }
     }
 
