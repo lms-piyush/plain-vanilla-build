@@ -41,9 +41,9 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { priceId, classId } = await req.json();
+    const { priceId, classId, classCount = 1 } = await req.json();
     if (!priceId) throw new Error("Price ID is required");
-    logStep("Request data parsed", { priceId, classId });
+    logStep("Request data parsed", { priceId, classId, classCount });
 
     const stripe = new Stripe(stripeKey, { apiVersion: "2023-10-16" });
 
@@ -121,13 +121,46 @@ serve(async (req) => {
       throw new Error("Could not resolve a valid Stripe price from the provided identifier. Ensure the value is a Price ID, Product ID with default price, or a Price lookup_key.");
     }
 
-    // Create checkout session for subscription
+    // Get price details and calculate dynamic amount if needed
+    const priceDetails = await stripe.prices.retrieve(resolvedPriceId);
+    const baseAmount = priceDetails.unit_amount || 0;
+    const calculatedAmount = baseAmount * classCount;
+    
+    logStep("Price calculation", { baseAmount, classCount, calculatedAmount });
+
+    // Use service role to save session info
+    const supabaseService = createClient(
+      Deno.env.get("SUPABASE_URL") ?? "",
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "",
+      { auth: { persistSession: false } }
+    );
+
+    // Create checkout session for subscription with dynamic pricing
     const origin = req.headers.get("origin") || "http://localhost:3000";
+    
+    // For subscription with custom amount, we need to create a custom price
+    let sessionPriceId = resolvedPriceId;
+    if (classCount > 1 && priceDetails.recurring) {
+      const customPrice = await stripe.prices.create({
+        unit_amount: calculatedAmount,
+        currency: priceDetails.currency,
+        recurring: priceDetails.recurring,
+        product: priceDetails.product as string,
+        metadata: {
+          original_price_id: resolvedPriceId,
+          class_count: classCount.toString(),
+          class_id: classId || '',
+        }
+      });
+      sessionPriceId = customPrice.id;
+      logStep("Created custom price for subscription", { customPriceId: sessionPriceId });
+    }
+
     const session = await stripe.checkout.sessions.create({
       customer: customerId,
       line_items: [
         {
-          price: resolvedPriceId,
+          price: sessionPriceId,
           quantity: 1,
         },
       ],
@@ -137,7 +170,26 @@ serve(async (req) => {
       metadata: {
         user_id: user.id,
         class_id: classId || '',
+        class_count: classCount.toString(),
+        base_amount: baseAmount.toString(),
+        calculated_amount: calculatedAmount.toString(),
       },
+    });
+
+    // Save session to database
+    await supabaseService.from('subscription_sessions').insert({
+      user_id: user.id,
+      class_id: classId || null,
+      stripe_session_id: session.id,
+      calculated_amount: calculatedAmount,
+      base_amount: baseAmount,
+      class_count: classCount,
+      session_type: 'subscription',
+      status: 'pending',
+      metadata: {
+        original_price_id: resolvedPriceId,
+        custom_price_id: sessionPriceId !== resolvedPriceId ? sessionPriceId : null,
+      }
     });
 
     logStep("Checkout session created", { sessionId: session.id, url: session.url });

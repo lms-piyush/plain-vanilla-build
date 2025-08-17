@@ -8,7 +8,7 @@ import { enrollStudentInClass } from "@/hooks/use-student-enrollment";
 import PaymentButton from "@/components/payment/PaymentButton";
 import SubscriptionButton from "@/components/subscription/SubscriptionButton";
 import { usePaymentSuccess } from "@/hooks/use-payment-success";
-import { useSubscriptionPlans, useSubscriptionStatus } from "@/hooks/use-subscription";
+import { useSubscriptionPlans, useSubscriptionStatus, useCreatePaymentCheckout } from "@/hooks/use-subscription";
 
 interface ClassPurchaseSectionProps {
   classDetails: StudentClassDetails;
@@ -19,9 +19,20 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
   const [isEnrolling, setIsEnrolling] = useState(false);
   const { data: subscriptionPlans } = useSubscriptionPlans();
   const { data: subscriptionStatus } = useSubscriptionStatus();
+  const createPaymentCheckout = useCreatePaymentCheckout();
 
   // Handle payment success from URL parameters
   usePaymentSuccess(onEnrollmentChange);
+
+  // Calculate dynamic pricing for subscriptions
+  const calculateSubscriptionAmount = () => {
+    if (!classDetails.monthly_charges || !classDetails.total_sessions) return classDetails.price;
+    return classDetails.monthly_charges * classDetails.total_sessions;
+  };
+
+  const displayPrice = classDetails.duration_type === 'recurring' && classDetails.monthly_charges 
+    ? calculateSubscriptionAmount() 
+    : classDetails.price;
 
   const handleFreeEnrollment = async () => {
     if (classDetails?.isEnrolled && classDetails?.isCurrentBatch) {
@@ -73,18 +84,35 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
   };
 
   const handlePaymentSuccess = async () => {
-    // Enrollment is now handled automatically by the process-payment-enrollment edge function
+    // Enrollment is now handled automatically by the enhanced enrollment system
     // Just trigger the refetch to update UI
     onEnrollmentChange();
+  };
+
+  const handleEnhancedPayment = () => {
+    const amount = Math.round((typeof displayPrice === 'string' ? parseFloat(displayPrice) : displayPrice || 0) * 100);
+    const description = `Course: ${classDetails.title}`;
+    
+    createPaymentCheckout.mutate({
+      amount,
+      description,
+      classId: classDetails.id,
+      currency: classDetails.currency?.toLowerCase() || "usd",
+    });
   };
 
   return (
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t border-gray-100">
       <div>
         <span className="text-xl font-bold text-[#8A5BB7]">
-          {classDetails.price ? `${classDetails.currency || 'USD'} ${classDetails.price}` : 'Free'}
+          {displayPrice ? `${classDetails.currency || 'USD'} ${displayPrice}` : 'Free'}
           {classDetails.duration_type === 'recurring' && <span className="text-sm font-normal">/month</span>}
         </span>
+        {classDetails.duration_type === 'recurring' && classDetails.monthly_charges && classDetails.total_sessions && (
+          <div className="text-sm text-gray-600">
+            {classDetails.currency || 'USD'} {classDetails.monthly_charges} × {classDetails.total_sessions} classes
+          </div>
+        )}
       </div>
       <div className="flex flex-col gap-2">
         {classDetails.isEnrolled && !classDetails.isCurrentBatch && (
@@ -92,7 +120,7 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
             You are enrolled in batch {classDetails.enrolledBatch}. This class has been updated to batch {classDetails.batch_number}.
           </p>
         )}
-        {classDetails.price && (typeof classDetails.price === 'string' ? parseFloat(classDetails.price) : classDetails.price) > 0 ? (
+        {displayPrice && (typeof displayPrice === 'string' ? parseFloat(displayPrice) : displayPrice) > 0 ? (
           classDetails.isEnrolled && classDetails.isCurrentBatch ? (
             <Button disabled className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90">
               Already Enrolled
@@ -105,32 +133,34 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
                   Access with {subscriptionStatus.subscription_tier} Plan
                 </Button>
               ) : (
-                subscriptionPlans && subscriptionPlans.length > 0 && (
-                  <SubscriptionButton
-                    plan={subscriptionPlans[0]}
-                    classId={classDetails.id}
-                    className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
-                  />
-                )
+              subscriptionPlans && subscriptionPlans.length > 0 && (
+                <SubscriptionButton
+                  plan={subscriptionPlans[0]}
+                  classId={classDetails.id}
+                  classCount={classDetails.total_sessions || classDetails.class_schedules?.[0]?.total_sessions || 1}
+                  className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
+                />
+              )
               )
             ) : (
               subscriptionPlans && subscriptionPlans.length > 0 && (
                 <SubscriptionButton
                   plan={subscriptionPlans[0]}
                   classId={classDetails.id}
+                  classCount={classDetails.total_sessions || classDetails.class_schedules?.[0]?.total_sessions || 1}
                   className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
                 />
               )
             )
           ) : (
-            // Fixed duration classes use one-time payment
-            <PaymentButton
-              amount={Math.round((typeof classDetails.price === 'string' ? parseFloat(classDetails.price) : classDetails.price) * 100)}
-              description={`Course: ${classDetails.title}`}
+            // Fixed duration classes use enhanced one-time payment
+            <Button
+              onClick={handleEnhancedPayment}
+              disabled={createPaymentCheckout.isPending}
               className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
-              classId={classDetails.id}
-              onSuccess={handlePaymentSuccess}
-            />
+            >
+              {createPaymentCheckout.isPending ? "Processing..." : `Pay ${classDetails.currency || 'USD'} ${displayPrice}`}
+            </Button>
           )
         ) : (
           <Button

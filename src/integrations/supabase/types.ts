@@ -249,13 +249,16 @@ export type Database = {
           enrollment_deadline: string | null
           id: string
           max_students: number | null
+          monthly_charges: number | null
           price: number | null
           pricing_model: string | null
           required_subscription_tier: string | null
           status: Database["public"]["Enums"]["class_status"]
           subject: string | null
+          subscription_multiplier: number | null
           thumbnail_url: string | null
           title: string
+          total_sessions: number | null
           tutor_id: string
           updated_at: string
         }
@@ -272,13 +275,16 @@ export type Database = {
           enrollment_deadline?: string | null
           id?: string
           max_students?: number | null
+          monthly_charges?: number | null
           price?: number | null
           pricing_model?: string | null
           required_subscription_tier?: string | null
           status?: Database["public"]["Enums"]["class_status"]
           subject?: string | null
+          subscription_multiplier?: number | null
           thumbnail_url?: string | null
           title: string
+          total_sessions?: number | null
           tutor_id: string
           updated_at?: string
         }
@@ -295,13 +301,16 @@ export type Database = {
           enrollment_deadline?: string | null
           id?: string
           max_students?: number | null
+          monthly_charges?: number | null
           price?: number | null
           pricing_model?: string | null
           required_subscription_tier?: string | null
           status?: Database["public"]["Enums"]["class_status"]
           subject?: string | null
+          subscription_multiplier?: number | null
           thumbnail_url?: string | null
           title?: string
+          total_sessions?: number | null
           tutor_id?: string
           updated_at?: string
         }
@@ -938,6 +947,51 @@ export type Database = {
           name?: string
           stripe_price_id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      subscription_sessions: {
+        Row: {
+          base_amount: number
+          calculated_amount: number
+          class_count: number
+          class_id: string
+          created_at: string
+          id: string
+          metadata: Json | null
+          session_type: string
+          status: string
+          stripe_session_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          base_amount: number
+          calculated_amount: number
+          class_count?: number
+          class_id: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          session_type?: string
+          status?: string
+          stripe_session_id: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          base_amount?: number
+          calculated_amount?: number
+          class_count?: number
+          class_id?: string
+          created_at?: string
+          id?: string
+          metadata?: Json | null
+          session_type?: string
+          status?: string
+          stripe_session_id?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }

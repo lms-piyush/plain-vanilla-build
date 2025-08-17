@@ -6,11 +6,12 @@ import { supabase } from "@/integrations/supabase/client";
 interface SubscriptionButtonProps {
   plan: SubscriptionPlan;
   classId?: string;
+  classCount?: number;
   className?: string;
   disabled?: boolean;
 }
 
-const SubscriptionButton = ({ plan, classId, className, disabled }: SubscriptionButtonProps) => {
+const SubscriptionButton = ({ plan, classId, classCount = 1, className, disabled }: SubscriptionButtonProps) => {
   const createCheckout = useCreateSubscriptionCheckout();
 
   const handleSubscribe = async () => {
@@ -32,6 +33,7 @@ const SubscriptionButton = ({ plan, classId, className, disabled }: Subscription
     createCheckout.mutate({
       priceId,
       classId,
+      classCount,
     });
   };
 

@@ -12,6 +12,8 @@ export interface StudentClassDetails {
   required_subscription_tier?: string;
   status: 'draft' | 'active' | 'inactive' | 'completed' | 'running';
   price: number | null;
+  monthly_charges?: number | null;
+  total_sessions?: number | null;
   currency: string | null;
   max_students: number | null;
   thumbnail_url: string | null;
