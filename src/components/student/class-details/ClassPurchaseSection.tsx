@@ -93,12 +93,26 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
           </p>
         )}
         {classDetails.price && (typeof classDetails.price === 'string' ? parseFloat(classDetails.price) : classDetails.price) > 0 ? (
-          classDetails.pricing_model === 'subscription' ? (
-            // Subscription-based class
-            subscriptionStatus?.subscribed ? (
-              <Button disabled className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90">
-                Access with {subscriptionStatus.subscription_tier} Plan
-              </Button>
+          classDetails.isEnrolled && classDetails.isCurrentBatch ? (
+            <Button disabled className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90">
+              Already Enrolled
+            </Button>
+          ) : classDetails.duration_type === 'recurring' ? (
+            // Recurring classes use subscription flow
+            classDetails.pricing_model === 'subscription' ? (
+              subscriptionStatus?.subscribed ? (
+                <Button disabled className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90">
+                  Access with {subscriptionStatus.subscription_tier} Plan
+                </Button>
+              ) : (
+                subscriptionPlans && subscriptionPlans.length > 0 && (
+                  <SubscriptionButton
+                    plan={subscriptionPlans[0]}
+                    classId={classDetails.id}
+                    className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
+                  />
+                )
+              )
             ) : (
               subscriptionPlans && subscriptionPlans.length > 0 && (
                 <SubscriptionButton
@@ -108,11 +122,8 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
                 />
               )
             )
-          ) : classDetails.isEnrolled && classDetails.isCurrentBatch ? (
-            <Button disabled className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90">
-              Already Enrolled
-            </Button>
           ) : (
+            // Fixed duration classes use one-time payment
             <PaymentButton
               amount={Math.round((typeof classDetails.price === 'string' ? parseFloat(classDetails.price) : classDetails.price) * 100)}
               description={`Course: ${classDetails.title}`}
