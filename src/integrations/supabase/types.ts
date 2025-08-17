@@ -101,6 +101,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_class_reviews_student_id"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "tutor_public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       class_schedules: {
@@ -307,6 +314,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "classes_tutor_id_fkey"
+            columns: ["tutor_id"]
+            isOneToOne: false
+            referencedRelation: "tutor_public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       conversations: {
@@ -356,10 +370,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "conversations_student_id_fkey1"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "tutor_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "conversations_tutor_id_fkey1"
             columns: ["tutor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_tutor_id_fkey1"
+            columns: ["tutor_id"]
+            isOneToOne: false
+            referencedRelation: "tutor_public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -471,10 +499,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "messages_recipient_id_fkey1"
+            columns: ["recipient_id"]
+            isOneToOne: false
+            referencedRelation: "tutor_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "messages_sender_id_fkey1"
             columns: ["sender_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "messages_sender_id_fkey1"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "tutor_public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -552,10 +594,24 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "notifications_sender_id_fkey"
+            columns: ["sender_id"]
+            isOneToOne: false
+            referencedRelation: "tutor_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "notifications_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "tutor_public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -738,6 +794,13 @@ export type Database = {
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "session_attendance_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "tutor_public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
       student_enrollments: {
@@ -787,6 +850,13 @@ export type Database = {
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_enrollments_student_id_fkey1"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "tutor_public_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -864,19 +934,134 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "fk_tutor_reviews_student_id"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "tutor_public_profiles"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "fk_tutor_reviews_tutor_id"
             columns: ["tutor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "fk_tutor_reviews_tutor_id"
+            columns: ["tutor_id"]
+            isOneToOne: false
+            referencedRelation: "tutor_public_profiles"
+            referencedColumns: ["id"]
+          },
         ]
       }
     }
     Views: {
-      [_ in never]: never
+      public_class_reviews: {
+        Row: {
+          class_id: string | null
+          created_at: string | null
+          id: string | null
+          rating: number | null
+          review_text: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          class_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          rating?: number | null
+          review_text?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          class_id?: string | null
+          created_at?: string | null
+          id?: string | null
+          rating?: number | null
+          review_text?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_class_reviews_class_id"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      public_tutor_reviews: {
+        Row: {
+          created_at: string | null
+          id: string | null
+          rating: number | null
+          review_text: string | null
+          tutor_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string | null
+          rating?: number | null
+          review_text?: string | null
+          tutor_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string | null
+          rating?: number | null
+          review_text?: string | null
+          tutor_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_tutor_reviews_tutor_id"
+            columns: ["tutor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_tutor_reviews_tutor_id"
+            columns: ["tutor_id"]
+            isOneToOne: false
+            referencedRelation: "tutor_public_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tutor_public_profiles: {
+        Row: {
+          avatar_url: string | null
+          full_name: string | null
+          id: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+        }
+        Update: {
+          avatar_url?: string | null
+          full_name?: string | null
+          id?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
+      can_view_tutor_profile: {
+        Args: { p_id: string }
+        Returns: boolean
+      }
       create_class_batch: {
         Args: { original_class_id: string; tutor_id_param: string }
         Returns: string
