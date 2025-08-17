@@ -121,10 +121,10 @@ serve(async (req) => {
       throw new Error("Could not resolve a valid Stripe price from the provided identifier. Ensure the value is a Price ID, Product ID with default price, or a Price lookup_key.");
     }
 
-    // Get price details and calculate dynamic amount if needed
+    // Get price details - for subscriptions, use base amount only (no multiplication)
     const priceDetails = await stripe.prices.retrieve(resolvedPriceId);
     const baseAmount = priceDetails.unit_amount || 0;
-    const calculatedAmount = baseAmount * classCount;
+    const calculatedAmount = baseAmount; // No multiplication for subscriptions
     
     logStep("Price calculation", { baseAmount, classCount, calculatedAmount });
 
@@ -138,22 +138,12 @@ serve(async (req) => {
     // Create checkout session for subscription with dynamic pricing
     const origin = req.headers.get("origin") || "http://localhost:3000";
     
-    // For subscription with custom amount, we need to create a custom price
+    // Use original price for subscriptions - no custom pricing needed
     let sessionPriceId = resolvedPriceId;
-    if (classCount > 1 && priceDetails.recurring) {
-      const customPrice = await stripe.prices.create({
-        unit_amount: calculatedAmount,
-        currency: priceDetails.currency,
-        recurring: priceDetails.recurring,
-        product: priceDetails.product as string,
-        metadata: {
-          original_price_id: resolvedPriceId,
-          class_count: classCount.toString(),
-          class_id: classId || '',
-        }
-      });
-      sessionPriceId = customPrice.id;
-      logStep("Created custom price for subscription", { customPriceId: sessionPriceId });
+    
+    // Ensure currency is INR for subscriptions
+    if (priceDetails.currency !== 'inr') {
+      logStep("Warning: Price currency is not INR", { currency: priceDetails.currency });
     }
 
     const session = await stripe.checkout.sessions.create({

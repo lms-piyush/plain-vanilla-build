@@ -41,7 +41,7 @@ serve(async (req) => {
     if (!user?.email) throw new Error("User not authenticated or email not available");
     logStep("User authenticated", { userId: user.id, email: user.email });
 
-    const { amount, description, classId, currency = "usd" } = await req.json();
+    const { amount, description, classId, currency = "inr" } = await req.json();
     if (!amount) throw new Error("Amount is required");
     logStep("Request data parsed", { amount, description, classId, currency });
 
@@ -76,7 +76,7 @@ serve(async (req) => {
       line_items: [
         {
           price_data: {
-            currency: currency,
+            currency: "inr", // Force INR currency
             product_data: {
               name: description || "Course Payment",
             },

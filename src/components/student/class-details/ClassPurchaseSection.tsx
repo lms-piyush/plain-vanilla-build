@@ -24,14 +24,9 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
   // Handle payment success from URL parameters
   usePaymentSuccess(onEnrollmentChange);
 
-  // Calculate dynamic pricing for subscriptions
-  const calculateSubscriptionAmount = () => {
-    if (!classDetails.monthly_charges || !classDetails.total_sessions) return classDetails.price;
-    return classDetails.monthly_charges * classDetails.total_sessions;
-  };
-
+  // For recurring classes, show monthly charge only (no multiplication)
   const displayPrice = classDetails.duration_type === 'recurring' && classDetails.monthly_charges 
-    ? calculateSubscriptionAmount() 
+    ? classDetails.monthly_charges 
     : classDetails.price;
 
   const handleFreeEnrollment = async () => {
@@ -97,7 +92,7 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
       amount,
       description,
       classId: classDetails.id,
-      currency: classDetails.currency?.toLowerCase() || "usd",
+      currency: "inr", // Force INR currency
     });
   };
 
@@ -105,12 +100,12 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
     <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t border-gray-100">
       <div>
         <span className="text-xl font-bold text-[#8A5BB7]">
-          {displayPrice ? `${classDetails.currency || 'USD'} ${displayPrice}` : 'Free'}
+          {displayPrice ? `₹${displayPrice}` : 'Free'}
           {classDetails.duration_type === 'recurring' && <span className="text-sm font-normal">/month</span>}
         </span>
-        {classDetails.duration_type === 'recurring' && classDetails.monthly_charges && classDetails.total_sessions && (
+        {classDetails.duration_type === 'recurring' && classDetails.total_sessions && (
           <div className="text-sm text-gray-600">
-            {classDetails.currency || 'USD'} {classDetails.monthly_charges} × {classDetails.total_sessions} classes
+            {classDetails.total_sessions} sessions included
           </div>
         )}
       </div>
@@ -159,7 +154,7 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
               disabled={createPaymentCheckout.isPending}
               className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
             >
-              {createPaymentCheckout.isPending ? "Processing..." : `Pay ${classDetails.currency || 'USD'} ${displayPrice}`}
+              {createPaymentCheckout.isPending ? "Processing..." : `Pay ₹${displayPrice}`}
             </Button>
           )
         ) : (
