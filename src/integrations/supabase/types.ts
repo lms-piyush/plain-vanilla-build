@@ -56,6 +56,13 @@ export type Database = {
             referencedRelation: "classes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "class_locations_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "tutor_class_summary"
+            referencedColumns: ["id"]
+          },
         ]
       }
       class_reviews: {
@@ -92,6 +99,13 @@ export type Database = {
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fk_class_reviews_class_id"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "tutor_class_summary"
             referencedColumns: ["id"]
           },
           {
@@ -137,6 +151,13 @@ export type Database = {
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_schedules_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "tutor_class_summary"
             referencedColumns: ["id"]
           },
         ]
@@ -198,6 +219,13 @@ export type Database = {
             referencedRelation: "classes"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "class_syllabus_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "tutor_class_summary"
+            referencedColumns: ["id"]
+          },
         ]
       }
       class_time_slots: {
@@ -231,6 +259,13 @@ export type Database = {
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_time_slots_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "tutor_class_summary"
             referencedColumns: ["id"]
           },
         ]
@@ -361,6 +396,13 @@ export type Database = {
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "conversations_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "tutor_class_summary"
             referencedColumns: ["id"]
           },
           {
@@ -804,6 +846,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "student_enrollments_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "tutor_class_summary"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "student_enrollments_student_id_fkey1"
             columns: ["student_id"]
             isOneToOne: false
@@ -1042,7 +1091,71 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      tutor_class_summary: {
+        Row: {
+          amount: number | null
+          batch_number: number | null
+          class_format: Database["public"]["Enums"]["class_format"] | null
+          class_size: Database["public"]["Enums"]["class_size"] | null
+          created_at: string | null
+          currency: string | null
+          delivery_mode: Database["public"]["Enums"]["delivery_mode"] | null
+          duration_type: Database["public"]["Enums"]["duration_type"] | null
+          id: string | null
+          monthly_charges: number | null
+          price: number | null
+          status: Database["public"]["Enums"]["class_status"] | null
+          student_count: number | null
+          title: string | null
+          tutor_id: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          amount?: never
+          batch_number?: number | null
+          class_format?: Database["public"]["Enums"]["class_format"] | null
+          class_size?: Database["public"]["Enums"]["class_size"] | null
+          created_at?: string | null
+          currency?: string | null
+          delivery_mode?: Database["public"]["Enums"]["delivery_mode"] | null
+          duration_type?: Database["public"]["Enums"]["duration_type"] | null
+          id?: string | null
+          monthly_charges?: never
+          price?: never
+          status?: Database["public"]["Enums"]["class_status"] | null
+          student_count?: never
+          title?: string | null
+          tutor_id?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          amount?: never
+          batch_number?: number | null
+          class_format?: Database["public"]["Enums"]["class_format"] | null
+          class_size?: Database["public"]["Enums"]["class_size"] | null
+          created_at?: string | null
+          currency?: string | null
+          delivery_mode?: Database["public"]["Enums"]["delivery_mode"] | null
+          duration_type?: Database["public"]["Enums"]["duration_type"] | null
+          id?: string | null
+          monthly_charges?: never
+          price?: never
+          status?: Database["public"]["Enums"]["class_status"] | null
+          student_count?: never
+          title?: string | null
+          tutor_id?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "classes_tutor_id_fkey"
+            columns: ["tutor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Functions: {
       can_view_tutor_profile: {
