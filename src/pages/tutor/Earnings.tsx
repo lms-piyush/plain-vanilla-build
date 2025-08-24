@@ -21,6 +21,7 @@ import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ArrowUpDown, ArrowUp, ArrowDown, Filter, Calendar as CalendarIcon, DollarSign } from "lucide-react";
 import { useTutorEarningsClasses } from "@/hooks/use-tutor-earnings-classes";
+import { useTutorEarningsStats } from "@/hooks/use-tutor-earnings-stats";
 import { format } from "date-fns";
 import {
   AreaChart,
@@ -33,22 +34,6 @@ import {
   Tooltip,
   ResponsiveContainer
 } from "recharts";
-
-// Monthly revenue data for chart
-const monthlyRevenueData = [
-  { month: "Jun 24", value: 20000 },
-  { month: "Jul 24", value: 15000 },
-  { month: "Aug 24", value: 20000 },
-  { month: "Sep 24", value: 55000 },
-  { month: "Oct 24", value: 20000 },
-  { month: "Nov 24", value: 18000 },
-  { month: "Dec 24", value: 30000 },
-  { month: "Jan 25", value: 50000 },
-  { month: "Feb 25", value: 20000 },
-  { month: "Mar 25", value: 15000 },
-  { month: "Apr 25", value: 22000 },
-  { month: "May 25", value: 25000 }
-];
 
 const Earnings = () => {
   const [deliveryMode, setDeliveryMode] = useState<'online' | 'offline' | null>(null);
@@ -83,18 +68,34 @@ const Earnings = () => {
     pageSize
   });
 
-  // Calculate totals for display
-  const calculateTotals = () => {
-    if (!allData?.classes) return { totalEarnings: 0, onlineClasses: 0, offlineClasses: 0 };
-    
-    const totalEarnings = allData.classes.reduce((sum, cls) => sum + (cls.amount || 0), 0);
-    const onlineClasses = allData.classes.filter(cls => cls.delivery_mode === 'online').length;
-    const offlineClasses = allData.classes.filter(cls => cls.delivery_mode === 'offline').length;
-    
-    return { totalEarnings, onlineClasses, offlineClasses };
-  };
+  // Get real earnings statistics
+  const { data: earningsStats, isLoading: statsLoading, error: statsError } = useTutorEarningsStats();
 
-  const { totalEarnings, onlineClasses, offlineClasses } = calculateTotals();
+  // Use real data or fallback to dummy data
+  const {
+    totalEarnings = 0,
+    thisMonth = 0,
+    previousMonth = 0,
+    thisMonthClasses = { online: 0, offline: 0 },
+    previousMonthClasses = { online: 0, offline: 0 },
+    monthlyData = []
+  } = earningsStats || {};
+
+  // Fallback monthly data if no real data
+  const displayMonthlyData = monthlyData.length > 0 ? monthlyData : [
+    { month: "Jun 24", value: 20000, count: 3 },
+    { month: "Jul 24", value: 15000, count: 2 },
+    { month: "Aug 24", value: 20000, count: 4 },
+    { month: "Sep 24", value: 55000, count: 8 },
+    { month: "Oct 24", value: 20000, count: 3 },
+    { month: "Nov 24", value: 18000, count: 2 },
+    { month: "Dec 24", value: 30000, count: 5 },
+    { month: "Jan 25", value: 50000, count: 7 },
+    { month: "Feb 25", value: 20000, count: 3 },
+    { month: "Mar 25", value: 15000, count: 2 },
+    { month: "Apr 25", value: 22000, count: 4 },
+    { month: "May 25", value: 25000, count: 4 }
+  ];
 
   const handleSort = (column: string) => {
     if (sortBy === column) {
@@ -111,33 +112,41 @@ const Earnings = () => {
     return sortOrder === 'asc' ? <ArrowUp className="h-4 w-4" /> : <ArrowDown className="h-4 w-4" />;
   };
 
-  const getStatusBadge = (status: string) => {
-    const variants = {
-      active: 'default',
-      running: 'secondary',
-      completed: 'outline',
-      draft: 'destructive',
-      inactive: 'secondary'
-    } as const;
+  const getStatusDisplay = (status: string) => {
+    const statusMap = {
+      'active': 'Published',
+      'draft': 'Unpublished', 
+      'running': 'Ongoing',
+      'completed': 'Completed',
+      'inactive': 'Cancelled'
+    };
+    
+    return statusMap[status as keyof typeof statusMap] || status;
+  };
 
-    return (
-      <Badge variant={variants[status as keyof typeof variants] || 'outline'}>
-        {status.charAt(0).toUpperCase() + status.slice(1)}
-      </Badge>
-    );
+  const getStatusVariant = (status: string) => {
+    const variantMap = {
+      'active': 'bg-green-100 text-green-800 hover:bg-green-100',
+      'draft': 'bg-red-100 text-red-800 hover:bg-red-100',
+      'running': 'bg-purple-100 text-purple-800 hover:bg-purple-100', 
+      'completed': 'bg-blue-100 text-blue-800 hover:bg-blue-100',
+      'inactive': 'bg-gray-100 text-gray-800 hover:bg-gray-100'
+    };
+    
+    return variantMap[status as keyof typeof variantMap] || 'bg-gray-100 text-gray-800 hover:bg-gray-100';
   };
 
   const formatAmount = (amount: number, currency: string) => {
     return `${currency === 'INR' ? '₹' : '$'}${amount?.toLocaleString() || 0}`;
   };
 
-  if (allError || onlineError || offlineError) {
+  if (allError || onlineError || offlineError || statsError) {
     return (
       <div className="max-w-7xl mx-auto p-6">
         <h1 className="text-2xl font-bold mb-6">Earnings</h1>
         <Card>
           <CardContent className="pt-6">
-            <p className="text-destructive">Error loading earnings data: {(allError || onlineError || offlineError)?.message}</p>
+            <p className="text-destructive">Error loading earnings data: {(allError || onlineError || offlineError || statsError)?.message}</p>
           </CardContent>
         </Card>
       </div>
@@ -163,21 +172,19 @@ const Earnings = () => {
         <Card className="bg-white shadow-sm md:col-span-5 rounded-xl">
           <CardContent className="p-6">
             <div>
-              <h2 className="text-5xl font-bold text-gray-900">₹{(totalEarnings / 100000).toFixed(2)} Lac</h2>
+              <h2 className="text-5xl font-bold text-gray-900">
+                ₹{totalEarnings >= 100000 ? (totalEarnings / 100000).toFixed(2) + ' Lac' : totalEarnings.toLocaleString()}
+              </h2>
               <p className="text-sm text-gray-500 mt-1">Earned Till Now</p>
             </div>
 
             <div className="mt-6 mb-3 h-16 relative">
               <div className="h-full w-full">
                 <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={[
-                    { x: 1, y: 30 },
-                    { x: 2, y: 60 },
-                    { x: 3, y: 20 },
-                    { x: 4, y: 40 },
-                    { x: 5, y: 70 },
-                    { x: 6, y: 90 }
-                  ]}>
+                  <AreaChart data={displayMonthlyData.slice(-6).map((item, index) => ({
+                    x: index + 1, 
+                    y: item.value / 1000
+                  }))}>
                     <defs>
                       <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
                         <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.1}/>
@@ -196,12 +203,16 @@ const Earnings = () => {
                 </ResponsiveContainer>
               </div>
               <div className="absolute top-0 right-0 bg-white rounded-lg border border-green-100 px-2 py-1">
-                <span className="text-green-500 text-sm font-medium">+14%</span>
+                <span className="text-green-500 text-sm font-medium">
+                  {previousMonth > 0 ? `+${Math.round(((thisMonth - previousMonth) / previousMonth) * 100)}%` : '+0%'}
+                </span>
               </div>
             </div>
 
             <div className="flex items-center text-green-500 text-sm font-medium">
-              <span className="mr-1">+14% Sales</span>
+              <span className="mr-1">
+                {previousMonth > 0 ? `+${Math.round(((thisMonth - previousMonth) / previousMonth) * 100)}%` : '+0%'} Sales
+              </span>
               <span className="text-gray-500 font-normal">from last month</span>
             </div>
           </CardContent>
@@ -213,7 +224,7 @@ const Earnings = () => {
             <h3 className="text-base font-medium text-gray-900 mb-4">Monthly Sales Overview</h3>
             <div className="h-[200px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyRevenueData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
+                <BarChart data={displayMonthlyData} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
                   <XAxis 
                     dataKey="month" 
@@ -227,8 +238,7 @@ const Earnings = () => {
                     tickLine={false}
                     tick={{ fontSize: 11 }}
                     tickFormatter={(value) => `₹ ${value / 1000}k`}
-                    domain={[0, 100000]}
-                    ticks={[0, 25000, 50000, 75000, 100000]}
+                    domain={[0, 'dataMax']}
                   />
                   <Tooltip
                     formatter={(value) => [`₹ ${value}`, "Revenue"]}
@@ -262,8 +272,8 @@ const Earnings = () => {
               <div>
                 <h3 className="text-sm font-medium text-gray-500">This Month</h3>
                 <div className="mt-1">
-                  <h2 className="text-2xl font-bold">₹ {(totalEarnings * 0.2).toLocaleString()}</h2>
-                  <p className="text-xs text-gray-500 mt-1">{offlineClasses} Offline, {onlineClasses} Online</p>
+                  <h2 className="text-2xl font-bold">₹ {thisMonth.toLocaleString()}</h2>
+                  <p className="text-xs text-gray-500 mt-1">{thisMonthClasses.offline} Offline, {thisMonthClasses.online} Online</p>
                 </div>
               </div>
               <div className="bg-red-100 p-3 rounded-full">
@@ -280,8 +290,8 @@ const Earnings = () => {
               <div>
                 <h3 className="text-sm font-medium text-gray-500">Previous Month</h3>
                 <div className="mt-1">
-                  <h2 className="text-2xl font-bold">₹ {(totalEarnings * 0.15).toLocaleString()}</h2>
-                  <p className="text-xs text-gray-500 mt-1">{Math.floor(offlineClasses * 0.8)} Offline, {Math.floor(onlineClasses * 0.7)} Online</p>
+                  <h2 className="text-2xl font-bold">₹ {previousMonth.toLocaleString()}</h2>
+                  <p className="text-xs text-gray-500 mt-1">{previousMonthClasses.offline} Offline, {previousMonthClasses.online} Online</p>
                 </div>
               </div>
               <div className="bg-teal-100 p-3 rounded-full">
@@ -378,19 +388,10 @@ const Earnings = () => {
                                 <TableCell className="text-center">{classItem.student_count}</TableCell>
                                 <TableCell>
                                   <Badge 
-                                    className={`
-                                      ${classItem.status === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-100' : ''}
-                                      ${classItem.status === 'draft' ? 'bg-red-100 text-red-800 hover:bg-red-100' : ''}
-                                      ${classItem.status === 'running' ? 'bg-purple-100 text-purple-800 hover:bg-purple-100' : ''}
-                                      ${classItem.status === 'completed' ? 'bg-amber-100 text-amber-800 hover:bg-amber-100' : ''}
-                                      ${classItem.status === 'inactive' ? 'bg-gray-100 text-gray-800 hover:bg-gray-100' : ''}
-                                    `}
+                                    className={getStatusVariant(classItem.status)}
                                     variant="outline"
                                   >
-                                    {classItem.status === 'active' ? 'Published' : 
-                                     classItem.status === 'draft' ? 'Unpublished' :
-                                     classItem.status === 'running' ? 'Ongoing' :
-                                     classItem.status === 'completed' ? 'Upcoming' : classItem.status}
+                                    {getStatusDisplay(classItem.status)}
                                   </Badge>
                                 </TableCell>
                               </TableRow>
@@ -449,19 +450,10 @@ const Earnings = () => {
                                 <TableCell className="text-center">{classItem.student_count}</TableCell>
                                 <TableCell>
                                   <Badge 
-                                    className={`
-                                      ${classItem.status === 'active' ? 'bg-green-100 text-green-800 hover:bg-green-100' : ''}
-                                      ${classItem.status === 'draft' ? 'bg-red-100 text-red-800 hover:bg-red-100' : ''}
-                                      ${classItem.status === 'running' ? 'bg-purple-100 text-purple-800 hover:bg-purple-100' : ''}
-                                      ${classItem.status === 'completed' ? 'bg-amber-100 text-amber-800 hover:bg-amber-100' : ''}
-                                      ${classItem.status === 'inactive' ? 'bg-gray-100 text-gray-800 hover:bg-gray-100' : ''}
-                                    `}
+                                    className={getStatusVariant(classItem.status)}
                                     variant="outline"
                                   >
-                                    {classItem.status === 'active' ? 'Published' : 
-                                     classItem.status === 'draft' ? 'Unpublished' :
-                                     classItem.status === 'running' ? 'Ongoing' :
-                                     classItem.status === 'completed' ? 'Upcoming' : classItem.status}
+                                    {getStatusDisplay(classItem.status)}
                                   </Badge>
                                 </TableCell>
                               </TableRow>
