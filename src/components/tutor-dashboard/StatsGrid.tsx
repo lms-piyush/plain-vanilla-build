@@ -1,14 +1,43 @@
 
 import React from 'react';
 import { BookOpen, Calendar, Users, DollarSign, MessageSquare, Star } from 'lucide-react';
+import { useTutorDashboardStats } from '@/hooks/use-tutor-dashboard-stats';
 
 interface StatsGridProps {
-  totalClasses: number;
-  activeClasses: number;
-  todaysSessionsCount: number;
+  totalClasses?: number;
+  activeClasses?: number;
+  todaysSessionsCount?: number;
 }
 
-const StatsGrid = ({ totalClasses, activeClasses, todaysSessionsCount }: StatsGridProps) => {
+const StatsGrid = ({ totalClasses: propTotalClasses, activeClasses: propActiveClasses, todaysSessionsCount: propTodaysSessionsCount }: StatsGridProps) => {
+  const { data: stats, isLoading } = useTutorDashboardStats();
+
+  // Use real data if available, fallback to props, then to dummy data
+  const totalClasses = stats?.totalClasses ?? propTotalClasses ?? 12;
+  const activeClasses = propActiveClasses ?? Math.floor(totalClasses * 0.8);
+  const todaysSessionsCount = stats?.todaysSessions ?? propTodaysSessionsCount ?? 3;
+  const totalStudents = stats?.totalStudents ?? 156;
+  const monthlyRevenue = stats?.monthlyRevenue ?? 15000;
+  const unreadMessages = stats?.unreadMessages ?? 12;
+  const averageRating = stats?.averageRating ?? 4.5;
+  const totalReviews = stats?.totalReviews ?? 135;
+  const studentGrowth = stats?.studentGrowth ?? 14;
+  const revenueGrowth = stats?.previousMonthRevenue > 0 
+    ? ((monthlyRevenue - stats.previousMonthRevenue) / stats.previousMonthRevenue * 100)
+    : 0;
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
+        {[...Array(6)].map((_, i) => (
+          <div key={i} className="stats-card animate-pulse">
+            <div className="h-20 bg-gray-200 rounded"></div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
       {/* Classes Card */}
@@ -50,10 +79,12 @@ const StatsGrid = ({ totalClasses, activeClasses, todaysSessionsCount }: StatsGr
         <div className="flex items-start justify-between">
           <div>
             <h3 className="text-gray-500 text-sm font-medium">Total Students</h3>
-            <p className="text-2xl font-semibold mt-1">156</p>
+            <p className="text-2xl font-semibold mt-1">{totalStudents}</p>
             <p className="text-sm text-gray-500 mt-1">Currently Enrolled</p>
             <p className="text-xs text-gray-500 mt-2">
-              <span className="text-green-500">+14%</span> from last month
+              <span className={studentGrowth >= 0 ? "text-green-500" : "text-red-500"}>
+                {studentGrowth >= 0 ? "+" : ""}{Math.round(studentGrowth)}%
+              </span> from last month
             </p>
           </div>
           <div className="h-10 w-10 bg-purple-100 rounded-full flex items-center justify-center text-purple-600">
@@ -67,10 +98,12 @@ const StatsGrid = ({ totalClasses, activeClasses, todaysSessionsCount }: StatsGr
         <div className="flex items-start justify-between">
           <div>
             <h3 className="text-gray-500 text-sm font-medium">Monthly Revenue</h3>
-            <p className="text-2xl font-semibold mt-1">₹15,000</p>
+            <p className="text-2xl font-semibold mt-1">₹{monthlyRevenue.toLocaleString()}</p>
             <p className="text-sm text-gray-500 mt-1">This Month</p>
             <p className="text-xs text-gray-500 mt-2">
-              <span className="text-green-500">+₹5,000</span> from last month
+              <span className={revenueGrowth >= 0 ? "text-green-500" : "text-red-500"}>
+                {revenueGrowth >= 0 ? "+" : ""}₹{Math.abs(monthlyRevenue - (stats?.previousMonthRevenue ?? 0)).toLocaleString()}
+              </span> from last month
             </p>
           </div>
           <div className="h-10 w-10 bg-teal-100 rounded-full flex items-center justify-center text-teal-600">
@@ -84,10 +117,14 @@ const StatsGrid = ({ totalClasses, activeClasses, todaysSessionsCount }: StatsGr
         <div className="flex items-start justify-between">
           <div>
             <h3 className="text-gray-500 text-sm font-medium">Unread Messages</h3>
-            <p className="text-2xl font-semibold mt-1">12</p>
+            <p className="text-2xl font-semibold mt-1">{unreadMessages}</p>
             <p className="text-sm text-gray-500 mt-1">From Students</p>
             <p className="text-xs text-gray-500 mt-2">
-              <span className="text-green-500">+1</span> from yesterday
+              {unreadMessages > 0 ? (
+                <span className="text-orange-500">Needs attention</span>
+              ) : (
+                <span className="text-green-500">All caught up</span>
+              )}
             </p>
           </div>
           <div className="h-10 w-10 bg-pink-100 rounded-full flex items-center justify-center text-pink-600">
@@ -101,10 +138,13 @@ const StatsGrid = ({ totalClasses, activeClasses, todaysSessionsCount }: StatsGr
         <div className="flex items-start justify-between">
           <div>
             <h3 className="text-gray-500 text-sm font-medium">Average Ratings</h3>
-            <p className="text-2xl font-semibold mt-1">4.5</p>
-            <p className="text-sm text-gray-500 mt-1">From 135 Reviews</p>
+            <p className="text-2xl font-semibold mt-1">{averageRating}</p>
+            <p className="text-sm text-gray-500 mt-1">From {totalReviews} Reviews</p>
             <p className="text-xs font-medium text-yellow-600 mt-2">
-              Excellent
+              {averageRating >= 4.5 ? "Excellent" : 
+               averageRating >= 4.0 ? "Very Good" : 
+               averageRating >= 3.5 ? "Good" : 
+               averageRating >= 3.0 ? "Average" : "Needs Improvement"}
             </p>
           </div>
           <div className="h-10 w-10 bg-yellow-100 rounded-full flex items-center justify-center text-yellow-600">

@@ -17,10 +17,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import SimpleCreateClassDialog from "@/components/tutor-dashboard/SimpleCreateClassDialog";
 import { useTutorClasses } from "@/hooks/use-tutor-classes";
+import { useTutorDashboardStats } from "@/hooks/use-tutor-dashboard-stats";
 
 const TutorDashboard = () => {
   const [createClassDialogOpen, setCreateClassDialogOpen] = useState(false);
   const { refetch } = useTutorClasses();
+  const { data: stats, isLoading: statsLoading } = useTutorDashboardStats();
 
   const handleCreateClass = () => {
     setCreateClassDialogOpen(true);
@@ -56,49 +58,75 @@ const TutorDashboard = () => {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Active Classes</CardTitle>
-              <BookOpen className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">12</div>
-              <p className="text-xs text-muted-foreground">+2 from last month</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Students</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">156</div>
-              <p className="text-xs text-muted-foreground">+12% from last month</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">This Month's Revenue</CardTitle>
-              <DollarSign className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">$2,450</div>
-              <p className="text-xs text-muted-foreground">+8% from last month</p>
-            </CardContent>
-          </Card>
-          
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
-              <Star className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">4.8</div>
-              <p className="text-xs text-muted-foreground">Based on 89 reviews</p>
-            </CardContent>
-          </Card>
+          {statsLoading ? (
+            [...Array(4)].map((_, i) => (
+              <Card key={i}>
+                <CardContent className="p-6">
+                  <div className="animate-pulse space-y-2">
+                    <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                    <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-full"></div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <>
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Classes</CardTitle>
+                  <BookOpen className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats?.totalClasses || 0}</div>
+                  <p className="text-xs text-muted-foreground">All classes created</p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Total Students</CardTitle>
+                  <Users className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats?.totalStudents || 0}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {stats?.studentGrowth ? 
+                      `${stats.studentGrowth >= 0 ? '+' : ''}${Math.round(stats.studentGrowth)}% from last month` :
+                      'Currently enrolled'
+                    }
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Monthly Revenue</CardTitle>
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">₹{(stats?.monthlyRevenue || 0).toLocaleString()}</div>
+                  <p className="text-xs text-muted-foreground">
+                    {stats?.previousMonthRevenue ? 
+                      `${stats.monthlyRevenue >= stats.previousMonthRevenue ? '+' : ''}₹${Math.abs(stats.monthlyRevenue - stats.previousMonthRevenue).toLocaleString()} from last month` :
+                      'This month'
+                    }
+                  </p>
+                </CardContent>
+              </Card>
+              
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-sm font-medium">Average Rating</CardTitle>
+                  <Star className="h-4 w-4 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <div className="text-2xl font-bold">{stats?.averageRating || 0}</div>
+                  <p className="text-xs text-muted-foreground">Based on {stats?.totalReviews || 0} reviews</p>
+                </CardContent>
+              </Card>
+            </>
+          )}
         </div>
 
         {/* Recent Activity & Upcoming Sessions */}
