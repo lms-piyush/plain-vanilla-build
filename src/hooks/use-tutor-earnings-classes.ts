@@ -41,7 +41,7 @@ export const useTutorEarningsClasses = ({
         pageSize
       });
 
-      // Start building the query
+      // Start building the query - filter by current tutor's classes
       let query = supabase
         .from("classes")
         .select(`
@@ -56,8 +56,10 @@ export const useTutorEarningsClasses = ({
           created_at,
           status,
           delivery_mode,
-          batch_number
-        `, { count: 'exact' });
+          batch_number,
+          tutor_id
+        `, { count: 'exact' })
+        .eq('tutor_id', (await supabase.auth.getUser()).data.user?.id);
 
       // Apply delivery mode filter
       if (deliveryMode) {

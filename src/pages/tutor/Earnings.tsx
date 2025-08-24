@@ -37,6 +37,16 @@ const Earnings = () => {
     pageSize
   });
 
+  console.log("Earnings page debug:", {
+    isLoading,
+    error: error?.message,
+    data,
+    deliveryMode,
+    sortBy,
+    sortOrder,
+    currentPage
+  });
+
   const handleSort = (column: string) => {
     if (sortBy === column) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
