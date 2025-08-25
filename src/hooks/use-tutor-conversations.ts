@@ -23,48 +23,31 @@ export const useTutorConversations = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      // First get conversations for tutor
-      const { data: conversations, error: conversationsError } = await supabase
+      // Use JOIN to get conversations with student profiles in a single query
+      const { data: conversationsWithProfiles, error } = await supabase
         .from("conversations")
-        .select("*")
+        .select(`
+          *,
+          profiles!conversations_student_id_fkey(
+            id,
+            full_name
+          )
+        `)
         .eq("tutor_id", user.id)
         .order("last_message_at", { ascending: false });
 
-      if (conversationsError) {
-        console.error("Error fetching tutor conversations:", conversationsError);
-        throw conversationsError;
+      if (error) {
+        console.error("Error fetching tutor conversations with profiles:", error);
+        throw error;
       }
-
-      if (!conversations || conversations.length === 0) {
-        return [];
-      }
-
-      // Get unique student IDs
-      const studentIds = [...new Set(conversations.map(conv => conv.student_id))];
-
-      // Fetch student profiles with error handling
-      const { data: studentProfiles, error: profilesError } = await supabase
-        .from("profiles")
-        .select("id, full_name")
-        .in("id", studentIds);
-
-      if (profilesError) {
-        console.error("Error fetching student profiles:", profilesError);
-        // Don't throw error, just continue with empty profiles
-      }
-
-      // Create a map of student profiles for easy lookup
-      const studentProfileMap = new Map(
-        studentProfiles?.map(profile => [profile.id, profile]) || []
-      );
 
       // Transform the data to match the expected interface
-      const transformedConversations: TutorConversation[] = conversations.map(conv => ({
+      const transformedConversations: TutorConversation[] = conversationsWithProfiles?.map(conv => ({
         ...conv,
-        student_profile: studentProfileMap.has(conv.student_id) 
-          ? { full_name: studentProfileMap.get(conv.student_id)!.full_name }
-          : undefined
-      }));
+        student_profile: conv.profiles ? {
+          full_name: conv.profiles.full_name
+        } : undefined
+      })) || [];
 
       return transformedConversations;
     },
