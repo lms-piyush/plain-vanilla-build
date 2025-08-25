@@ -42,7 +42,7 @@ export const useTutorConversations = () => {
       // Get unique student IDs
       const studentIds = [...new Set(conversations.map(conv => conv.student_id))];
 
-      // Fetch student profiles
+      // Fetch student profiles with error handling
       const { data: studentProfiles, error: profilesError } = await supabase
         .from("profiles")
         .select("id, full_name")
@@ -50,7 +50,7 @@ export const useTutorConversations = () => {
 
       if (profilesError) {
         console.error("Error fetching student profiles:", profilesError);
-        throw profilesError;
+        // Don't throw error, just continue with empty profiles
       }
 
       // Create a map of student profiles for easy lookup
@@ -59,9 +59,9 @@ export const useTutorConversations = () => {
       );
 
       // Transform the data to match the expected interface
-      const transformedConversations = conversations.map(conv => ({
+      const transformedConversations: TutorConversation[] = conversations.map(conv => ({
         ...conv,
-        student_profile: studentProfileMap.get(conv.student_id) 
+        student_profile: studentProfileMap.has(conv.student_id) 
           ? { full_name: studentProfileMap.get(conv.student_id)!.full_name }
           : undefined
       }));

@@ -52,9 +52,10 @@ const Messages = () => {
     }
   };
   
-  const filteredConversations = conversations.filter(conv => 
-    conv.student_profile?.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredConversations = conversations.filter(conv => {
+    const studentName = conv.student_profile?.full_name || 'Unknown Student';
+    return studentName.toLowerCase().includes(searchQuery.toLowerCase());
+  });
   
   const formatMessageTime = (dateString: string) => {
     return new Date(dateString).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
