@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/badge";
 import { HelpCircle, Loader2 } from "lucide-react";
 import { useSupportTickets } from "@/hooks/use-support-tickets";
 import { useFAQs } from "@/hooks/use-faqs";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Help = () => {
   const [subject, setSubject] = useState("");
@@ -23,9 +24,16 @@ const Help = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedFAQCategory, setSelectedFAQCategory] = useState<'general' | 'classes' | 'billing'>('general');
   
+  // Check authentication
+  const { user, isAuthenticated } = useAuth();
+  
   // Use hooks for database operations
   const { tickets, isLoading: ticketsLoading, isSubmitting, createTicket } = useSupportTickets();
   const { faqs, isLoading: faqsLoading } = useFAQs(selectedFAQCategory);
+
+  console.log('Help component - Auth state:', { user: !!user, isAuthenticated });
+  console.log('Help component - Tickets:', tickets?.length || 0);
+  console.log('Help component - FAQs:', faqs?.length || 0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
