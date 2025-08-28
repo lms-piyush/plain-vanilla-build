@@ -9,17 +9,23 @@ import { Calendar, Book, Star, BookOpen } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useNewCourses } from "@/hooks/use-new-courses";
 import { useStudentTodayClasses } from "@/hooks/use-student-today-classes";
+import { useStudentEnrollmentStats } from "@/hooks/use-student-enrollment-stats";
+import { useStudentSavedClassesStats } from "@/hooks/use-student-saved-classes-stats";
+import { useStudentCourseDistribution } from "@/hooks/use-student-course-distribution";
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { data: newCourses = [], isLoading: isNewCoursesLoading } = useNewCourses();
   const { data: todayClasses = [], isLoading: isTodayClassesLoading } = useStudentTodayClasses();
+  const { data: enrollmentStats = { totalEnrolled: 0 }, isLoading: isEnrollmentStatsLoading } = useStudentEnrollmentStats();
+  const { data: savedClassesStats = { totalSaved: 0 }, isLoading: isSavedStatsLoading } = useStudentSavedClassesStats();
+  const { data: courseDistribution = { notStarted: 0, ongoing: 0, completed: 0 }, isLoading: isDistributionLoading } = useStudentCourseDistribution();
 
   // Calculate stats from real data
   const stats = [
     {
       title: "Today's Classes",
-      value: todayClasses.length,
+      value: isTodayClassesLoading ? 0 : todayClasses.length,
       icon: <Calendar className="h-5 w-5" />,
       delta: { value: 0, isPositive: true },
       onClick: () => {
@@ -29,29 +35,29 @@ const Dashboard = () => {
     },
     {
       title: "My Classes",
-      value: 12,
+      value: isEnrollmentStatsLoading ? 0 : enrollmentStats.totalEnrolled,
       icon: <Book className="h-5 w-5" />,
-      delta: { value: 10, isPositive: true },
-      onClick: () => navigate("/my-classes")
+      delta: { value: 0, isPositive: true },
+      onClick: () => navigate("/student/my-classes")
     },
     {
       title: "Saved Classes",
-      value: 5,
+      value: isSavedStatsLoading ? 0 : savedClassesStats.totalSaved,
       icon: <Star className="h-5 w-5" />,
       delta: { value: 0, isPositive: true },
-      onClick: () => navigate("/explore?filter=saved")
+      onClick: () => navigate("/student/explore?tab=saved")
     }
   ];
 
-  // Sample data for chart
-  const chartData = [
-    { name: "Completed", value: 8, color: "#8A5BB7" },
-    { name: "Ongoing", value: 4, color: "#BA8DF1" },
-    { name: "Not Started", value: 6, color: "#E5D0FF" }
+  // Real data for chart from database
+  const chartData = isDistributionLoading ? [] : [
+    { name: "Completed", value: courseDistribution.completed, color: "#8A5BB7" },
+    { name: "Ongoing", value: courseDistribution.ongoing, color: "#BA8DF1" },
+    { name: "Not Started", value: courseDistribution.notStarted, color: "#E5D0FF" }
   ];
 
   // Calculate total courses for chart center
-  const totalCourses = chartData.reduce((sum, item) => sum + item.value, 0);
+  const totalCourses = isDistributionLoading ? 0 : chartData.reduce((sum, item) => sum + item.value, 0);
 
 
   // Filter out completed classes for display
