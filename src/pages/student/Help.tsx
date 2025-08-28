@@ -12,53 +12,39 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { HelpCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { HelpCircle, Loader2 } from "lucide-react";
+import { useSupportTickets } from "@/hooks/use-support-tickets";
+import { useFAQs } from "@/hooks/use-faqs";
 
 const Help = () => {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [userIssues, setUserIssues] = useState([
-    {
-      id: 1,
-      title: "Login Issue",
-      description: "Unable to login with correct password",
-      status: "In Progress"
-    },
-    {
-      id: 2,
-      title: "Payment Failed",
-      description: "Payment was declined but funds were deducted",
-      status: "Resolved"
-    }
-  ]);
+  const [selectedFAQCategory, setSelectedFAQCategory] = useState<'general' | 'classes' | 'billing'>('general');
+  
+  // Use hooks for database operations
+  const { tickets, isLoading: ticketsLoading, isSubmitting, createTicket } = useSupportTickets();
+  const { faqs, isLoading: faqsLoading } = useFAQs(selectedFAQCategory);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (subject && message) {
-      // Add the new issue to the list
-      setUserIssues([
-        ...userIssues,
-        {
-          id: userIssues.length + 1,
-          title: subject,
-          description: message,
-          status: "In Progress"
-        }
-      ]);
-      
-      // Show modal
-      setIsModalOpen(true);
-      
-      // Auto close after 5 seconds
-      setTimeout(() => {
-        setIsModalOpen(false);
-      }, 5000);
-      
-      // Reset form
-      setSubject("");
-      setMessage("");
+      const success = await createTicket(subject, message);
+      if (success) {
+        // Show modal
+        setIsModalOpen(true);
+        
+        // Auto close after 5 seconds
+        setTimeout(() => {
+          setIsModalOpen(false);
+        }, 5000);
+        
+        // Reset form
+        setSubject("");
+        setMessage("");
+      }
     } else {
       toast({
         title: "Error",
@@ -69,48 +55,9 @@ const Help = () => {
   };
 
   const faqCategories = [
-    {
-      id: "general",
-      name: "General",
-      faqs: [
-        {
-          question: "How do I enroll in a class?",
-          answer: "To enroll in a class, navigate to the Explore Classes page and select the class you're interested in. Click the Enroll button and follow the payment instructions to complete your enrollment."
-        },
-        {
-          question: "What payment methods are accepted?",
-          answer: "We accept credit/debit cards, UPI, and netbanking. You can manage your payment methods in your Profile page under the Payment Method section."
-        }
-      ]
-    },
-    {
-      id: "classes",
-      name: "Classes",
-      faqs: [
-        {
-          question: "How do I join an online class?",
-          answer: "You can join an online class from your Dashboard or My Classes page. Click on the 'Start Session' button when it becomes available (usually 1 minute before the scheduled time)."
-        },
-        {
-          question: "What's the difference between inbound and outbound offline classes?",
-          answer: "Inbound classes take place at the tutor's location, and you'll need to travel there. Outbound classes take place at your location, and the tutor will travel to you."
-        }
-      ]
-    },
-    {
-      id: "billing",
-      name: "Billing",
-      faqs: [
-        {
-          question: "Can I get a refund if I'm not satisfied with a class?",
-          answer: "Yes, we offer a 7-day satisfaction guarantee. If you're not satisfied with a class, you can request a refund within 7 days of enrollment."
-        },
-        {
-          question: "How do I update my billing information?",
-          answer: "You can update your billing information in your Profile page under the Payment Method section."
-        }
-      ]
-    }
+    { id: "general", name: "General" },
+    { id: "classes", name: "Classes" },
+    { id: "billing", name: "Billing" }
   ];
 
   return (
@@ -166,8 +113,16 @@ const Help = () => {
               <Button 
                 type="submit" 
                 className="w-full bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
+                disabled={isSubmitting}
               >
-                Submit Request
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  'Submit Request'
+                )}
               </Button>
             </form>
           </CardContent>
@@ -189,24 +144,34 @@ const Help = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {userIssues.map((issue) => (
-                    <tr key={issue.id} className="border-b">
-                      <td className="py-3 px-4">{issue.title}</td>
-                      <td className="py-3 px-4">{issue.description}</td>
-                      <td className="py-3 px-4">
-                        <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                          issue.status === "Resolved" 
-                            ? "bg-green-100 text-green-800" 
-                            : "bg-yellow-100 text-yellow-800"
-                        }`}>
-                          {issue.status}
-                        </span>
+                  {ticketsLoading ? (
+                    <tr>
+                      <td colSpan={3} className="py-4 text-center">
+                        <Loader2 className="mx-auto h-4 w-4 animate-spin" />
                       </td>
                     </tr>
-                  ))}
-                  {userIssues.length === 0 && (
+                  ) : tickets.length > 0 ? (
+                    tickets.map((ticket) => (
+                      <tr key={ticket.id} className="border-b">
+                        <td className="py-3 px-4">{ticket.title}</td>
+                        <td className="py-3 px-4 max-w-xs truncate">{ticket.description}</td>
+                        <td className="py-3 px-4">
+                          <Badge 
+                            variant={ticket.status === "resolved" ? "default" : "secondary"}
+                            className={
+                              ticket.status === "resolved" 
+                                ? "bg-green-100 text-green-800 hover:bg-green-100" 
+                                : "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
+                            }
+                          >
+                            {ticket.status === "resolved" ? "Resolved" : "In Progress"}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
                     <tr>
-                      <td colSpan={3} className="py-4 text-center text-gray-500">
+                      <td colSpan={3} className="py-4 text-center text-muted-foreground">
                         No support tickets found
                       </td>
                     </tr>
@@ -224,7 +189,10 @@ const Help = () => {
           <CardTitle>Frequently Asked Questions</CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="general">
+          <Tabs 
+            value={selectedFAQCategory} 
+            onValueChange={(value) => setSelectedFAQCategory(value as 'general' | 'classes' | 'billing')}
+          >
             <TabsList className="mb-6">
               {faqCategories.map(category => (
                 <TabsTrigger key={category.id} value={category.id}>
@@ -235,16 +203,27 @@ const Help = () => {
             
             {faqCategories.map(category => (
               <TabsContent key={category.id} value={category.id}>
-                <Accordion type="single" collapsible className="w-full">
-                  {category.faqs.map((faq, index) => (
-                    <AccordionItem key={index} value={`${category.id}-item-${index}`}>
-                      <AccordionTrigger className="text-left">
-                        {faq.question}
-                      </AccordionTrigger>
-                      <AccordionContent>{faq.answer}</AccordionContent>
-                    </AccordionItem>
-                  ))}
-                </Accordion>
+                {faqsLoading ? (
+                  <div className="flex justify-center py-8">
+                    <Loader2 className="h-6 w-6 animate-spin" />
+                  </div>
+                ) : (
+                  <Accordion type="single" collapsible className="w-full">
+                    {faqs.map((faq) => (
+                      <AccordionItem key={faq.id} value={faq.id}>
+                        <AccordionTrigger className="text-left">
+                          {faq.title}
+                        </AccordionTrigger>
+                        <AccordionContent>{faq.description}</AccordionContent>
+                      </AccordionItem>
+                    ))}
+                    {faqs.length === 0 && (
+                      <div className="py-8 text-center text-muted-foreground">
+                        No FAQs found for this category.
+                      </div>
+                    )}
+                  </Accordion>
+                )}
               </TabsContent>
             ))}
           </Tabs>

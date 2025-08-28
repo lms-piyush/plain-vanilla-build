@@ -435,6 +435,33 @@ export type Database = {
           },
         ]
       }
+      faqs: {
+        Row: {
+          category: Database["public"]["Enums"]["faq_category"]
+          created_at: string
+          description: string
+          id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["faq_category"]
+          created_at?: string
+          description: string
+          id?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["faq_category"]
+          created_at?: string
+          description?: string
+          id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       lesson_materials: {
         Row: {
           created_at: string
@@ -1058,6 +1085,44 @@ export type Database = {
         }
         Relationships: []
       }
+      tickets: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string
+          id: string
+          status: Database["public"]["Enums"]["ticket_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description: string
+          id?: string
+          status?: Database["public"]["Enums"]["ticket_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string
+          id?: string
+          status?: Database["public"]["Enums"]["ticket_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tutor_reviews: {
         Row: {
           created_at: string
@@ -1199,6 +1264,8 @@ export type Database = {
       class_status: "draft" | "active" | "inactive" | "completed" | "running"
       delivery_mode: "online" | "offline"
       duration_type: "recurring" | "fixed"
+      faq_category: "general" | "classes" | "billing"
+      ticket_status: "in-progress" | "resolved"
       user_role: "student" | "parent" | "tutor"
     }
     CompositeTypes: {
@@ -1332,6 +1399,8 @@ export const Constants = {
       class_status: ["draft", "active", "inactive", "completed", "running"],
       delivery_mode: ["online", "offline"],
       duration_type: ["recurring", "fixed"],
+      faq_category: ["general", "classes", "billing"],
+      ticket_status: ["in-progress", "resolved"],
       user_role: ["student", "parent", "tutor"],
     },
   },
