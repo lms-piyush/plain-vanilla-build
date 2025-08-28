@@ -42,7 +42,7 @@ const ExploreClassesHeader = ({
 }: ExploreClassesHeaderProps) => {
   return (
     <div className="flex flex-col sm:flex-row justify-between gap-4 mb-6">
-      <Tabs defaultValue={activeTab} className="mb-8 w-full" onValueChange={setActiveTab}>
+      <Tabs value={activeTab} className="mb-8 w-full" onValueChange={setActiveTab}>
         <div className="flex justify-between items-center">
           <TabsList>
             <TabsTrigger value="all">All Classes</TabsTrigger>

@@ -21,9 +21,9 @@ import { useFilterState } from "@/hooks/use-filter-state";
 const ExploreClasses = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const filterParam = searchParams.get("filter");
+  const tabParam = searchParams.get("tab");
   
-  const [activeTab, setActiveTab] = useState(filterParam === "saved" ? "saved" : "all");
+  const [activeTab, setActiveTab] = useState(tabParam === "saved" ? "saved" : "all");
   const [filterOpen, setFilterOpen] = useState(false);
   const [sortBy, setSortBy] = useState("popular");
   const [currentPage, setCurrentPage] = useState(1);
@@ -211,33 +211,32 @@ const ExploreClasses = () => {
       
       <div className="flex flex-col md:flex-row gap-6">
         <div className="w-full">
-          <ExploreClassesHeader
-            activeTab={activeTab}
-            setActiveTab={setActiveTab}
-            sortBy={sortBy}
-            setSortBy={setSortBy}
-            wishlistedCourses={savedClassIds}
-            filterOpen={filterOpen}
-            setFilterOpen={setFilterOpen}
-          >
-            <FilterSheet
+          <Tabs value={activeTab} className="w-full" onValueChange={setActiveTab}>
+            <ExploreClassesHeader
+              activeTab={activeTab}
+              setActiveTab={setActiveTab}
+              sortBy={sortBy}
+              setSortBy={setSortBy}
+              wishlistedCourses={savedClassIds}
               filterOpen={filterOpen}
               setFilterOpen={setFilterOpen}
-              classMode={classMode}
-              setClassMode={setClassMode}
-              classFormat={classFormat}
-              setClassFormat={setClassFormat}
-              classSize={classSize}
-              setClassSize={setClassSize}
-              classDuration={classDuration}
-              setClassDuration={setClassDuration}
-              paymentModel={paymentModel}
-              setPaymentModel={setPaymentModel}
-              onApplyFilters={handleApplyFilters}
-            />
-          </ExploreClassesHeader>
-          
-          <Tabs defaultValue={activeTab} className="w-full" onValueChange={setActiveTab}>
+            >
+              <FilterSheet
+                filterOpen={filterOpen}
+                setFilterOpen={setFilterOpen}
+                classMode={classMode}
+                setClassMode={setClassMode}
+                classFormat={classFormat}
+                setClassFormat={setClassFormat}
+                classSize={classSize}
+                setClassSize={setClassSize}
+                classDuration={classDuration}
+                setClassDuration={setClassDuration}
+                paymentModel={paymentModel}
+                setPaymentModel={setPaymentModel}
+                onApplyFilters={handleApplyFilters}
+              />
+            </ExploreClassesHeader>
             <ClassesList
               activeTab={activeTab}
               isLoading={isLoading}
