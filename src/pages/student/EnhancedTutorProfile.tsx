@@ -29,6 +29,7 @@ import {
 import { useTutorProfile } from '@/hooks/use-tutor-profile';
 import { useTutorReviews } from '@/hooks/use-tutor-reviews';
 import { useAllClassesWithReviews } from '@/hooks/use-all-classes-with-reviews';
+import { useTutorAnalytics } from '@/hooks/use-tutor-analytics';
 import { useAuth } from '@/contexts/AuthContext';
 import TutorReviewCard from '@/components/student/class-details/reviews-tab/TutorReviewCard';
 import WriteReviewModal from '@/components/student/class-details/WriteReviewModal';
@@ -61,6 +62,11 @@ const EnhancedTutorProfile = () => {
   const { data: classesData } = useAllClassesWithReviews();
   const tutorClasses = classesData?.classes?.filter(cls => cls.tutor_id === id) || [];
 
+  const { 
+    data: analyticsData, 
+    isLoading: analyticsLoading 
+  } = useTutorAnalytics(id || "");
+
   const handleSubmitReview = async (rating: number, reviewText: string) => {
     setIsSubmitting(true);
     const success = await submitReview(rating, reviewText);
@@ -72,24 +78,9 @@ const EnhancedTutorProfile = () => {
     return success;
   };
 
-  // Mock data for charts (in real app, this would come from analytics)
-  const monthlyEngagement = [
-    { month: 'Jan', students: 42 },
-    { month: 'Feb', students: 48 },
-    { month: 'Mar', students: 53 },
-    { month: 'Apr', students: 57 },
-    { month: 'May', students: 62 },
-    { month: 'Jun', students: 58 }
-  ];
-
-  const ratings = [
-    { month: 'Jan', onlineRating: 4.6, offlineRating: 4.5 },
-    { month: 'Feb', onlineRating: 4.7, offlineRating: 4.6 },
-    { month: 'Mar', onlineRating: 4.7, offlineRating: 4.6 },
-    { month: 'Apr', onlineRating: 4.8, offlineRating: 4.7 },
-    { month: 'May', onlineRating: 4.9, offlineRating: 4.8 },
-    { month: 'Jun', onlineRating: 4.8, offlineRating: 4.7 }
-  ];
+  // Use analytics data or fallback to empty arrays
+  const monthlyEngagement = analyticsData?.monthlyEngagement || [];
+  const ratingTrends = analyticsData?.ratingTrends || [];
 
   if (profileLoading) {
     return (
@@ -235,15 +226,28 @@ const EnhancedTutorProfile = () => {
             <CardTitle>Monthly Student Engagement</CardTitle>
           </CardHeader>
           <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={monthlyEngagement}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis />
-                <RechartsTooltip />
-                <Bar dataKey="students" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+            {analyticsLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : monthlyEngagement.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyEngagement}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <RechartsTooltip 
+                    formatter={(value) => [`${value} students`, 'Engagement']}
+                    labelFormatter={(label) => `${label} 2025`}
+                  />
+                  <Bar dataKey="students" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-muted-foreground">
+                No engagement data available
+              </div>
+            )}
           </CardContent>
         </Card>
         
@@ -252,29 +256,35 @@ const EnhancedTutorProfile = () => {
             <CardTitle>Rating Trends</CardTitle>
           </CardHeader>
           <CardContent className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={ratings}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="month" />
-                <YAxis domain={[4, 5]} />
-                <RechartsTooltip />
-                <Legend />
-                <Line 
-                  type="monotone" 
-                  dataKey="onlineRating" 
-                  name="Online Classes"
-                  stroke="hsl(var(--primary))" 
-                  strokeWidth={2}
-                />
-                <Line 
-                  type="monotone" 
-                  dataKey="offlineRating" 
-                  name="Offline Classes"
-                  stroke="#36A2EB" 
-                  strokeWidth={2}
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            {analyticsLoading ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : ratingTrends.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={ratingTrends}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis domain={[0, 5]} />
+                  <RechartsTooltip 
+                    formatter={(value) => [`${value}/5.0`, 'Average Rating']}
+                    labelFormatter={(label) => `${label} 2025`}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="avg_rating" 
+                    name="Average Rating"
+                    stroke="hsl(var(--primary))" 
+                    strokeWidth={2}
+                    activeDot={{ r: 6 }}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="flex items-center justify-center h-full text-muted-foreground">
+                No rating trend data available
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

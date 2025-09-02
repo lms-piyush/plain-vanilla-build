@@ -1123,6 +1123,24 @@ export type Database = {
           },
         ]
       }
+      tutor_monthly_engagement: {
+        Row: {
+          enrollments_count: number
+          month_start: string
+          tutor_id: string
+        }
+        Insert: {
+          enrollments_count?: number
+          month_start: string
+          tutor_id: string
+        }
+        Update: {
+          enrollments_count?: number
+          month_start?: string
+          tutor_id?: string
+        }
+        Relationships: []
+      }
       tutor_reviews: {
         Row: {
           created_at: string
@@ -1269,6 +1287,23 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "classes_tutor_id_fkey"
+            columns: ["tutor_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tutor_rating_trends: {
+        Row: {
+          avg_rating: number | null
+          month_start: string | null
+          review_count: number | null
+          tutor_id: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_tutor_reviews_tutor_id"
             columns: ["tutor_id"]
             isOneToOne: false
             referencedRelation: "profiles"
