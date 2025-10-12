@@ -13,7 +13,7 @@ import PopularClasses from "@/components/home/PopularClasses";
 import CallToAction from "@/components/home/CallToAction";
 import DashboardNavigation from "@/components/navbar/DashboardNavigation";
 import { useFeaturedClasses } from "@/hooks/use-featured-classes";
-import { useFeaturedTutors } from "@/hooks/use-featured-tutors";
+import { tutors } from "@/components/home/data";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   DropdownMenu,
@@ -29,7 +29,6 @@ const Index = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const { classes: featuredClasses, isLoading: classesLoading } = useFeaturedClasses();
-  const { tutors, isLoading: tutorsLoading } = useFeaturedTutors();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -132,7 +131,7 @@ const Index = () => {
       <main>
         <Hero />
         {!classesLoading && <PopularClasses featuredClasses={featuredClasses} />}
-        {!tutorsLoading && <FeaturedTutors tutors={tutors} />}
+        <FeaturedTutors tutors={tutors} />
         <Categories />
         <HowItWorks />
         <Testimonials />

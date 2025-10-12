@@ -11,6 +11,7 @@ interface FAQ {
   updated_at: string;
 }
 
+// Export both names for compatibility
 export const useFAQs = (category?: 'general' | 'classes' | 'billing') => {
   const [faqs, setFaqs] = useState<FAQ[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -49,8 +50,12 @@ export const useFAQs = (category?: 'general' | 'classes' | 'billing') => {
   }, [category]);
 
   return {
+    data: faqs,
     faqs,
     isLoading,
     refetch: fetchFAQs
   };
 };
+
+// Alias for compatibility
+export const useFaqs = useFAQs;

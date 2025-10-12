@@ -29,7 +29,7 @@ const Help = () => {
   const { user, isAuthenticated } = useAuth();
   
   // Use hooks for database operations
-  const { tickets, isLoading: ticketsLoading, isSubmitting, createTicket } = useSupportTickets();
+  const { tickets, isLoading: ticketsLoading, isCreating, createTicket } = useSupportTickets();
   const { faqs, isLoading: faqsLoading } = useFAQs(selectedFAQCategory);
   const { tutorials, isLoading: tutorialsLoading, openVideo, getYouTubeThumbnail } = useVideoTutorials();
 
@@ -41,20 +41,19 @@ const Help = () => {
     e.preventDefault();
     
     if (subject && message) {
-      const success = await createTicket(subject, message);
-      if (success) {
-        // Show modal
-        setIsModalOpen(true);
-        
-        // Auto close after 5 seconds
-        setTimeout(() => {
-          setIsModalOpen(false);
-        }, 5000);
-        
-        // Reset form
-        setSubject("");
-        setMessage("");
-      }
+      createTicket({ subject, message });
+      
+      // Show modal
+      setIsModalOpen(true);
+      
+      // Auto close after 5 seconds
+      setTimeout(() => {
+        setIsModalOpen(false);
+      }, 5000);
+      
+      // Reset form
+      setSubject("");
+      setMessage("");
     } else {
       toast({
         title: "Error",
@@ -123,9 +122,9 @@ const Help = () => {
               <Button 
                 type="submit" 
                 className="w-full bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
-                disabled={isSubmitting}
+                disabled={isCreating}
               >
-                {isSubmitting ? (
+                {isCreating ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Submitting...
@@ -163,8 +162,8 @@ const Help = () => {
                   ) : tickets.length > 0 ? (
                     tickets.map((ticket) => (
                       <tr key={ticket.id} className="border-b">
-                        <td className="py-3 px-4">{ticket.title}</td>
-                        <td className="py-3 px-4 max-w-xs truncate">{ticket.description}</td>
+                        <td className="py-3 px-4">{ticket.subject}</td>
+                        <td className="py-3 px-4 max-w-xs truncate">{ticket.message}</td>
                         <td className="py-3 px-4">
                           <Badge 
                             variant={ticket.status === "resolved" ? "default" : "secondary"}
