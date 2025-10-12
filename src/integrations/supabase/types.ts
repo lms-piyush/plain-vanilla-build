@@ -335,6 +335,33 @@ export type Database = {
           },
         ]
       }
+      faqs: {
+        Row: {
+          category: string
+          created_at: string | null
+          description: string
+          id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string | null
+          description: string
+          id?: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       lesson_materials: {
         Row: {
           created_at: string | null
