@@ -1,5 +1,6 @@
 
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +10,7 @@ import PaymentButton from "@/components/payment/PaymentButton";
 import SubscriptionButton from "@/components/subscription/SubscriptionButton";
 import { usePaymentSuccess } from "@/hooks/use-payment-success";
 import { useSubscriptionPlans, useSubscriptionStatus, useCreatePaymentCheckout, useCreateClassSubscriptionCheckout } from "@/hooks/use-subscription";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ClassPurchaseSectionProps {
   classDetails: StudentClassDetails;
@@ -16,6 +18,8 @@ interface ClassPurchaseSectionProps {
 }
 
 const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchaseSectionProps) => {
+  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [isEnrolling, setIsEnrolling] = useState(false);
   const { data: subscriptionPlans } = useSubscriptionPlans();
   const { data: subscriptionStatus } = useSubscriptionStatus();
@@ -31,6 +35,16 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
     : classDetails.price;
 
   const handleFreeEnrollment = async () => {
+    // Check if user is logged in first
+    if (!isAuthenticated) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to enroll in this class.",
+      });
+      navigate('/auth/login');
+      return;
+    }
+
     if (classDetails?.isEnrolled && classDetails?.isCurrentBatch) {
       toast({
         title: "Already enrolled",
@@ -49,6 +63,7 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
           description: "You need to be logged in to enroll in a class.",
           variant: "destructive"
         });
+        navigate('/auth/login');
         return;
       }
 
@@ -86,6 +101,16 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
   };
 
   const handleEnhancedPayment = () => {
+    // Check if user is logged in first
+    if (!isAuthenticated) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to purchase this class.",
+      });
+      navigate('/auth/login');
+      return;
+    }
+
     const amount = Math.round((typeof displayPrice === 'string' ? parseFloat(displayPrice) : displayPrice || 0) * 100);
     const description = `Course: ${classDetails.title}`;
     
@@ -98,6 +123,16 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
   };
 
   const handleCreateClassSubscription = () => {
+    // Check if user is logged in first
+    if (!isAuthenticated) {
+      toast({
+        title: "Login Required",
+        description: "Please log in to subscribe to this class.",
+      });
+      navigate('/auth/login');
+      return;
+    }
+
     if (!classDetails.monthly_charges) {
       toast({
         title: "Error",

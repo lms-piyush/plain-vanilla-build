@@ -200,8 +200,14 @@ const AppRoutes = () => {
         />
       </Route>
       
-      {/* Student Routes with Layout - with /student/ prefix */}
+      {/* Student Routes with Layout - Public browsing allowed */}
       <Route element={<Layout />}>
+        {/* Public routes - no login required */}
+        <Route path="/student/explore" element={<ExploreClasses />} />
+        <Route path="/student/classes/:id" element={<ClassDetail />} />
+        <Route path="/student/tutor/:id" element={<EnhancedTutorProfile />} />
+        
+        {/* Protected routes - login required */}
         <Route 
           path="/student/dashboard" 
           element={<ProtectedRoute allowedRoles={["student", "parent"]}><StudentDashboardPage /></ProtectedRoute>} 
@@ -209,14 +215,6 @@ const AppRoutes = () => {
         <Route 
           path="/student/my-classes" 
           element={<ProtectedRoute allowedRoles={["student", "parent"]}><StudentMyClasses /></ProtectedRoute>} 
-        />
-        <Route 
-          path="/student/explore" 
-          element={<ProtectedRoute allowedRoles={["student", "parent"]}><ExploreClasses /></ProtectedRoute>} 
-        />
-        <Route 
-          path="/student/classes/:id" 
-          element={<ProtectedRoute allowedRoles={["student", "parent"]}><ClassDetail /></ProtectedRoute>} 
         />
         <Route 
           path="/student/checkout/:id" 
@@ -235,8 +233,8 @@ const AppRoutes = () => {
           element={<ProtectedRoute allowedRoles={["student", "parent"]}><StudentMessages /></ProtectedRoute>} 
         />
         <Route 
-          path="/student/tutor/:id" 
-          element={<ProtectedRoute allowedRoles={["student", "parent"]}><EnhancedTutorProfile /></ProtectedRoute>} 
+          path="/student/subscription" 
+          element={<ProtectedRoute allowedRoles={["student", "parent"]}><Subscription /></ProtectedRoute>} 
         />
         <Route 
           path="/student/subscription" 
