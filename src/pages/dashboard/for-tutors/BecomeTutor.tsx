@@ -1,4 +1,5 @@
 
+import { Link } from "react-router-dom";
 import PageLayout from "@/components/PageLayout";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Users, Calendar, Video, DollarSign, Globe } from "lucide-react";
@@ -100,8 +101,8 @@ const BecomeTutor = () => {
             <p className="text-talent-muted mb-6">
               Share your passion and expertise with eager young minds on TalentSchool—India's growing platform for online education. Create your own schedule, set your rates, and connect with students who are excited to learn from you.
             </p>
-            <Button size="lg" className="bg-talent-primary hover:bg-talent-secondary text-white">
-              Apply to Teach
+            <Button size="lg" className="bg-talent-primary hover:bg-talent-secondary text-white" asChild>
+              <Link to="/for-tutors/apply">Apply to Teach</Link>
             </Button>
           </div>
           <div className="rounded-xl overflow-hidden shadow-lg">

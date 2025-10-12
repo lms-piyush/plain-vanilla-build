@@ -1,4 +1,5 @@
 
+import { Link } from "react-router-dom";
 import PageLayout from "@/components/PageLayout";
 import { Button } from "@/components/ui/button";
 import { CheckCircle, Users, Calendar, Video, Star, Shield } from "lucide-react";
@@ -73,8 +74,8 @@ const ForParents = () => {
             <p className="text-talent-muted mb-6">
               At TalentSchool, we're passionate about helping children explore their interests, develop new skills, and build confidence through quality online education.
             </p>
-            <Button size="lg" className="bg-talent-primary hover:bg-talent-secondary text-white">
-              Browse Classes
+            <Button size="lg" className="bg-talent-primary hover:bg-talent-secondary text-white" asChild>
+              <Link to="/student/explore">Browse Classes</Link>
             </Button>
           </div>
           <div className="rounded-xl overflow-hidden shadow-lg">
@@ -144,8 +145,8 @@ const ForParents = () => {
           <p className="text-talent-muted mb-6 max-w-2xl mx-auto">
             Join thousands of families who have discovered the perfect classes for their children on TalentSchool.
           </p>
-          <Button size="lg" className="bg-talent-primary hover:bg-talent-secondary text-white">
-            Browse Classes Now
+          <Button size="lg" className="bg-talent-primary hover:bg-talent-secondary text-white" asChild>
+            <Link to="/student/explore">Browse Classes Now</Link>
           </Button>
         </div>
       </div>

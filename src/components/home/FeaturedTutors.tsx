@@ -1,5 +1,6 @@
 
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import TutorCard from "@/components/TutorCard";
 import { LectureType } from "@/types/lecture-types";
@@ -47,9 +48,15 @@ const FeaturedTutors = ({ tutors }: FeaturedTutorsProps) => {
               Learn from passionate experts who are dedicated to helping students excel.
             </p>
           </div>
-          <Button variant="outline" className="border-talent-primary/30 hover:border-talent-primary text-talent-dark font-medium">
-            Browse All Tutors
-            <ArrowRight className="ml-2 h-4 w-4" />
+          <Button
+            variant="outline"
+            className="border-talent-primary/30 hover:border-talent-primary text-talent-dark font-medium"
+            asChild
+          >
+            <Link to="/student/explore">
+              Browse All Tutors
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
           </Button>
         </div>
         

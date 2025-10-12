@@ -1,137 +1,101 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import DashboardLayout from "@/components/DashboardLayout";
 import ClassesHeader from "@/components/dashboard/ClassesHeader";
-import ClassFilters from "@/components/dashboard/ClassFilters";
 import ClassList from "@/components/dashboard/ClassList";
-import { mockClasses, ClassData } from "@/data/mockClasses";
+import { useStudentEnrollmentsWithReviews } from "@/hooks/use-student-enrollments-with-reviews";
 import { ClassCardProps } from "@/components/dashboard/ClassCard";
 
 const EnrolledClasses = () => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [deliveryMode, setDeliveryMode] = useState<"online" | "offline">("online");
-  const [onlineFormat, setOnlineFormat] = useState<"recorded" | "live">("recorded");
-  const [offlineFormat, setOfflineFormat] = useState<"inbound" | "outbound">("inbound");
-  const [classSize, setClassSize] = useState<"group" | "one-on-one">("group");
-  
-  // Reset sub-tabs when changing main delivery mode or format
-  useEffect(() => {
-    if (deliveryMode === "online") {
-      setOnlineFormat("recorded");
-      setClassSize("group");
-    } else {
-      // For offline classes
-      if (offlineFormat === "inbound") {
-        // Inbound is always one-on-one
-        setClassSize("one-on-one");
-      } else {
-        // Outbound can be either, default to group
-        setClassSize("group");
-      }
-    }
-  }, [deliveryMode]);
+  const { data: enrollments = [], isLoading } = useStudentEnrollmentsWithReviews();
 
-  // When changing offline format
-  useEffect(() => {
-    if (deliveryMode === "offline" && offlineFormat === "inbound") {
-      // Inbound is always one-on-one
-      setClassSize("one-on-one");
-    }
-  }, [offlineFormat, deliveryMode]);
-  
-  // Convert ClassData to ClassCardProps
-  const convertToClassCardProps = (classData: ClassData): ClassCardProps => {
+  // Convert enrollments to ClassCardProps format
+  const convertToClassCardProps = (enrollment: any): ClassCardProps => {
+    const cls = enrollment.classes;
     return {
-      id: classData.id,
-      title: classData.title,
-      tutor: classData.tutor,
-      image: classData.image,
-      nextSession: classData.nextSession,
-      progress: classData.progress,
-      category: classData.category,
-      status: classData.status,
-      completionDate: classData.completionDate,
-      classType: classData.deliveryMode,
-      format: classData.format as "live" | "recorded" | "inbound" | "outbound", // This is already compatible
-      classSize: classData.size === "group" ? "group" : "individual", 
-      duration: "fixed", // Default to fixed for now
-      studentsCount: classData.studentsCount
+      id: cls.id.toString(),
+      title: cls.title,
+      tutor: cls.tutor_name || "Unknown Tutor",
+      image: cls.thumbnail_url || "https://images.unsplash.com/photo-1546410531-bb4caa6b424d?auto=format&w=800&h=500&fit=crop",
+      nextSession: "Upcoming",
+      progress: "0%",
+      category: cls.subject || "General",
+      status: enrollment.status === "active" ? "active" : "completed",
+      completionDate: enrollment.status !== "active" ? enrollment.updated_at : undefined,
+      classType: cls.delivery_mode as "online" | "offline",
+      format: cls.class_format as "live" | "recorded",
+      classSize: cls.class_size === "one-on-one" ? "individual" : "group",
+      duration: "fixed" as const,
+      studentsCount: cls.max_students || 0,
     };
   };
-  
-  // Filter active and completed classes based on current filters
-  const activeClasses = mockClasses
-    .filter(
-      (cls) => cls.status === "active" && 
-      cls.deliveryMode === deliveryMode &&
-      ((deliveryMode === "online" && cls.format === onlineFormat) || 
-       (deliveryMode === "offline" && cls.format === offlineFormat)) &&
-      ((deliveryMode === "offline" && offlineFormat === "inbound") || cls.size === classSize) &&
-      (cls.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-       cls.tutor.toLowerCase().includes(searchQuery.toLowerCase()) ||
-       cls.category.toLowerCase().includes(searchQuery.toLowerCase()))
-    )
-    .map(convertToClassCardProps);
-  
-  const completedClasses = mockClasses
-    .filter(
-      (cls) => cls.status === "completed" &&
-      cls.deliveryMode === deliveryMode &&
-      ((deliveryMode === "online" && cls.format === onlineFormat) || 
-       (deliveryMode === "offline" && cls.format === offlineFormat)) &&
-      ((deliveryMode === "offline" && offlineFormat === "inbound") || cls.size === classSize) &&
-      (cls.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-       cls.tutor.toLowerCase().includes(searchQuery.toLowerCase()) ||
-       cls.category.toLowerCase().includes(searchQuery.toLowerCase()))
-    )
-    .map(convertToClassCardProps);
+
+  // Filter classes by search query and status
+  const filterClasses = (status: string) => {
+    return enrollments
+      .filter((enrollment: any) => {
+        const cls = enrollment.classes;
+        const matchesStatus = enrollment.status === status;
+        const matchesSearch =
+          !searchQuery ||
+          cls.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          cls.tutor_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          cls.subject?.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesStatus && matchesSearch;
+      })
+      .map(convertToClassCardProps);
+  };
+
+  const activeClasses = filterClasses("active");
+  const completedClasses = filterClasses("completed");
 
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <ClassesHeader 
-          searchQuery={searchQuery}
-          onSearchChange={setSearchQuery}
-        />
-        
-        <ClassFilters
-          deliveryMode={deliveryMode}
-          onDeliveryModeChange={setDeliveryMode}
-          onlineFormat={onlineFormat}
-          onOnlineFormatChange={setOnlineFormat}
-          offlineFormat={offlineFormat}
-          onOfflineFormatChange={setOfflineFormat}
-          classSize={classSize}
-          onClassSizeChange={setClassSize}
-        />
-        
-        <Tabs defaultValue="active" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="active">
-              Active Classes <Badge className="ml-2" variant="secondary">{activeClasses.length}</Badge>
-            </TabsTrigger>
-            <TabsTrigger value="completed">
-              Completed <Badge className="ml-2" variant="secondary">{completedClasses.length}</Badge>
-            </TabsTrigger>
-          </TabsList>
-          
-          <TabsContent value="active" className="space-y-4">
-            <ClassList 
-              classes={activeClasses}
-              emptyStateMessage="No active classes found."
-              showFindClassesButton
-            />
-          </TabsContent>
-          
-          <TabsContent value="completed" className="space-y-4">
-            <ClassList 
-              classes={completedClasses}
-              emptyStateMessage="No completed classes yet."
-            />
-          </TabsContent>
-        </Tabs>
+        <ClassesHeader searchQuery={searchQuery} onSearchChange={setSearchQuery} />
+
+        {isLoading ? (
+          <div className="space-y-4">
+            {[...Array(3)].map((_, i) => (
+              <Skeleton key={i} className="h-32 w-full rounded-lg" />
+            ))}
+          </div>
+        ) : (
+          <Tabs defaultValue="active" className="space-y-4">
+            <TabsList>
+              <TabsTrigger value="active">
+                Active Classes{" "}
+                <Badge className="ml-2" variant="secondary">
+                  {activeClasses.length}
+                </Badge>
+              </TabsTrigger>
+              <TabsTrigger value="completed">
+                Completed{" "}
+                <Badge className="ml-2" variant="secondary">
+                  {completedClasses.length}
+                </Badge>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="active" className="space-y-4">
+              <ClassList
+                classes={activeClasses}
+                emptyStateMessage="No active classes found."
+                showFindClassesButton
+              />
+            </TabsContent>
+
+            <TabsContent value="completed" className="space-y-4">
+              <ClassList
+                classes={completedClasses}
+                emptyStateMessage="No completed classes yet."
+              />
+            </TabsContent>
+          </Tabs>
+        )}
       </div>
     </DashboardLayout>
   );

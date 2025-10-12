@@ -1,5 +1,6 @@
 
 import { ArrowRight } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import ClassCard from "@/components/ClassCard";
 import { LectureType } from "@/types/lecture-types";
@@ -46,9 +47,15 @@ const PopularClasses = ({ featuredClasses }: PopularClassesProps) => {
               From online to in-person, we offer diverse learning experiences to fit your needs.
             </p>
           </div>
-          <Button variant="outline" className="border-talent-primary/30 hover:border-talent-primary text-talent-dark font-medium">
-            View All Classes
-            <ArrowRight className="ml-2 h-4 w-4" />
+          <Button
+            variant="outline"
+            className="border-talent-primary/30 hover:border-talent-primary text-talent-dark font-medium"
+            asChild
+          >
+            <Link to="/student/explore">
+              View All Classes
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Link>
           </Button>
         </div>
         

@@ -10,6 +10,7 @@ import Index from "@/pages/dashboard/Index";
 import Dashboard from "@/pages/Dashboard";
 import StudentEntry from "@/pages/StudentEntry";
 import TutorEntry from "@/pages/TutorEntry";
+import TutorApplicationForm from "@/pages/TutorApplicationForm";
 
 // Stripe Demo
 import StripeDemo from "@/pages/StripeDemo";
@@ -258,6 +259,7 @@ const AppRoutes = () => {
       
       {/* For Tutors */}
       <Route path="/for-tutors/become-tutor" element={<BecomeTutor />} />
+      <Route path="/for-tutors/apply" element={<TutorApplicationForm />} />
       <Route path="/for-tutors/success-stories" element={<SuccessStories />} />
       <Route path="/for-tutors/tutor-resources" element={<TutorResources />} />
       

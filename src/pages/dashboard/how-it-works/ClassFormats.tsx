@@ -1,4 +1,5 @@
 
+import { Link } from "react-router-dom";
 import PageLayout from "@/components/PageLayout";
 import { Calendar, Video, Users, Clock, BookOpen, Medal } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -70,8 +71,8 @@ const ClassFormats = () => {
           <p className="text-talent-muted mb-6">
             At TalentSchool, we offer a variety of class formats to match your child's learning style, interests, and schedule. From one-time workshops to ongoing courses, our flexible approach ensures the perfect fit for your family's needs.
           </p>
-          <Button className="bg-talent-primary hover:bg-talent-secondary text-white">
-            Browse All Classes
+          <Button className="bg-talent-primary hover:bg-talent-secondary text-white" asChild>
+            <Link to="/student/explore">Browse All Classes</Link>
           </Button>
         </div>
         
@@ -156,8 +157,8 @@ const ClassFormats = () => {
           <p className="text-talent-muted mb-6 max-w-2xl mx-auto">
             Browse our extensive catalog of classes across different formats and discover the ideal learning experience for your child's unique needs.
           </p>
-          <Button size="lg" className="bg-talent-primary hover:bg-talent-secondary text-white">
-            Explore Classes Now
+          <Button size="lg" className="bg-talent-primary hover:bg-talent-secondary text-white" asChild>
+            <Link to="/student/explore">Explore Classes Now</Link>
           </Button>
         </div>
       </div>
