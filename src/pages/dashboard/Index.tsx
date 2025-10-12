@@ -58,9 +58,9 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col overflow-x-hidden w-full">
       {/* Unified Dashboard Navbar */}
-      <header className="bg-white shadow-sm border-b sticky top-0 z-50">
+      <header className="bg-white shadow-sm border-b sticky top-0 z-50 w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
@@ -129,7 +129,7 @@ const Index = () => {
         </div>
       </header>
       
-      <main>
+      <main className="w-full overflow-x-hidden">
         <Hero />
         {!classesLoading && <PopularClasses featuredClasses={featuredClasses} />}
         {!tutorsLoading && featuredTutors && featuredTutors.length > 0 && (
