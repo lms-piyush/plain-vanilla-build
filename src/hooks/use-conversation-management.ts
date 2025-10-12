@@ -18,12 +18,12 @@ export const useConversationManagement = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User not authenticated");
 
-      // Check if conversation already exists between student and tutor
+      // Check if conversation already exists between participants
       const { data: existingConversation, error: searchError } = await supabase
         .from("conversations")
         .select("*")
-        .eq("student_id", studentId)
-        .eq("tutor_id", tutorId)
+        .or(`and(participant1_id.eq.${studentId},participant2_id.eq.${tutorId}),and(participant1_id.eq.${tutorId},participant2_id.eq.${studentId})`)
+        .eq("class_id", classId)
         .maybeSingle();
 
       if (searchError) {
@@ -40,10 +40,9 @@ export const useConversationManagement = () => {
       const { data: newConversation, error: createError } = await supabase
         .from("conversations")
         .insert({
-          student_id: studentId,
-          tutor_id: tutorId,
+          participant1_id: studentId,
+          participant2_id: tutorId,
           class_id: classId,
-          last_message: "",
           last_message_at: new Date().toISOString(),
         })
         .select()

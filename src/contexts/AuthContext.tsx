@@ -80,15 +80,15 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
               console.log("Profile fetch result:", profile, error);
               
               if (profile && !error && mounted) {
-                const userData = {
-                  id: session.user.id,
-                  fullName: profile.full_name,
-                  email: session.user.email || '',
-                  role: profile.role,
-                  avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.email}`
-                };
-                
-                setUser(userData);
+              const userData: User = {
+                id: session.user.id,
+                fullName: profile.full_name || '',
+                email: session.user.email || '',
+                role: (profile.role as User['role']) || 'student',
+                avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.email}`
+              };
+              
+              setUser(userData);
                 // Store user data in localStorage for persistence
                 localStorage.setItem('talentschool_user', JSON.stringify(userData));
               } else if (error && mounted) {
