@@ -1186,6 +1186,27 @@ export type Database = {
           },
         ]
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       video_tutorials: {
         Row: {
           created_at: string
@@ -1321,9 +1342,42 @@ export type Database = {
         Args: { original_class_id: string; tutor_id_param: string }
         Returns: string
       }
+      get_admin_statistics: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          active_classes: number
+          active_enrollments: number
+          total_classes: number
+          total_enrollments: number
+          total_revenue: number
+          total_students: number
+          total_tutors: number
+        }[]
+      }
       get_latest_batch_number: {
         Args: { class_id_param: string }
         Returns: number
+      }
+      get_platform_growth: {
+        Args: Record<PropertyKey, never>
+        Returns: {
+          month: string
+          new_classes: number
+          new_enrollments: number
+          new_students: number
+          new_tutors: number
+        }[]
+      }
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin: {
+        Args: { _user_id: string }
+        Returns: boolean
       }
       is_student_enrolled_in_class: {
         Args: { class_id_param: string; student_id_param: string }
@@ -1335,6 +1389,7 @@ export type Database = {
       }
     }
     Enums: {
+      app_role: "admin" | "tutor" | "student" | "parent"
       class_format: "live" | "recorded" | "inbound" | "outbound"
       class_size: "group" | "one-on-one"
       class_status: "draft" | "active" | "inactive" | "completed" | "running"
@@ -1470,6 +1525,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
+      app_role: ["admin", "tutor", "student", "parent"],
       class_format: ["live", "recorded", "inbound", "outbound"],
       class_size: ["group", "one-on-one"],
       class_status: ["draft", "active", "inactive", "completed", "running"],

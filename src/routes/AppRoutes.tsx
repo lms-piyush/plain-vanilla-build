@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { Routes, Route, useLocation } from "react-router-dom";
 import ProtectedRoute from "@/components/ProtectedRoute";
+import AdminRoute from "@/components/admin/AdminRoute";
 import AuthRedirect from "@/components/AuthRedirect";
 import NotFound from "@/pages/NotFound";
 
@@ -83,6 +84,11 @@ import LearningGuides from "@/pages/dashboard/resources/LearningGuides";
 import BookClass from "@/pages/dashboard/classes/BookClass";
 import { default as PublicClassDetails } from "@/pages/dashboard/classes/ClassDetails";
 import ClassManageDetails from "@/pages/tutor/ClassManageDetails";
+
+// Admin Pages
+import AdminDashboard from "@/pages/admin/Dashboard";
+import AdminUsers from "@/pages/admin/Users";
+import AdminClasses from "@/pages/admin/Classes";
 
 const AppRoutes = () => {
   return (
@@ -263,6 +269,20 @@ const AppRoutes = () => {
       {/* Classes */}
       <Route path="/classes/:id" element={<PublicClassDetails />} />
       <Route path="/classes/:id/book" element={<BookClass />} />
+      
+      {/* Admin Routes */}
+      <Route 
+        path="/admin/dashboard" 
+        element={<AdminRoute><AdminDashboard /></AdminRoute>} 
+      />
+      <Route 
+        path="/admin/users" 
+        element={<AdminRoute><AdminUsers /></AdminRoute>} 
+      />
+      <Route 
+        path="/admin/classes" 
+        element={<AdminRoute><AdminClasses /></AdminRoute>} 
+      />
       
       {/* 404 Not Found */}
       <Route path="*" element={<NotFound />} />
