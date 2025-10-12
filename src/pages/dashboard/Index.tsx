@@ -64,16 +64,18 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
           <div className="flex justify-between items-center h-16 gap-2 min-w-0">
             {/* Logo */}
-            <div className="flex items-center">
+            <div className="flex items-center min-w-0">
               <GraduationCap className="h-8 w-8 text-[#8A5BB7]" />
-              <h1 className="ml-2 text-2xl font-bold text-gray-900">TalentSchool</h1>
+              <h1 className="ml-2 text-xl font-bold text-gray-900 hidden sm:block">TalentSchool</h1>
             </div>
 
             {/* Navigation Dropdown Menus */}
-            <DashboardNavigation />
+            <div className="hidden md:block">
+              <DashboardNavigation />
+            </div>
 
             {/* Right Section - User Info or Auth Buttons */}
-            <div className="flex items-center space-x-2 shrink-0">
+            <div className="flex items-center space-x-2 min-w-0">
               {isAuthenticated && user ? (
                 <>
                   {/* User Profile Dropdown */}
@@ -116,7 +118,7 @@ const Index = () => {
                 </>
               ) : (
                 <>
-                  <Button variant="outline" size="sm" className="text-xs sm:text-sm px-3 py-1.5 sm:px-4" asChild>
+                  <Button variant="outline" size="sm" className="text-xs sm:text-sm px-3 py-1.5 sm:px-4 whitespace-nowrap" asChild>
                     <Link to="/auth/login">Login</Link>
                   </Button>
                   <Button size="sm" className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90 text-xs sm:text-sm px-3 py-1.5 sm:px-4 whitespace-nowrap" asChild>
