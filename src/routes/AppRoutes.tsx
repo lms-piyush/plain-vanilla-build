@@ -90,6 +90,8 @@ import ClassManageDetails from "@/pages/tutor/ClassManageDetails";
 import AdminDashboard from "@/pages/admin/Dashboard";
 import AdminUsers from "@/pages/admin/Users";
 import AdminClasses from "@/pages/admin/Classes";
+import BlogManagement from "@/pages/admin/BlogManagement";
+import TicketsManagement from "@/pages/admin/TicketsManagement";
 
 const AppRoutes = () => {
   return (
@@ -284,6 +286,14 @@ const AppRoutes = () => {
       <Route 
         path="/admin/classes" 
         element={<AdminRoute><AdminClasses /></AdminRoute>} 
+      />
+      <Route 
+        path="/admin/blog" 
+        element={<AdminRoute><BlogManagement /></AdminRoute>} 
+      />
+      <Route 
+        path="/admin/tickets" 
+        element={<AdminRoute><TicketsManagement /></AdminRoute>} 
       />
       
       {/* 404 Not Found */}
