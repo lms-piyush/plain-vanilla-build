@@ -5,7 +5,7 @@ export const useAdminStatistics = () => {
   return useQuery({
     queryKey: ['admin-statistics'],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_admin_statistics');
+      const { data, error } = await (supabase as any).rpc('get_admin_statistics');
       
       if (error) throw error;
       
@@ -26,7 +26,7 @@ export const usePlatformGrowth = () => {
   return useQuery({
     queryKey: ['platform-growth'],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc('get_platform_growth');
+      const { data, error } = await (supabase as any).rpc('get_platform_growth');
       
       if (error) throw error;
       

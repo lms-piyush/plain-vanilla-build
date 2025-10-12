@@ -57,7 +57,7 @@ export const useAllClassesWithReviews = (params: UseAllClassesWithReviewsParams 
 
       console.log("Raw classes data:", data);
 
-      const classesWithReviews: TutorClassWithReviews[] = data?.map(classItem => {
+      const classesWithReviews: TutorClassWithReviews[] = (data as any[])?.map((classItem: any) => {
         const reviews = classItem.class_reviews || [];
         const totalReviews = reviews.length;
         const averageRating = totalReviews > 0 
@@ -67,12 +67,27 @@ export const useAllClassesWithReviews = (params: UseAllClassesWithReviewsParams 
         const studentCount = classItem.student_enrollments?.length || 0;
 
         return {
-          ...classItem,
+          id: classItem.id,
+          title: classItem.title,
+          description: classItem.description ?? null,
+          subject: classItem.subject ?? null,
+          delivery_mode: classItem.delivery_mode as any,
+          class_format: classItem.class_format as any,
+          class_size: classItem.class_size as any,
+          duration_type: classItem.duration_type as any,
+          status: classItem.status as any,
+          price: classItem.price ?? null,
+          currency: classItem.currency ?? null,
+          max_students: classItem.max_students ?? null,
+          thumbnail_url: classItem.thumbnail_url ?? null,
+          tutor_id: classItem.tutor_id,
+          created_at: classItem.created_at,
+          updated_at: classItem.updated_at,
           tutor_name: classItem.profiles?.full_name || "Unknown Tutor",
           average_rating: averageRating,
           total_reviews: totalReviews,
-          student_count: studentCount
-        };
+          student_count: studentCount,
+        } as TutorClassWithReviews;
       }) || [];
 
       console.log("Processed classes with reviews:", classesWithReviews.length);

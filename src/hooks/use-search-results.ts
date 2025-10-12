@@ -63,7 +63,7 @@ export const useSearchResults = () => {
       if (tutorError) throw tutorError;
 
       // Format results
-      const classResults: SearchResult[] = (classes || []).map(cls => ({
+      const classResults: SearchResult[] = ((classes as any[]) || []).map((cls: any) => ({
         id: cls.id,
         title: cls.title,
         description: cls.description || '',

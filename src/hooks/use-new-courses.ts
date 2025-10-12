@@ -33,7 +33,7 @@ export const useNewCourses = () => {
         throw error;
       }
 
-      const newCourses: NewCourse[] = data?.map(course => {
+      const newCourses: NewCourse[] = (data as any[])?.map((course: any) => {
         const reviews = course.class_reviews || [];
         const averageRating = reviews.length > 0 
           ? Math.round((reviews.reduce((sum: number, review: any) => sum + review.rating, 0) / reviews.length) * 10) / 10

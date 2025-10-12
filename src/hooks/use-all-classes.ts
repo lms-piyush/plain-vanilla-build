@@ -65,9 +65,26 @@ export const useAllClasses = ({ page = 1, pageSize = 9 }: UseAllClassesOptions =
       console.log("Total count:", count);
 
       // Transform the data to include tutor_name
-      const transformedClasses: TutorClass[] = classes?.map(cls => ({
-        ...cls,
-        tutor_name: cls.profiles?.full_name || "Unknown Tutor"
+      const transformedClasses: TutorClass[] = (classes as any[])?.map((cls: any) => ({
+        id: cls.id,
+        title: cls.title,
+        description: cls.description ?? null,
+        subject: cls.subject ?? null,
+        price: cls.price ?? null,
+        currency: cls.currency ?? null,
+        max_students: cls.max_students ?? null,
+        thumbnail_url: cls.thumbnail_url ?? null,
+        status: cls.status as any,
+        delivery_mode: cls.delivery_mode as any,
+        class_format: cls.class_format as any,
+        class_size: cls.class_size as any,
+        duration_type: cls.duration_type as any,
+        auto_renewal: cls.auto_renewal ?? null,
+        enrollment_deadline: cls.enrollment_deadline ?? null,
+        tutor_id: cls.tutor_id,
+        tutor_name: cls.profiles?.full_name || "Unknown Tutor",
+        created_at: cls.created_at,
+        updated_at: cls.updated_at,
       })) || [];
 
       console.log("Transformed classes:", transformedClasses);

@@ -27,9 +27,9 @@ export const useClassDetails = (classId: string) => {
       const enrolledStudents = await fetchClassEnrollments(classId);
 
       setClassDetails({
-        ...classData,
-        enrolled_students: enrolledStudents,
-      });
+        ...(classData as any),
+        enrolled_students: enrolledStudents as any,
+      } as ClassDetails);
       setError(null);
     } catch (err: any) {
       console.error("Error fetching class details:", err);

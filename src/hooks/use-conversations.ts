@@ -52,7 +52,7 @@ export const useConversations = () => {
       }
 
       // Get unique tutor IDs
-      const tutorIds = [...new Set(conversations.map(conv => conv.tutor_id))];
+      const tutorIds = [...new Set((conversations as any[]).map((conv: any) => conv.tutor_id))];
 
       // Fetch tutor profiles
       const { data: tutorProfiles, error: profilesError } = await supabase
@@ -67,11 +67,11 @@ export const useConversations = () => {
 
       // Create a map of tutor profiles for easy lookup
       const tutorProfileMap = new Map(
-        tutorProfiles?.map(profile => [profile.id, profile]) || []
+        (tutorProfiles as any[])?.map((profile: any) => [profile.id, profile]) || []
       );
 
       // Transform the data to match the expected interface
-      const transformedConversations = conversations.map(conv => ({
+      const transformedConversations = (conversations as any[]).map((conv: any) => ({
         ...conv,
         tutor_profile: tutorProfileMap.get(conv.tutor_id) 
           ? { full_name: tutorProfileMap.get(conv.tutor_id)!.full_name }

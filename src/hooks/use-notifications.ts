@@ -52,12 +52,12 @@ export const useNotifications = () => {
 
       if (error) throw error;
 
-      const newNotifications = data || [];
+      const newNotifications = (data as any[]) || [];
       
       if (append) {
-        setNotifications(prev => [...prev, ...newNotifications]);
+        setNotifications(prev => [...prev, ...(newNotifications as any as Notification[])]);
       } else {
-        setNotifications(newNotifications);
+        setNotifications(newNotifications as any as Notification[]);
       }
 
       // Check if there are more notifications
@@ -189,7 +189,7 @@ export const useNotifications = () => {
           filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
-          const newNotification = payload.new as Notification;
+          const newNotification = payload.new as any as Notification;
           setNotifications(prev => [newNotification, ...prev]);
           setUnreadCount(prev => prev + 1);
         }
@@ -203,7 +203,7 @@ export const useNotifications = () => {
           filter: `user_id=eq.${user.id}`,
         },
         (payload) => {
-          const updatedNotification = payload.new as Notification;
+          const updatedNotification = payload.new as any as Notification;
           setNotifications(prev => 
             prev.map(notif => 
               notif.id === updatedNotification.id ? updatedNotification : notif

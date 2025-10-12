@@ -53,7 +53,7 @@ export const useSendMessage = () => {
           recipient_id: recipientId,
           content: content,
           is_read: false,
-        })
+        } as any)
         .select()
         .single();
 
