@@ -67,10 +67,10 @@ const Index = () => {
         <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
           <div className="flex justify-between items-center h-16 gap-2 min-w-0">
             {/* Logo */}
-            <div className="flex items-center min-w-0">
+            <Link to="/" className="flex items-center min-w-0 hover:opacity-80 transition-opacity">
               <GraduationCap className="h-8 w-8 text-[#8A5BB7]" />
               <h1 className="ml-2 text-xl font-bold text-gray-900 hidden sm:block">TalentSchool</h1>
-            </div>
+            </Link>
 
             {/* Desktop Navigation Dropdown Menus */}
             <div className="hidden md:block">
