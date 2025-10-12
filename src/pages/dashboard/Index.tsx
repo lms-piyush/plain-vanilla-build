@@ -77,11 +77,6 @@ const Index = () => {
               <DashboardNavigation />
             </div>
 
-            {/* Mobile Menu Toggle */}
-            <div className="md:hidden">
-              <MenuToggle isMenuOpen={isMenuOpen} toggleMenu={() => setIsMenuOpen(!isMenuOpen)} />
-            </div>
-
             {/* Right Section - User Info or Auth Buttons */}
             <div className="flex items-center space-x-2 min-w-0">
               {isAuthenticated && user ? (
@@ -134,6 +129,11 @@ const Index = () => {
                   </Button>
                 </>
               )}
+              
+              {/* Mobile Menu Toggle */}
+              <div className="md:hidden">
+                <MenuToggle isMenuOpen={isMenuOpen} toggleMenu={() => setIsMenuOpen(!isMenuOpen)} />
+              </div>
             </div>
           </div>
         </div>
