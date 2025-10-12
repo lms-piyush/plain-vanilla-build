@@ -60,9 +60,9 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col overflow-x-hidden w-full">
       {/* Unified Dashboard Navbar */}
-      <header className="bg-white shadow-sm border-b sticky top-0 z-50 w-full">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+      <header className="bg-white shadow-sm border-b sticky top-0 z-50 w-full overflow-x-hidden">
+        <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
+          <div className="flex justify-between items-center h-16 gap-2 min-w-0">
             {/* Logo */}
             <div className="flex items-center">
               <GraduationCap className="h-8 w-8 text-[#8A5BB7]" />
@@ -73,7 +73,7 @@ const Index = () => {
             <DashboardNavigation />
 
             {/* Right Section - User Info or Auth Buttons */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 shrink-0">
               {isAuthenticated && user ? (
                 <>
                   {/* User Profile Dropdown */}
@@ -116,11 +116,11 @@ const Index = () => {
                 </>
               ) : (
                 <>
-                  <Button variant="outline" asChild>
+                  <Button variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3" asChild>
                     <Link to="/auth/login">Login</Link>
                   </Button>
-                  <Button className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90" asChild>
-                    <Link to="/auth/signup">Sign Up</Link>
+                  <Button size="sm" className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90 text-xs sm:text-sm px-2 sm:px-3" asChild>
+                    <Link to="/auth/signup"><span className="hidden xs:inline">Sign </span>Up</Link>
                   </Button>
                 </>
               )}
