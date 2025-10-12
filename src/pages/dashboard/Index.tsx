@@ -116,11 +116,11 @@ const Index = () => {
                 </>
               ) : (
                 <>
-                  <Button variant="outline" size="sm" className="text-xs sm:text-sm px-2 sm:px-3" asChild>
+                  <Button variant="outline" size="sm" className="text-xs sm:text-sm px-3 py-1.5 sm:px-4" asChild>
                     <Link to="/auth/login">Login</Link>
                   </Button>
-                  <Button size="sm" className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90 text-xs sm:text-sm px-2 sm:px-3" asChild>
-                    <Link to="/auth/signup"><span className="hidden xs:inline">Sign </span>Up</Link>
+                  <Button size="sm" className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90 text-xs sm:text-sm px-3 py-1.5 sm:px-4 whitespace-nowrap" asChild>
+                    <Link to="/auth/signup">Sign Up</Link>
                   </Button>
                 </>
               )}
