@@ -15,7 +15,7 @@ const Footer = () => {
             <Link to="/" className="inline-block mb-6">
               <div className="h-12 w-48 relative">
                 <img
-                  src="/talent_school.png"
+                  src="/lovable-uploads/b1650d07-3bd0-4177-87ad-8710731d1032.png"
                   alt="TalentSchool Logo"
                   className="h-full object-contain brightness-0 invert"
                 />
