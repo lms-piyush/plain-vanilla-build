@@ -70,9 +70,7 @@ const Index = () => {
             </div>
 
             {/* Navigation Dropdown Menus */}
-            <div className="hidden md:block">
-              <DashboardNavigation />
-            </div>
+            <DashboardNavigation />
 
             {/* Right Section - User Info or Auth Buttons */}
             <div className="flex items-center space-x-2 min-w-0">
