@@ -642,6 +642,125 @@ export type Database = {
         }
         Relationships: []
       }
+      support_tickets: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          priority: string | null
+          status: string | null
+          subject: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          priority?: string | null
+          status?: string | null
+          subject: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          priority?: string | null
+          status?: string | null
+          subject?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      tutor_applications: {
+        Row: {
+          admin_notes: string | null
+          bio: string
+          certifications: string[] | null
+          created_at: string | null
+          education: string
+          email: string
+          experience_years: number
+          expertise: string[]
+          full_name: string
+          id: string
+          linkedin_url: string | null
+          phone: string | null
+          resume_url: string | null
+          status: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          bio: string
+          certifications?: string[] | null
+          created_at?: string | null
+          education: string
+          email: string
+          experience_years: number
+          expertise: string[]
+          full_name: string
+          id?: string
+          linkedin_url?: string | null
+          phone?: string | null
+          resume_url?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          bio?: string
+          certifications?: string[] | null
+          created_at?: string | null
+          education?: string
+          email?: string
+          experience_years?: number
+          expertise?: string[]
+          full_name?: string
+          id?: string
+          linkedin_url?: string | null
+          phone?: string | null
+          resume_url?: string | null
+          status?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      wishlist: {
+        Row: {
+          class_id: string
+          created_at: string | null
+          id: string
+          user_id: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string | null
+          id?: string
+          user_id: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string | null
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "wishlist_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
