@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { GraduationCap, User, LogOut } from "lucide-react";
@@ -12,6 +12,8 @@ import FeaturedTutors from "@/components/home/FeaturedTutors";
 import PopularClasses from "@/components/home/PopularClasses";
 import CallToAction from "@/components/home/CallToAction";
 import DashboardNavigation from "@/components/navbar/DashboardNavigation";
+import MobileNavigation from "@/components/navbar/MobileNavigation";
+import MenuToggle from "@/components/navbar/MenuToggle";
 import { useFeaturedClasses } from "@/hooks/use-featured-classes";
 import { useFeaturedTutors } from "@/hooks/use-featured-tutors";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,6 +30,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 const Index = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const { classes: featuredClasses, isLoading: classesLoading } = useFeaturedClasses();
   const { data: featuredTutors, isLoading: tutorsLoading } = useFeaturedTutors();
 
@@ -69,8 +72,15 @@ const Index = () => {
               <h1 className="ml-2 text-xl font-bold text-gray-900 hidden sm:block">TalentSchool</h1>
             </div>
 
-            {/* Navigation Dropdown Menus */}
-            <DashboardNavigation />
+            {/* Desktop Navigation Dropdown Menus */}
+            <div className="hidden md:block">
+              <DashboardNavigation />
+            </div>
+
+            {/* Mobile Menu Toggle */}
+            <div className="md:hidden">
+              <MenuToggle isMenuOpen={isMenuOpen} toggleMenu={() => setIsMenuOpen(!isMenuOpen)} />
+            </div>
 
             {/* Right Section - User Info or Auth Buttons */}
             <div className="flex items-center space-x-2 min-w-0">
@@ -127,6 +137,9 @@ const Index = () => {
             </div>
           </div>
         </div>
+        
+        {/* Mobile Navigation */}
+        <MobileNavigation isMenuOpen={isMenuOpen} />
       </header>
       
       <main className="w-full overflow-x-hidden">
