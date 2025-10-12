@@ -53,7 +53,7 @@ const FeaturedTutors = ({ tutors }: FeaturedTutorsProps) => {
             className="border-talent-primary/30 hover:border-talent-primary text-talent-dark font-medium"
             asChild
           >
-            <Link to="/student/explore">
+            <Link to="/student/tutors">
               Browse All Tutors
               <ArrowRight className="ml-2 h-4 w-4" />
             </Link>

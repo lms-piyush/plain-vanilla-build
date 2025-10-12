@@ -51,6 +51,7 @@ import TutorProfilePage from "@/pages/tutor/Profile";
 import StudentDashboardPage from "@/pages/student/Dashboard";
 import StudentMyClasses from "@/pages/student/MyClasses";
 import ExploreClasses from "@/pages/student/ExploreClasses";
+import ExploreTutors from "@/pages/student/ExploreTutors";
 import ClassDetail from "@/pages/student/ClassDetail";
 import Profile from "@/pages/student/Profile";
 import Help from "@/pages/student/Help";
@@ -204,6 +205,7 @@ const AppRoutes = () => {
       <Route element={<Layout />}>
         {/* Public routes - no login required */}
         <Route path="/student/explore" element={<ExploreClasses />} />
+        <Route path="/student/tutors" element={<ExploreTutors />} />
         <Route path="/student/classes/:id" element={<ClassDetail />} />
         <Route path="/student/tutor/:id" element={<EnhancedTutorProfile />} />
         
