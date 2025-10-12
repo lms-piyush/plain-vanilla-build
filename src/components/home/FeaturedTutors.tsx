@@ -31,18 +31,18 @@ const FeaturedTutors = ({ tutors }: FeaturedTutorsProps) => {
   const isMobile = useIsMobile();
 
   return (
-    <section className={`py-6 md:py-20 bg-white`}>
+    <section className={`py-8 md:py-20 bg-white`}>
       <div className="container mx-auto px-4 md:px-6">
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
-          <div className="max-w-2xl mb-6 md:mb-0">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Meet Our Featured Tutors</h2>
-            <p className="text-talent-muted text-lg">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-12">
+          <div className="max-w-2xl mb-4 md:mb-6 md:mb-0">
+            <h2 className="text-2xl md:text-4xl font-bold mb-2 md:mb-4">Meet Our Featured Tutors</h2>
+            <p className="text-talent-muted text-sm md:text-lg">
               Learn from passionate experts who are dedicated to helping students excel.
             </p>
           </div>
           <Button
             variant="outline"
-            className="border-talent-primary/30 hover:border-talent-primary text-talent-dark font-medium"
+            className="border-talent-primary/30 hover:border-talent-primary text-talent-dark font-medium text-sm md:text-base py-2 md:py-2"
             asChild
           >
             <Link to="/student/tutors">

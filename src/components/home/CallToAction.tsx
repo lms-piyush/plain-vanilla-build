@@ -10,17 +10,17 @@ const CallToAction = () => {
       
       <div className="container mx-auto px-4 md:px-6 relative z-10">
         <div className="max-w-3xl mx-auto text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
+          <h2 className="text-2xl md:text-4xl font-bold text-white mb-4 md:mb-6">
             Ready to Help Your Child Discover Their Talents?
           </h2>
-          <p className="text-white/80 text-lg mb-8">
+          <p className="text-white/80 text-sm md:text-lg mb-6 md:mb-8">
             Join thousands of families who are nurturing their children's growth with TalentSchool's expert-led classes.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button className="bg-white text-talent-primary hover:bg-gray-100 font-medium text-lg px-8 py-6 h-auto" asChild>
+          <div className="flex flex-col sm:flex-row gap-3 md:gap-4 justify-center">
+            <Button className="bg-white text-talent-primary hover:bg-gray-100 font-medium text-base md:text-lg px-6 py-5 md:px-8 md:py-6 h-auto w-full sm:w-auto" asChild>
               <Link to="/student/explore">Browse Classes</Link>
             </Button>
-            <Button className="bg-white text-talent-primary hover:bg-gray-100 font-medium text-lg px-8 py-6 h-auto" asChild>
+            <Button className="bg-white text-talent-primary hover:bg-gray-100 font-medium text-base md:text-lg px-6 py-5 md:px-8 md:py-6 h-auto w-full sm:w-auto" asChild>
               <Link to="/dashboard">Become a Tutor</Link>
             </Button>
           </div>

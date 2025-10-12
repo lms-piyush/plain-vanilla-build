@@ -38,18 +38,18 @@ const PopularClasses = ({ featuredClasses }: PopularClassesProps) => {
   const isMobile = useIsMobile();
 
   return (
-    <section className={`py-6 md:py-20 bg-gray-50`}>
+    <section className={`py-8 md:py-20 bg-gray-50`}>
       <div className="container mx-auto px-4 md:px-6">
         <div className={`flex flex-col md:flex-row md:items-end justify-between ${isMobile ? 'mb-6' : 'mb-12'}`}>
           <div className={`max-w-2xl ${isMobile ? 'mb-4' : 'mb-6 md:mb-0'}`}>
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Explore Popular Classes</h2>
-            <p className="text-talent-muted text-lg">
+            <h2 className="text-2xl md:text-4xl font-bold mb-2 md:mb-4">Explore Popular Classes</h2>
+            <p className="text-talent-muted text-sm md:text-lg">
               From online to in-person, we offer diverse learning experiences to fit your needs.
             </p>
           </div>
           <Button
             variant="outline"
-            className="border-talent-primary/30 hover:border-talent-primary text-talent-dark font-medium"
+            className="border-talent-primary/30 hover:border-talent-primary text-talent-dark font-medium text-sm md:text-base py-2 md:py-2"
             asChild
           >
             <Link to="/student/explore">

@@ -61,23 +61,23 @@ const Categories = () => {
   };
 
   return (
-    <section className="py-20 bg-talent-gray-100">
+    <section className="py-10 md:py-20 bg-talent-gray-100">
       <div className="container mx-auto px-4 md:px-6">
-        {/* Search filters component */}
-        <div className="bg-white rounded-xl p-6 shadow-sm mb-12">
+        {/* Search filters component - hide on mobile */}
+        <div className="hidden md:block bg-white rounded-xl p-6 shadow-sm mb-12">
           <SearchFilters onSearch={handleSearch} />
         </div>
 
-        <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
-          <div className="max-w-2xl mb-6 md:mb-0">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4">Explore Categories</h2>
-            <p className="text-talent-muted text-lg">
+        <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 md:mb-12">
+          <div className="max-w-2xl mb-4 md:mb-6 md:mb-0">
+            <h2 className="text-2xl md:text-4xl font-bold mb-2 md:mb-4">Explore Categories</h2>
+            <p className="text-talent-muted text-sm md:text-lg">
               Discover thousands of classes across diverse categories taught by expert tutors.
             </p>
           </div>
           <Button 
             variant="outline" 
-            className="border-talent-primary/30 hover:border-talent-primary text-talent-dark font-medium"
+            className="border-talent-primary/30 hover:border-talent-primary text-talent-dark font-medium text-sm md:text-base py-2 md:py-2"
             asChild
           >
             <Link to="/student/explore">

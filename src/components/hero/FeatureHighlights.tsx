@@ -21,13 +21,13 @@ const FeatureHighlights = () => {
   ];
 
   return (
-    <div className="w-full bg-[#F8F9FA] py-3 md:py-4 border-y border-gray-200">
+    <div className="w-full bg-[#F8F9FA] py-4 md:py-4 border-y border-gray-200">
       <div className="container mx-auto px-4">
-        <div className="flex flex-wrap justify-between items-center gap-6 md:gap-4">
+        <div className="grid grid-cols-2 md:flex md:flex-wrap md:justify-between items-center gap-4 md:gap-4">
           {features.map((feature, index) => (
-            <div key={index} className="flex items-center gap-2 text-sm md:text-base text-gray-700">
-              {feature.icon}
-              <span>{feature.text}</span>
+            <div key={index} className="flex items-center gap-2 text-xs md:text-base text-gray-700">
+              <div className="shrink-0">{feature.icon}</div>
+              <span className="leading-tight">{feature.text}</span>
             </div>
           ))}
         </div>

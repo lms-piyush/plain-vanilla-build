@@ -18,23 +18,23 @@ const HeroBanner = () => {
   ];
 
   return (
-    <section className="pt-12 pb-4 md:pt-28 md:pb-8 overflow-hidden bg-[#F8F9FA]">
+    <section className="pt-8 pb-4 md:pt-28 md:pb-8 overflow-hidden bg-[#F8F9FA]">
       <div className="container mx-auto px-4 md:px-6">
         <div className="grid lg:grid-cols-2 gap-8 items-center">
           <div className="max-w-2xl">
-            <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-talent-dark mb-6">
+            <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold tracking-tight text-talent-dark mb-4 md:mb-6 leading-tight">
               Expert educators and tutors for your future <AnimatedJobTitle titles={careerTitles} />
             </h1>
-            <p className="text-lg text-talent-muted mb-6">
+            <p className="text-base md:text-lg text-talent-muted mb-4 md:mb-6">
               Ignite your child's curiosity with passionate tutors and interactive classes designed for eager young minds.
             </p>
             
-            <div className="flex items-center gap-4 mb-6">
-              <div className="flex -space-x-3">
+            <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6">
+              <div className="flex -space-x-2 md:-space-x-3">
                 {[1, 2, 3, 4].map((i) => (
                   <div 
                     key={i} 
-                    className="h-10 w-10 rounded-full border-2 border-white overflow-hidden bg-talent-gray-200"
+                    className="h-8 w-8 md:h-10 md:w-10 rounded-full border-2 border-white overflow-hidden bg-talent-gray-200"
                   >
                     <img 
                       src={`https://randomuser.me/api/portraits/${i % 2 === 0 ? 'men' : 'women'}/${i + 20}.jpg`} 
@@ -44,21 +44,21 @@ const HeroBanner = () => {
                   </div>
                 ))}
               </div>
-              <div className="text-sm text-talent-muted">
+              <div className="text-xs md:text-sm text-talent-muted">
                 <span className="font-semibold text-talent-dark">4.9/5</span> from over 2,500+ student reviews
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
-              <Button asChild variant="outline" className="border-talent-primary text-talent-primary hover:bg-talent-primary hover:text-white font-medium px-6 py-6 h-auto text-lg">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 md:gap-4">
+              <Button asChild variant="outline" className="border-talent-primary text-talent-primary hover:bg-talent-primary hover:text-white font-medium px-4 py-5 md:px-6 md:py-6 h-auto text-base md:text-lg w-full sm:w-auto">
                 <Link to="/student/dashboard">
                   Student Dashboard
                 </Link>
               </Button>
-              <Button asChild className="bg-talent-primary hover:bg-talent-secondary text-white font-medium px-6 py-6 h-auto text-lg">
+              <Button asChild className="bg-talent-primary hover:bg-talent-secondary text-white font-medium px-4 py-5 md:px-6 md:py-6 h-auto text-base md:text-lg w-full sm:w-auto">
                 <Link to="/student/explore">
                   Explore Classes
-                  <ArrowRight className="ml-2 h-5 w-5" />
+                  <ArrowRight className="ml-2 h-4 w-4 md:h-5 md:w-5" />
                 </Link>
               </Button>
             </div>

@@ -34,14 +34,14 @@ const HowItWorks = () => {
   ];
 
   return (
-    <section className="py-20 bg-white overflow-hidden relative">
+    <section className="py-10 md:py-20 bg-white overflow-hidden relative">
       <div className="absolute top-0 right-0 w-96 h-96 bg-talent-primary/5 rounded-full filter blur-3xl -z-10 transform translate-x-1/2 -translate-y-1/2"></div>
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-talent-accent/5 rounded-full filter blur-3xl -z-10 transform -translate-x-1/2 translate-y-1/2"></div>
       
       <div className="container mx-auto px-4 md:px-6">
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4">How TalentSchool Works</h2>
-          <p className="text-talent-muted text-lg">
+        <div className="text-center max-w-3xl mx-auto mb-10 md:mb-16">
+          <h2 className="text-2xl md:text-4xl font-bold mb-2 md:mb-4">How TalentSchool Works</h2>
+          <p className="text-talent-muted text-sm md:text-lg">
             Getting started is simple. Follow these steps to begin your learning journey with TalentSchool.
           </p>
         </div>
@@ -49,24 +49,24 @@ const HowItWorks = () => {
         <div className="relative">
           <div className="hidden md:block absolute left-[calc(50%-1px)] top-24 bottom-24 w-0.5 bg-gray-200 -z-10"></div>
           
-          <div className="grid md:grid-cols-2 gap-12 md:gap-y-32">
+          <div className="grid md:grid-cols-2 gap-6 md:gap-12 md:gap-y-32">
             {steps.map((step, index) => (
               <div 
                 key={index} 
                 className={`relative animate-fade-up ${index % 2 === 1 ? 'md:col-start-2' : ''}`}
                 style={{ animationDelay: `${index * 200}ms` }}
               >
-                <div className="rounded-xl p-6 border border-talent-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-start gap-5">
-                    <div className={`${step.color} h-14 w-14 rounded-full flex items-center justify-center shrink-0`}>
+                <div className="rounded-xl p-4 md:p-6 border border-talent-gray-200 bg-white shadow-sm hover:shadow-md transition-shadow">
+                  <div className="flex items-start gap-3 md:gap-5">
+                    <div className={`${step.color} h-12 w-12 md:h-14 md:w-14 rounded-full flex items-center justify-center shrink-0`}>
                       {step.icon}
                     </div>
                     <div>
-                      <div className="inline-block px-2.5 py-0.5 mb-3 rounded-full bg-talent-gray-200 text-xs font-semibold">
+                      <div className="inline-block px-2.5 py-0.5 mb-2 md:mb-3 rounded-full bg-talent-gray-200 text-xs font-semibold">
                         Step {step.number}
                       </div>
-                      <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-                      <p className="text-talent-muted">{step.description}</p>
+                      <h3 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">{step.title}</h3>
+                      <p className="text-talent-muted text-sm md:text-base">{step.description}</p>
                     </div>
                   </div>
                 </div>
