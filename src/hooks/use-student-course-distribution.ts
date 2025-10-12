@@ -45,17 +45,17 @@ export const useStudentCourseDistribution = () => {
       let ongoing = 0;
       let completed = 0;
 
-      enrollments.forEach((enrollment) => {
+      enrollments.forEach((enrollment: any) => {
         const classData = enrollment.classes;
-        const schedule = classData.class_schedules?.[0];
+        const schedule = classData?.class_schedules?.[0];
 
-        if (classData.status === 'completed') {
+        if (classData?.status === 'completed') {
           completed++;
-        } else if (classData.status === 'running' || 
+        } else if (classData?.status === 'running' || 
                   (schedule?.start_date && schedule.start_date <= today && 
                    schedule?.end_date && schedule.end_date >= today)) {
           ongoing++;
-        } else if (classData.status === 'active' || 
+        } else if (classData?.status === 'active' || 
                   (schedule?.start_date && schedule.start_date > today)) {
           notStarted++;
         } else {

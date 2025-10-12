@@ -76,11 +76,11 @@ export const useTutorDashboardStats = () => {
       let monthlyRevenue = 0;
       let previousMonthRevenue = 0;
 
-      enrollments?.forEach(enrollment => {
+      enrollments?.forEach((enrollment: any) => {
         const enrollmentDate = new Date(enrollment.enrollment_date);
-        const revenue = enrollment.classes.duration_type === 'recurring' 
-          ? (enrollment.classes.monthly_charges || enrollment.classes.price || 0)
-          : (enrollment.classes.price || 0);
+        const revenue = enrollment.classes?.duration_type === 'recurring' 
+          ? (enrollment.classes?.monthly_charges || enrollment.classes?.price || 0)
+          : (enrollment.classes?.price || 0);
 
         if (enrollmentDate >= currentMonth) {
           monthlyRevenue += Number(revenue);

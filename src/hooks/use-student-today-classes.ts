@@ -128,16 +128,16 @@ export const useStudentTodayClasses = () => {
 
           transformedClasses.push({
             id: syllabus.id,
-            name: syllabus.title || classData.title,
-            type: classData.delivery_mode === 'online' ? 'Online' : 'Offline',
+            name: syllabus.title || (classData as any).title,
+            type: (classData as any).delivery_mode === 'online' ? 'Online' : 'Offline',
             status,
-            format: classData.class_format === 'live' ? 'Live' : 
-                    classData.class_format === 'recorded' ? 'Recorded' :
-                    classData.class_format === 'inbound' ? 'Inbound' : 'Outbound',
+            format: (classData as any).class_format === 'live' ? 'Live' : 
+                    (classData as any).class_format === 'recorded' ? 'Recorded' :
+                    (classData as any).class_format === 'inbound' ? 'Inbound' : 'Outbound',
             time: timeDisplay,
             isStartable,
-            class_id: classData.id,
-            tutor_name: classData.profiles?.full_name || 'Unknown Tutor',
+            class_id: (classData as any).id,
+            tutor_name: (classData as any).profiles?.full_name || 'Unknown Tutor',
             session_date: syllabus.session_date,
             start_time: syllabus.start_time || '',
             end_time: syllabus.end_time || '',

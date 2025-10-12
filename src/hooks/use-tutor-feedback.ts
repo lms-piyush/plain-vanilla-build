@@ -95,15 +95,15 @@ export const useTutorFeedback = (page: number = 1) => {
         throw reviewsError;
       }
 
-      const processedReviews: TutorFeedback[] = (reviewsData || []).map(review => ({
+      const processedReviews: TutorFeedback[] = ((reviewsData as any[]) || []).map((review: any) => ({
         id: review.id,
         class_id: review.class_id,
         student_id: review.student_id,
         rating: review.rating,
         review_text: review.review_text,
         created_at: review.created_at,
-        profiles: review.profiles,
-        classes: review.classes
+        profiles: review.profiles?.[0] || review.profiles || { full_name: 'Unknown Student' },
+        classes: review.classes?.[0] || review.classes || { title: 'Unknown Class' }
       }));
 
       const totalCount = count || 0;
