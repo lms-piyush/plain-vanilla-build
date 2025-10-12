@@ -24,14 +24,6 @@ interface FeaturedTutorsProps {
     students: number;
     classes: number;
     offeredLectureTypes: LectureType[];
-    featuredClass: {
-      id: string;
-      title: string;
-      price: number;
-      duration: number;
-      nextAvailable: string;
-      lectureType: LectureType;
-    };
   }>;
 }
 

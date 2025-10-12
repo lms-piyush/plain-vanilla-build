@@ -13,7 +13,7 @@ import PopularClasses from "@/components/home/PopularClasses";
 import CallToAction from "@/components/home/CallToAction";
 import DashboardNavigation from "@/components/navbar/DashboardNavigation";
 import { useFeaturedClasses } from "@/hooks/use-featured-classes";
-import { tutors } from "@/components/home/data";
+import { useFeaturedTutors } from "@/hooks/use-featured-tutors";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   DropdownMenu,
@@ -29,6 +29,7 @@ const Index = () => {
   const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
   const { classes: featuredClasses, isLoading: classesLoading } = useFeaturedClasses();
+  const { data: featuredTutors, isLoading: tutorsLoading } = useFeaturedTutors();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -131,7 +132,19 @@ const Index = () => {
       <main>
         <Hero />
         {!classesLoading && <PopularClasses featuredClasses={featuredClasses} />}
-        <FeaturedTutors tutors={tutors} />
+        {!tutorsLoading && featuredTutors && featuredTutors.length > 0 && (
+          <FeaturedTutors tutors={featuredTutors.map(tutor => ({
+            id: Number(tutor.id),
+            name: tutor.full_name || 'Unknown',
+            title: tutor.bio || '',
+            image: tutor.avatar_url || '/placeholder.svg',
+            rating: tutor.average_rating || 0,
+            reviews: 0,
+            students: tutor.total_students || 0,
+            classes: tutor.total_classes || 0,
+            offeredLectureTypes: []
+          }))} />
+        )}
         <Categories />
         <HowItWorks />
         <Testimonials />
