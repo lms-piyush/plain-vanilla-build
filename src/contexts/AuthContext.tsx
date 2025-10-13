@@ -78,13 +78,20 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
                 .maybeSingle();
               
               console.log("Profile fetch result:", profile, error);
+
+              // Fetch user role from user_roles table
+              const { data: userRole } = await supabase
+                .from('user_roles')
+                .select('role')
+                .eq('user_id', session.user.id)
+                .maybeSingle();
               
               if (profile && !error && mounted) {
               const userData: User = {
                 id: session.user.id,
                 fullName: profile.full_name || '',
                 email: session.user.email || '',
-                role: (profile.role as User['role']) || 'student',
+                role: (userRole?.role as User['role']) || 'student',
                 avatar: `https://api.dicebear.com/7.x/avataaars/svg?seed=${session.user.email}`
               };
               

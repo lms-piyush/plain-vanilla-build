@@ -20,13 +20,25 @@ const AdminUsers = () => {
   const { data: users, isLoading } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: profiles, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
-      return data;
+      if (profileError) throw profileError;
+
+      // Fetch roles for all users
+      const { data: roles, error: roleError } = await supabase
+        .from('user_roles')
+        .select('user_id, role');
+
+      if (roleError) throw roleError;
+
+      // Combine profiles with roles
+      return profiles?.map(profile => ({
+        ...profile,
+        role: roles?.find(r => r.user_id === profile.id)?.role || 'student'
+      }));
     }
   });
 
@@ -35,10 +47,11 @@ const AdminUsers = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('user_roles')
-        .select('*');
+        .select('*')
+        .eq('role', 'admin');
       
       if (error) throw error;
-      return data;
+      return data || [];
     }
   });
 
@@ -46,7 +59,7 @@ const AdminUsers = () => {
     mutationFn: async (userId: string) => {
       const { error } = await supabase
         .from('user_roles')
-        .insert({ user_id: userId, role: 'admin' });
+        .upsert({ user_id: userId, role: 'admin' }, { onConflict: 'user_id,role' });
       
       if (error) throw error;
     },
