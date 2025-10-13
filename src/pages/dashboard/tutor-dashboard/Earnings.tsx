@@ -1,12 +1,13 @@
-
 import { useState } from "react";
 import { 
   Calendar as CalendarIcon,
-  DollarSign
+  DollarSign,
+  Wallet
 } from "lucide-react";
 import TutorDashboardLayout from "@/components/TutorDashboardLayout";
 import { Card, CardContent } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import {
   Select,
   SelectContent,
@@ -27,6 +28,10 @@ import {
   Tooltip,
   ResponsiveContainer
 } from "recharts";
+import { useAvailableBalance } from "@/hooks/use-withdrawal";
+import BankAccountManagement from "@/components/tutor/BankAccountManagement";
+import WithdrawalRequestDialog from "@/components/tutor/WithdrawalRequestDialog";
+import WithdrawalHistory from "@/components/tutor/WithdrawalHistory";
 
 // Revenue data for the chart
 const monthlyRevenueData = [
@@ -105,6 +110,8 @@ const recentTransactions = [
 
 const Earnings = () => {
   const [selectedTab, setSelectedTab] = useState("online");
+  const [withdrawalDialogOpen, setWithdrawalDialogOpen] = useState(false);
+  const { data: availableBalance } = useAvailableBalance();
 
   return (
     <>
@@ -115,55 +122,34 @@ const Earnings = () => {
             <h1 className="text-2xl font-bold text-gray-900">Earnings</h1>
             <p className="text-gray-500 mt-1">Manage and track your teaching revenue</p>
           </div>
+          <Button onClick={() => setWithdrawalDialogOpen(true)} size="lg" className="mt-4 md:mt-0">
+            <Wallet className="h-4 w-4 mr-2" />
+            Withdraw Funds
+          </Button>
         </div>
 
         {/* Revenue Overview Section */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 mb-8">
-          {/* Total Earnings Card */}
-          <Card className="bg-white shadow-sm md:col-span-5 rounded-xl">
+          {/* Available Balance Card */}
+          <Card className="bg-gradient-to-br from-emerald-500 to-emerald-600 shadow-lg md:col-span-5 rounded-xl text-white">
             <CardContent className="p-6">
-              <div>
-                <h2 className="text-5xl font-bold text-gray-900">₹1.15 Lac</h2>
-                <p className="text-sm text-gray-500 mt-1">Earned Till Now</p>
-              </div>
-
-              <div className="mt-6 mb-3 h-16 relative">
-                <div className="h-full w-full">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={[
-                      { x: 1, y: 30 },
-                      { x: 2, y: 60 },
-                      { x: 3, y: 20 },
-                      { x: 4, y: 40 },
-                      { x: 5, y: 70 },
-                      { x: 6, y: 90 }
-                    ]}>
-                      <defs>
-                        <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#8B5CF6" stopOpacity={0.1}/>
-                          <stop offset="95%" stopColor="#8B5CF6" stopOpacity={0}/>
-                        </linearGradient>
-                      </defs>
-                      <Area
-                        type="monotone"
-                        dataKey="y"
-                        stroke="#000"
-                        strokeWidth={2}
-                        fill="url(#gradient)"
-                      />
-                      <circle cx="83%" cy="32%" r="4" fill="#4ADE80" stroke="#fff" strokeWidth="2" />
-                    </AreaChart>
-                  </ResponsiveContainer>
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="text-sm opacity-90 mb-2">Available Balance</p>
+                  <h2 className="text-4xl font-bold">₹{availableBalance?.toFixed(2) || '0.00'}</h2>
+                  <p className="text-sm opacity-75 mt-2">Ready to withdraw</p>
                 </div>
-                <div className="absolute top-0 right-0 bg-white rounded-lg border border-green-100 px-2 py-1">
-                  <span className="text-green-500 text-sm font-medium">+14%</span>
+                <div className="bg-white/20 p-3 rounded-full">
+                  <Wallet className="h-6 w-6" />
                 </div>
               </div>
-
-              <div className="flex items-center text-green-500 text-sm font-medium">
-                <span className="mr-1">+14% Sales</span>
-                <span className="text-gray-500 font-normal">from last month</span>
-              </div>
+              <Button 
+                onClick={() => setWithdrawalDialogOpen(true)}
+                variant="secondary"
+                className="w-full mt-4 bg-white text-emerald-600 hover:bg-gray-50"
+              >
+                Request Withdrawal
+              </Button>
             </CardContent>
           </Card>
 
@@ -429,7 +415,9 @@ const Earnings = () => {
                             ))
                           ) : (
                             <TableRow>
-                              <TableCell colSpan={8} className="text-center py-8 text-gray-500">No offline classes found</TableCell>
+                              <TableCell colSpan={8} className="text-center py-8 text-gray-500">
+                                No offline classes found
+                              </TableCell>
                             </TableRow>
                           )}
                         </TableBody>
@@ -441,6 +429,17 @@ const Earnings = () => {
             </CardContent>
           </Card>
         </div>
+
+        {/* Withdrawal Management Section */}
+        <div className="grid gap-6 md:grid-cols-2 mb-8">
+          <BankAccountManagement />
+          <WithdrawalHistory />
+        </div>
+
+        <WithdrawalRequestDialog 
+          open={withdrawalDialogOpen} 
+          onClose={() => setWithdrawalDialogOpen(false)} 
+        />
       </div>
     </>
   );

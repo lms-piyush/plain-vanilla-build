@@ -826,6 +826,114 @@ export type Database = {
         }
         Relationships: []
       }
+      tutor_bank_accounts: {
+        Row: {
+          account_holder_name: string
+          account_number: string
+          account_type: string
+          bank_name: string
+          created_at: string | null
+          id: string
+          is_primary: boolean | null
+          is_verified: boolean | null
+          routing_number: string
+          tutor_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          account_holder_name: string
+          account_number: string
+          account_type: string
+          bank_name: string
+          created_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          is_verified?: boolean | null
+          routing_number: string
+          tutor_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          account_holder_name?: string
+          account_number?: string
+          account_type?: string
+          bank_name?: string
+          created_at?: string | null
+          id?: string
+          is_primary?: boolean | null
+          is_verified?: boolean | null
+          routing_number?: string
+          tutor_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      tutor_earnings: {
+        Row: {
+          amount: number
+          available_at: string | null
+          class_id: string | null
+          created_at: string | null
+          currency: string | null
+          earned_at: string | null
+          enrollment_id: string | null
+          id: string
+          net_amount: number
+          platform_fee: number | null
+          status: string | null
+          tutor_id: string
+          updated_at: string | null
+          withdrawn_at: string | null
+        }
+        Insert: {
+          amount: number
+          available_at?: string | null
+          class_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          earned_at?: string | null
+          enrollment_id?: string | null
+          id?: string
+          net_amount: number
+          platform_fee?: number | null
+          status?: string | null
+          tutor_id: string
+          updated_at?: string | null
+          withdrawn_at?: string | null
+        }
+        Update: {
+          amount?: number
+          available_at?: string | null
+          class_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          earned_at?: string | null
+          enrollment_id?: string | null
+          id?: string
+          net_amount?: number
+          platform_fee?: number | null
+          status?: string | null
+          tutor_id?: string
+          updated_at?: string | null
+          withdrawn_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tutor_earnings_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tutor_earnings_enrollment_id_fkey"
+            columns: ["enrollment_id"]
+            isOneToOne: false
+            referencedRelation: "student_enrollments"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string | null
@@ -872,6 +980,62 @@ export type Database = {
             columns: ["class_id"]
             isOneToOne: false
             referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      withdrawal_requests: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          bank_account_id: string | null
+          created_at: string | null
+          currency: string | null
+          id: string
+          processed_at: string | null
+          rejection_reason: string | null
+          requested_at: string | null
+          status: string | null
+          transaction_reference: string | null
+          tutor_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount: number
+          bank_account_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          processed_at?: string | null
+          rejection_reason?: string | null
+          requested_at?: string | null
+          status?: string | null
+          transaction_reference?: string | null
+          tutor_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          bank_account_id?: string | null
+          created_at?: string | null
+          currency?: string | null
+          id?: string
+          processed_at?: string | null
+          rejection_reason?: string | null
+          requested_at?: string | null
+          status?: string | null
+          transaction_reference?: string | null
+          tutor_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "withdrawal_requests_bank_account_id_fkey"
+            columns: ["bank_account_id"]
+            isOneToOne: false
+            referencedRelation: "tutor_bank_accounts"
             referencedColumns: ["id"]
           },
         ]
