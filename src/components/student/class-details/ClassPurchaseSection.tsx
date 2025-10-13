@@ -11,6 +11,7 @@ import SubscriptionButton from "@/components/subscription/SubscriptionButton";
 import { usePaymentSuccess } from "@/hooks/use-payment-success";
 import { useSubscriptionPlans, useSubscriptionStatus, useCreatePaymentCheckout, useCreateClassSubscriptionCheckout } from "@/hooks/use-subscription";
 import { useAuth } from "@/contexts/AuthContext";
+import { EnrollmentChildSelector } from "@/components/parent/EnrollmentChildSelector";
 
 interface ClassPurchaseSectionProps {
   classDetails: StudentClassDetails;
@@ -19,8 +20,10 @@ interface ClassPurchaseSectionProps {
 
 const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchaseSectionProps) => {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, user } = useAuth();
   const [isEnrolling, setIsEnrolling] = useState(false);
+  const [showChildSelector, setShowChildSelector] = useState(false);
+  const [pendingEnrollment, setPendingEnrollment] = useState<'free' | 'payment' | 'subscription' | null>(null);
   const { data: subscriptionPlans } = useSubscriptionPlans();
   const { data: subscriptionStatus } = useSubscriptionStatus();
   const createPaymentCheckout = useCreatePaymentCheckout();
@@ -34,7 +37,7 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
     ? classDetails.monthly_charges 
     : classDetails.price;
 
-  const handleFreeEnrollment = async () => {
+  const handleFreeEnrollment = async (childId?: string) => {
     // Check if user is logged in first
     if (!isAuthenticated) {
       toast({
@@ -42,6 +45,13 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
         description: "Please log in to enroll in this class.",
       });
       navigate('/auth/login');
+      return;
+    }
+
+    // For parents, show child selector if childId not provided
+    if (user?.role === "parent" && !childId) {
+      setPendingEnrollment('free');
+      setShowChildSelector(true);
       return;
     }
 
@@ -56,8 +66,8 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
     setIsEnrolling(true);
     
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      if (!currentUser) {
         toast({
           title: "Please log in",
           description: "You need to be logged in to enroll in a class.",
@@ -67,12 +77,27 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
         return;
       }
 
-      console.log('Attempting to enroll user:', user.id, 'in class:', classDetails.id);
+      console.log('Attempting to enroll user:', currentUser.id, 'in class:', classDetails.id);
 
-      // Use the existing enrollment function that includes notification logic
-      await enrollStudentInClass(classDetails.id, user.id);
+      // Insert enrollment with child_id if parent
+      const enrollmentData: any = {
+        class_id: classDetails.id,
+        student_id: currentUser.id,
+        status: 'active',
+        batch_number: classDetails.batch_number,
+      };
 
-      console.log('Enrollment successful with notifications');
+      if (childId) {
+        enrollmentData.child_id = childId;
+      }
+
+      const { error } = await supabase
+        .from('student_enrollments')
+        .insert(enrollmentData);
+
+      if (error) throw error;
+
+      console.log('Enrollment successful');
       
       toast({
         title: "Successfully enrolled!",
@@ -91,6 +116,8 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
       });
     } finally {
       setIsEnrolling(false);
+      setShowChildSelector(false);
+      setPendingEnrollment(null);
     }
   };
 
@@ -100,7 +127,7 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
     onEnrollmentChange();
   };
 
-  const handleEnhancedPayment = () => {
+  const handleEnhancedPayment = (childId?: string) => {
     // Check if user is logged in first
     if (!isAuthenticated) {
       toast({
@@ -111,18 +138,30 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
       return;
     }
 
+    // For parents, show child selector if childId not provided
+    if (user?.role === "parent" && !childId) {
+      setPendingEnrollment('payment');
+      setShowChildSelector(true);
+      return;
+    }
+
     const amount = Math.round((typeof displayPrice === 'string' ? parseFloat(displayPrice) : displayPrice || 0) * 100);
     const description = `Course: ${classDetails.title}`;
+    
+    // Store child_id for later use after payment
+    if (childId) {
+      localStorage.setItem(`pending_child_${classDetails.id}`, childId);
+    }
     
     createPaymentCheckout.mutate({
       amount,
       description,
       classId: classDetails.id,
-      currency: "inr", // Force INR currency
+      currency: "inr",
     });
   };
 
-  const handleCreateClassSubscription = () => {
+  const handleCreateClassSubscription = (childId?: string) => {
     // Check if user is logged in first
     if (!isAuthenticated) {
       toast({
@@ -130,6 +169,13 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
         description: "Please log in to subscribe to this class.",
       });
       navigate('/auth/login');
+      return;
+    }
+
+    // For parents, show child selector if childId not provided
+    if (user?.role === "parent" && !childId) {
+      setPendingEnrollment('subscription');
+      setShowChildSelector(true);
       return;
     }
 
@@ -142,16 +188,32 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
       return;
     }
 
+    // Store child_id for later use after subscription
+    if (childId) {
+      localStorage.setItem(`pending_child_${classDetails.id}`, childId);
+    }
+    
     createClassSubscription.mutate({
       classId: classDetails.id,
-      monthlyAmount: Math.round(classDetails.monthly_charges * 100), // Convert to paise/cents
+      monthlyAmount: Math.round(classDetails.monthly_charges * 100),
       className: classDetails.title,
-      currency: "inr"
+      currency: "inr",
     });
   };
 
+  const handleChildSelectionConfirm = (childId: string) => {
+    if (pendingEnrollment === 'free') {
+      handleFreeEnrollment(childId);
+    } else if (pendingEnrollment === 'payment') {
+      handleEnhancedPayment(childId);
+    } else if (pendingEnrollment === 'subscription') {
+      handleCreateClassSubscription(childId);
+    }
+  };
+
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t border-gray-100">
+    <>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pt-4 border-t border-gray-100">
       <div>
         <span className="text-xl font-bold text-[#8A5BB7]">
           {displayPrice ? `₹${displayPrice}` : 'Free'}
@@ -186,7 +248,7 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
           ) : (
             // Fixed duration classes use enhanced one-time payment
             <Button
-              onClick={handleEnhancedPayment}
+              onClick={() => handleEnhancedPayment()}
               disabled={createPaymentCheckout.isPending}
               className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
             >
@@ -195,7 +257,7 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
           )
         ) : (
           <Button
-            onClick={handleFreeEnrollment}
+            onClick={() => handleFreeEnrollment()}
             disabled={isEnrolling || (classDetails.isEnrolled && classDetails.isCurrentBatch)}
             className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90"
           >
@@ -210,7 +272,17 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
           </Button>
         )}
       </div>
-    </div>
+      </div>
+
+      {user?.role === "parent" && (
+        <EnrollmentChildSelector
+          open={showChildSelector}
+          onOpenChange={setShowChildSelector}
+          onConfirm={handleChildSelectionConfirm}
+          isProcessing={isEnrolling || createPaymentCheckout.isPending || createClassSubscription.isPending}
+        />
+      )}
+    </>
   );
 };
 

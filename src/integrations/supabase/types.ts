@@ -62,6 +62,42 @@ export type Database = {
         }
         Relationships: []
       }
+      children: {
+        Row: {
+          age: number | null
+          created_at: string | null
+          date_of_birth: string | null
+          grade_level: string | null
+          id: string
+          interests: string[] | null
+          name: string
+          parent_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          age?: number | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          grade_level?: string | null
+          id?: string
+          interests?: string[] | null
+          name: string
+          parent_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          age?: number | null
+          created_at?: string | null
+          date_of_birth?: string | null
+          grade_level?: string | null
+          id?: string
+          interests?: string[] | null
+          name?: string
+          parent_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       class_locations: {
         Row: {
           city: string | null
@@ -607,6 +643,7 @@ export type Database = {
       student_enrollments: {
         Row: {
           batch_number: number | null
+          child_id: string | null
           class_id: string
           created_at: string | null
           enrollment_date: string | null
@@ -618,6 +655,7 @@ export type Database = {
         }
         Insert: {
           batch_number?: number | null
+          child_id?: string | null
           class_id: string
           created_at?: string | null
           enrollment_date?: string | null
@@ -629,6 +667,7 @@ export type Database = {
         }
         Update: {
           batch_number?: number | null
+          child_id?: string | null
           class_id?: string
           created_at?: string | null
           enrollment_date?: string | null
@@ -639,6 +678,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "student_enrollments_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "student_enrollments_class_id_fkey"
             columns: ["class_id"]

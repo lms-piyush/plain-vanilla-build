@@ -23,9 +23,11 @@ import {
   Settings,
   CreditCard
 } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Sidebar = () => {
   const location = useLocation();
+  const { user } = useAuth();
   const isActive = (path: string) => location.pathname === path;
   const isTutorRoute = location.pathname.startsWith('/tutor');
 
@@ -33,6 +35,7 @@ const Sidebar = () => {
   const studentMenuItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/student/dashboard" },
     { icon: Book, label: "My Classes", path: "/student/my-classes" },
+    ...(user?.role === "parent" ? [{ icon: Users, label: "My Children", path: "/student/my-children" }] : []),
     { icon: Compass, label: "Explore Classes", path: "/student/explore" },
     { icon: CreditCard, label: "Subscription", path: "/student/subscription" },
     { icon: MessagesSquare, label: "Messages", path: "/student/messages" },

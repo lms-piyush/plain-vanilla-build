@@ -50,6 +50,7 @@ import TutorProfilePage from "@/pages/tutor/Profile";
 // Student pages
 import StudentDashboardPage from "@/pages/student/Dashboard";
 import StudentMyClasses from "@/pages/student/MyClasses";
+import MyChildren from "@/pages/student/MyChildren";
 import ExploreClasses from "@/pages/student/ExploreClasses";
 import ExploreTutors from "@/pages/student/ExploreTutors";
 import ClassDetail from "@/pages/student/ClassDetail";
@@ -217,6 +218,10 @@ const AppRoutes = () => {
         <Route 
           path="/student/my-classes" 
           element={<ProtectedRoute allowedRoles={["student", "parent"]}><StudentMyClasses /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/student/my-children" 
+          element={<ProtectedRoute allowedRoles={["parent"]}><MyChildren /></ProtectedRoute>} 
         />
         <Route 
           path="/student/checkout/:id" 
