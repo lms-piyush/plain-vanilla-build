@@ -29,7 +29,7 @@ import {
 import { useTutorProfile } from '@/hooks/use-tutor-profile';
 import { useTutorReviews } from '@/hooks/use-tutor-reviews';
 import { useAllClassesWithReviews } from '@/hooks/use-all-classes-with-reviews';
-import { useTutorAnalytics } from '@/hooks/use-tutor-analytics';
+import { usePublicTutorAnalytics } from '@/hooks/use-public-tutor-analytics';
 import { useAuth } from '@/contexts/AuthContext';
 import TutorReviewCard from '@/components/student/class-details/reviews-tab/TutorReviewCard';
 import WriteReviewModal from '@/components/student/class-details/WriteReviewModal';
@@ -65,7 +65,7 @@ const EnhancedTutorProfile = () => {
   const { 
     data: analyticsData, 
     isLoading: analyticsLoading 
-  } = useTutorAnalytics(id || "");
+  } = usePublicTutorAnalytics(id);
 
   const handleSubmitReview = async (rating: number, reviewText: string) => {
     setIsSubmitting(true);
