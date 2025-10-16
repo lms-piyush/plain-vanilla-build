@@ -19,6 +19,8 @@ import ClassCard from "@/components/student/ClassCard";
 import FilterSheet from "@/components/student/FilterSheet";
 import ActiveFilterDisplay from "@/components/common/ActiveFilterDisplay";
 import { useFilterState } from "@/hooks/use-filter-state";
+import UpcomingSessionsCard from "@/components/student/UpcomingSessionsCard";
+import { useUpcomingSessions } from "@/hooks/use-upcoming-sessions";
 
 const MyClasses = () => {
   const navigate = useNavigate();
@@ -62,6 +64,9 @@ const MyClasses = () => {
     enrolledClasses: enrolledClassIds,
     ...filterValues
   });
+
+  // Fetch upcoming sessions
+  const { sessions: upcomingSessions, isLoading: isSessionsLoading } = useUpcomingSessions();
 
   const isLoading = enrollmentsLoading || isFilteredLoading;
   const error = enrollmentsError || filteredError;
@@ -173,6 +178,11 @@ const MyClasses = () => {
   return (
     <>
       <h1 className="text-2xl font-bold mb-6">My Classes</h1>
+
+      {/* Upcoming Sessions */}
+      <div className="mb-6">
+        <UpcomingSessionsCard sessions={upcomingSessions} isLoading={isSessionsLoading} />
+      </div>
       
       {/* Search Section */}
       <div className="mb-6">
@@ -202,12 +212,12 @@ const MyClasses = () => {
         <Tabs defaultValue="all" className="w-full" onValueChange={setActiveTab}>
           <div className="flex justify-between items-center">
             <TabsList>
-              <TabsTrigger value="all">All ({classes.length})</TabsTrigger>
+              <TabsTrigger value="all">All</TabsTrigger>
               <TabsTrigger value="active">
-                Active Courses ({classes.filter(c => c.status === "Active" || c.status === "Enrolled").length})
+                Active
               </TabsTrigger>
               <TabsTrigger value="completed">
-                Completed ({classes.filter(c => c.status === "Completed").length})
+                Completed
               </TabsTrigger>
             </TabsList>
             

@@ -1,17 +1,26 @@
 
-import React from "react";
+import React, { useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useStudentClassDetails } from "@/hooks/use-student-class-details";
 import ClassDetailHeader from "@/components/student/class-details/ClassDetailHeader";
 import ClassPurchaseSection from "@/components/student/class-details/ClassPurchaseSection";
 import ClassTabs from "@/components/student/class-details/ClassTabs";
+import { useRecentlyViewedClasses } from "@/hooks/use-recently-viewed-classes";
 
 const ClassDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { trackView } = useRecentlyViewedClasses();
 
   const { classDetails, isLoading, error, refetch, reviewStats } = useStudentClassDetails(id || '');
+
+  // Track view when component mounts or id changes
+  useEffect(() => {
+    if (id) {
+      trackView(id);
+    }
+  }, [id, trackView]);
 
   if (isLoading) {
     return (

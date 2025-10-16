@@ -5,13 +5,16 @@ import CourseDistributionChart from "@/components/dashboard/CourseDistributionCh
 import CourseCard from "@/components/dashboard/CourseCard";
 import ClassesTable from "@/components/dashboard/ClassesTable";
 import { Button } from "@/components/ui/button";
-import { Calendar, Book, Star, BookOpen } from "lucide-react";
+import { Calendar, Book, Star, BookOpen, Clock, TrendingUp } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
 import { useNewCourses } from "@/hooks/use-new-courses";
 import { useStudentTodayClasses } from "@/hooks/use-student-today-classes";
 import { useStudentEnrollmentStats } from "@/hooks/use-student-enrollment-stats";
 import { useStudentSavedClassesStats } from "@/hooks/use-student-saved-classes-stats";
 import { useStudentCourseDistribution } from "@/hooks/use-student-course-distribution";
+import { useRecentlyViewedClasses } from "@/hooks/use-recently-viewed-classes";
+import { useRecommendedClasses } from "@/hooks/use-recommended-classes";
+import OnboardingTour from "@/components/student/OnboardingTour";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -20,6 +23,8 @@ const Dashboard = () => {
   const { data: enrollmentStats = { totalEnrolled: 0 }, isLoading: isEnrollmentStatsLoading } = useStudentEnrollmentStats();
   const { data: savedClassesStats = { totalSaved: 0 }, isLoading: isSavedStatsLoading } = useStudentSavedClassesStats();
   const { data: courseDistribution = { notStarted: 0, ongoing: 0, completed: 0 }, isLoading: isDistributionLoading } = useStudentCourseDistribution();
+  const { recentlyViewed, isLoading: isRecentlyViewedLoading } = useRecentlyViewedClasses();
+  const { recommendations, isLoading: isRecommendationsLoading } = useRecommendedClasses();
 
   // Calculate stats from real data
   const stats = [
@@ -74,6 +79,7 @@ const Dashboard = () => {
 
   return (
     <>
+      <OnboardingTour />
       <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
       
       {/* Statistics Section */}
@@ -90,17 +96,94 @@ const Dashboard = () => {
         ))}
       </div>
       
+      {/* Recommended for You Section */}
+      {recommendations.length > 0 && (
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5 text-primary" />
+              <h2 className="text-xl font-semibold">Recommended for You</h2>
+            </div>
+            <Button 
+              variant="outline" 
+              onClick={() => navigate("/student/explore")}
+            >
+              Explore More
+            </Button>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {isRecommendationsLoading ? (
+              [...Array(3)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-muted h-40 rounded-lg mb-4"></div>
+                  <div className="bg-muted h-4 rounded mb-2"></div>
+                  <div className="bg-muted h-4 rounded w-3/4"></div>
+                </div>
+              ))
+            ) : (
+              recommendations.slice(0, 3).map((course: any) => (
+                <CourseCard
+                  key={course.id}
+                  id={course.id}
+                  title={course.title}
+                  tutor="Expert Tutor"
+                  rating={course.average_rating || 0}
+                  image={course.thumbnail_url || "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=300"}
+                  onClick={() => navigate(`/student/classes/${course.id}`)}
+                />
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Recently Viewed Section */}
+      {recentlyViewed.length > 0 && (
+        <div className="mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <div className="flex items-center gap-2">
+              <Clock className="h-5 w-5 text-primary" />
+              <h2 className="text-xl font-semibold">Recently Viewed</h2>
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {isRecentlyViewedLoading ? (
+              [...Array(3)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-muted h-40 rounded-lg mb-4"></div>
+                  <div className="bg-muted h-4 rounded mb-2"></div>
+                  <div className="bg-muted h-4 rounded w-3/4"></div>
+                </div>
+              ))
+            ) : (
+              recentlyViewed.slice(0, 3).map((item: any) => (
+                <CourseCard
+                  key={item.class.id}
+                  id={item.class.id}
+                  title={item.class.title}
+                  tutor="Tutor"
+                  rating={0}
+                  image={item.class.thumbnail_url || "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b?auto=format&fit=crop&w=300"}
+                  onClick={() => navigate(`/student/classes/${item.class.id}`)}
+                />
+              ))
+            )}
+          </div>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Course Distribution Chart */}
         <CourseDistributionChart data={chartData} totalCourses={totalCourses} />
         
-        {/* New Courses Section (renamed from Popular Courses) */}
+        {/* New Courses Section */}
         <div className="lg:col-span-2 flex flex-col h-full">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-xl font-semibold">New Courses</h2>
             <Button 
               variant="outline" 
-              className="text-[#8A5BB7] border-[#8A5BB7]"
               onClick={() => navigate("/student/explore")}
             >
               View All Courses
@@ -109,16 +192,15 @@ const Dashboard = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 flex-grow">
             {isNewCoursesLoading ? (
-              // Loading skeleton
               [...Array(3)].map((_, i) => (
                 <div key={i} className="animate-pulse">
-                  <div className="bg-gray-200 h-40 rounded-lg mb-4"></div>
-                  <div className="bg-gray-200 h-4 rounded mb-2"></div>
-                  <div className="bg-gray-200 h-4 rounded w-3/4"></div>
+                  <div className="bg-muted h-40 rounded-lg mb-4"></div>
+                  <div className="bg-muted h-4 rounded mb-2"></div>
+                  <div className="bg-muted h-4 rounded w-3/4"></div>
                 </div>
               ))
             ) : (
-              newCourses.map((course) => (
+              newCourses.slice(0, 3).map((course) => (
                 <CourseCard
                   key={course.id}
                   id={course.id}
@@ -130,16 +212,6 @@ const Dashboard = () => {
                 />
               ))
             )}
-          </div>
-
-          <div className="mt-auto">
-            <Button 
-              variant="outline" 
-              className="w-full mt-4 text-[#8A5BB7] border-[#8A5BB7] md:hidden"
-              onClick={() => navigate("/student/explore")}
-            >
-              View All Courses
-            </Button>
           </div>
         </div>
       </div>

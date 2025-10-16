@@ -142,6 +142,44 @@ export type Database = {
           },
         ]
       }
+      class_recommendations: {
+        Row: {
+          class_id: string
+          created_at: string | null
+          id: string
+          reason: string | null
+          recommendation_score: number | null
+          student_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          class_id: string
+          created_at?: string | null
+          id?: string
+          reason?: string | null
+          recommendation_score?: number | null
+          student_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          class_id?: string
+          created_at?: string | null
+          id?: string
+          reason?: string | null
+          recommendation_score?: number | null
+          student_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_recommendations_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       class_reviews: {
         Row: {
           class_id: string
@@ -623,6 +661,38 @@ export type Database = {
         }
         Relationships: []
       }
+      recently_viewed_classes: {
+        Row: {
+          class_id: string
+          created_at: string | null
+          id: string
+          student_id: string
+          viewed_at: string | null
+        }
+        Insert: {
+          class_id: string
+          created_at?: string | null
+          id?: string
+          student_id: string
+          viewed_at?: string | null
+        }
+        Update: {
+          class_id?: string
+          created_at?: string | null
+          id?: string
+          student_id?: string
+          viewed_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recently_viewed_classes_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       session_attendance: {
         Row: {
           created_at: string | null
@@ -660,36 +730,48 @@ export type Database = {
           batch_number: number | null
           child_id: string | null
           class_id: string
+          completed_sessions: number | null
           created_at: string | null
           enrollment_date: string | null
           id: string
+          last_accessed_at: string | null
           payment_status: string | null
+          progress_percentage: number | null
           status: string | null
           student_id: string
+          total_sessions: number | null
           updated_at: string | null
         }
         Insert: {
           batch_number?: number | null
           child_id?: string | null
           class_id: string
+          completed_sessions?: number | null
           created_at?: string | null
           enrollment_date?: string | null
           id?: string
+          last_accessed_at?: string | null
           payment_status?: string | null
+          progress_percentage?: number | null
           status?: string | null
           student_id: string
+          total_sessions?: number | null
           updated_at?: string | null
         }
         Update: {
           batch_number?: number | null
           child_id?: string | null
           class_id?: string
+          completed_sessions?: number | null
           created_at?: string | null
           enrollment_date?: string | null
           id?: string
+          last_accessed_at?: string | null
           payment_status?: string | null
+          progress_percentage?: number | null
           status?: string | null
           student_id?: string
+          total_sessions?: number | null
           updated_at?: string | null
         }
         Relationships: [

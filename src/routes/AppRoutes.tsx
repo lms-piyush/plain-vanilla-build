@@ -60,6 +60,7 @@ import SubscriptionSuccess from "@/pages/student/SubscriptionSuccess";
 import Subscription from "@/pages/student/Subscription";
 import EnhancedTutorProfile from "@/pages/student/EnhancedTutorProfile";
 import CourseCheckout from "@/pages/student/CourseCheckout";
+import EnrollmentSuccess from "@/pages/student/EnrollmentSuccess";
 
 // Explore Pages
 import AcademicSubjects from "@/pages/dashboard/explore/AcademicSubjects";
@@ -226,7 +227,11 @@ const AppRoutes = () => {
           element={<ProtectedRoute allowedRoles={["student", "parent"]}><CourseCheckout /></ProtectedRoute>} 
         />
         <Route 
-          path="/student/profile" 
+          path="/student/enrollment/success/:enrollmentId" 
+          element={<ProtectedRoute allowedRoles={["student", "parent"]}><EnrollmentSuccess /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/student/profile"
           element={<ProtectedRoute allowedRoles={["student", "parent"]}><Profile /></ProtectedRoute>} 
         />
         <Route 
