@@ -33,7 +33,7 @@ const Sidebar = () => {
 
   // Student navigation items - Updated with /student/ prefix
   const studentMenuItems = [
-    { icon: LayoutDashboard, label: "Dashboard", path: "/student/dashboard" },
+    { icon: LayoutDashboard, label: user?.role === "parent" ? "Family Overview" : "Dashboard", path: user?.role === "parent" ? "/student/family-overview" : "/student/dashboard" },
     { icon: Book, label: "My Classes", path: "/student/my-classes" },
     ...(user?.role === "parent" ? [{ icon: Users, label: "My Children", path: "/student/my-children" }] : []),
     { icon: Compass, label: "Explore Classes", path: "/student/explore" },

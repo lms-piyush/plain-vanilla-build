@@ -55,6 +55,9 @@ import EnhancedTutorProfile from "@/pages/student/EnhancedTutorProfile";
 import CourseCheckout from "@/pages/student/CourseCheckout";
 import EnrollmentSuccess from "@/pages/student/EnrollmentSuccess";
 
+// Parent pages
+import FamilyOverview from "@/pages/parent/FamilyOverview";
+
 // Explore Pages
 import AcademicSubjects from "@/pages/dashboard/explore/AcademicSubjects";
 import ArtsCreativity from "@/pages/dashboard/explore/ArtsCreativity";
@@ -186,6 +189,10 @@ const AppRoutes = () => {
         <Route 
           path="/student/my-children" 
           element={<ProtectedRoute allowedRoles={["parent"]}><MyChildren /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/student/family-overview" 
+          element={<ProtectedRoute allowedRoles={["parent"]}><FamilyOverview /></ProtectedRoute>} 
         />
         <Route 
           path="/student/checkout/:id" 

@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import StatCard from "@/components/dashboard/StatCard";
 import CourseDistributionChart from "@/components/dashboard/CourseDistributionChart";
 import CourseCard from "@/components/dashboard/CourseCard";
@@ -15,9 +16,11 @@ import { useStudentCourseDistribution } from "@/hooks/use-student-course-distrib
 import { useRecentlyViewedClasses } from "@/hooks/use-recently-viewed-classes";
 import { useRecommendedClasses } from "@/hooks/use-recommended-classes";
 import OnboardingTour from "@/components/student/OnboardingTour";
+import ParentOnboardingTour from "@/components/parent/ParentOnboardingTour";
 
 const Dashboard = () => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { data: newCourses = [], isLoading: isNewCoursesLoading } = useNewCourses();
   const { data: todayClasses = [], isLoading: isTodayClassesLoading } = useStudentTodayClasses();
   const { data: enrollmentStats = { totalEnrolled: 0 }, isLoading: isEnrollmentStatsLoading } = useStudentEnrollmentStats();
@@ -25,6 +28,12 @@ const Dashboard = () => {
   const { data: courseDistribution = { notStarted: 0, ongoing: 0, completed: 0 }, isLoading: isDistributionLoading } = useStudentCourseDistribution();
   const { recentlyViewed, isLoading: isRecentlyViewedLoading } = useRecentlyViewedClasses();
   const { recommendations, isLoading: isRecommendationsLoading } = useRecommendedClasses();
+  
+  // Redirect parents to family overview
+  if (user?.role === "parent") {
+    navigate("/student/family-overview", { replace: true });
+    return null;
+  }
 
   // Calculate stats from real data
   const stats = [
@@ -79,7 +88,7 @@ const Dashboard = () => {
 
   return (
     <>
-      <OnboardingTour />
+      {user?.role === "student" ? <OnboardingTour /> : <ParentOnboardingTour />}
       <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
       
       {/* Statistics Section */}
