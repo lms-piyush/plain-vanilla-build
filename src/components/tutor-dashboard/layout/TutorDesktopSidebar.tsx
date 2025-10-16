@@ -6,6 +6,8 @@ import {
   BarChart,
   MessageSquare,
   Star,
+  User,
+  HelpCircle,
   LogOut,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,7 +23,7 @@ const TutorDesktopSidebar = ({ isSidebarOpen, onLogout }: TutorDesktopSidebarPro
   const location = useLocation();
 
   const isActiveRoute = (path: string) => {
-    if (path === "/tutor-dashboard") {
+    if (path === "/tutor/dashboard") {
       return location.pathname === path;
     }
     return location.pathname.startsWith(path);
@@ -31,89 +33,101 @@ const TutorDesktopSidebar = ({ isSidebarOpen, onLogout }: TutorDesktopSidebarPro
     <aside className={`hidden md:block ${isSidebarOpen ? 'col-span-2 lg:col-span-2 xl:col-span-2' : 'col-span-1'} transition-all duration-300 border-r bg-background`}>
       <div className="flex flex-col h-full p-2 gap-1">
         <Link
-          to="/tutor-dashboard"
+          to="/tutor/dashboard"
           className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all ${
-            isActiveRoute("/tutor-dashboard") && location.pathname === "/tutor-dashboard"
-              ? "bg-purple-600 text-white font-medium"
-              : "text-muted-foreground hover:bg-purple-100 hover:text-purple-600"
+            isActiveRoute("/tutor/dashboard") && location.pathname === "/tutor/dashboard"
+              ? "bg-primary text-primary-foreground font-medium"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
-          aria-current={isActiveRoute("/tutor-dashboard") ? "page" : undefined}
+          aria-current={isActiveRoute("/tutor/dashboard") ? "page" : undefined}
         >
           <LayoutDashboard className="h-4 w-4 shrink-0" />
           {isSidebarOpen && <span className="truncate">Dashboard</span>}
         </Link>
         
         <Link
-          to="/tutor-dashboard/classes"
+          to="/tutor/classes"
           className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all ${
-            isActiveRoute("/tutor-dashboard/classes")
-              ? "bg-purple-100 text-purple-600 font-medium"
-              : "text-muted-foreground hover:bg-purple-100 hover:text-purple-600"
+            isActiveRoute("/tutor/classes")
+              ? "bg-primary text-primary-foreground font-medium"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
-          aria-current={isActiveRoute("/tutor-dashboard/classes") ? "page" : undefined}
+          aria-current={isActiveRoute("/tutor/classes") ? "page" : undefined}
         >
           <BookOpen className="h-4 w-4 shrink-0" />
-          {isSidebarOpen && (
-            <>
-              <span className="truncate">Classes</span>
-              <Badge className="ml-auto text-xs bg-purple-200 text-purple-700" variant="secondary">
-                3
-              </Badge>
-            </>
-          )}
+          {isSidebarOpen && <span className="truncate">Classes</span>}
         </Link>
         
         <Link
-          to="/tutor-dashboard/earnings"
+          to="/tutor/earnings"
           className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all ${
-            isActiveRoute("/tutor-dashboard/earnings")
-              ? "bg-purple-100 text-purple-600 font-medium"
-              : "text-muted-foreground hover:bg-purple-100 hover:text-purple-600"
+            isActiveRoute("/tutor/earnings")
+              ? "bg-primary text-primary-foreground font-medium"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
-          aria-current={isActiveRoute("/tutor-dashboard/earnings") ? "page" : undefined}
+          aria-current={isActiveRoute("/tutor/earnings") ? "page" : undefined}
         >
           <BarChart className="h-4 w-4 shrink-0" />
           {isSidebarOpen && <span className="truncate">Earnings</span>}
         </Link>
         
         <Link
-          to="/tutor-dashboard/messages"
+          to="/tutor/messages"
           className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all ${
-            isActiveRoute("/tutor-dashboard/messages")
-              ? "bg-purple-100 text-purple-600 font-medium"
-              : "text-muted-foreground hover:bg-purple-100 hover:text-purple-600"
+            isActiveRoute("/tutor/messages")
+              ? "bg-primary text-primary-foreground font-medium"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
-          aria-current={isActiveRoute("/tutor-dashboard/messages") ? "page" : undefined}
+          aria-current={isActiveRoute("/tutor/messages") ? "page" : undefined}
         >
           <MessageSquare className="h-4 w-4 shrink-0" />
-          {isSidebarOpen && (
-            <>
-              <span className="truncate">Messages</span>
-              <Badge className="ml-auto text-xs bg-purple-200 text-purple-700" variant="secondary">
-                2
-              </Badge>
-            </>
-          )}
+          {isSidebarOpen && <span className="truncate">Messages</span>}
         </Link>
         
         <Link
-          to="/tutor-dashboard/feedback"
+          to="/tutor/feedback"
           className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all ${
-            isActiveRoute("/tutor-dashboard/feedback")
-              ? "bg-purple-100 text-purple-600 font-medium"
-              : "text-muted-foreground hover:bg-purple-100 hover:text-purple-600"
+            isActiveRoute("/tutor/feedback")
+              ? "bg-primary text-primary-foreground font-medium"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
           }`}
-          aria-current={isActiveRoute("/tutor-dashboard/feedback") ? "page" : undefined}
+          aria-current={isActiveRoute("/tutor/feedback") ? "page" : undefined}
         >
           <Star className="h-4 w-4 shrink-0" />
           {isSidebarOpen && <span className="truncate">Feedback</span>}
+        </Link>
+        
+        <Link
+          to="/tutor/profile"
+          className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all ${
+            isActiveRoute("/tutor/profile")
+              ? "bg-primary text-primary-foreground font-medium"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          }`}
+          aria-current={isActiveRoute("/tutor/profile") ? "page" : undefined}
+        >
+          <User className="h-4 w-4 shrink-0" />
+          {isSidebarOpen && <span className="truncate">Profile</span>}
+        </Link>
+        
+        <Link
+          to="/tutor/help"
+          className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-all ${
+            isActiveRoute("/tutor/help")
+              ? "bg-primary text-primary-foreground font-medium"
+              : "text-muted-foreground hover:bg-muted hover:text-foreground"
+          }`}
+          aria-current={isActiveRoute("/tutor/help") ? "page" : undefined}
+        >
+          <HelpCircle className="h-4 w-4 shrink-0" />
+          {isSidebarOpen && <span className="truncate">Help</span>}
         </Link>
 
         <div className="mt-auto pt-4">
           <Separator className="mb-2" />
           <Button 
             variant="ghost" 
-            className={`w-full justify-start gap-3 text-muted-foreground hover:bg-purple-100 hover:text-purple-600 ${!isSidebarOpen ? 'px-3' : ''}`}
+            className={`w-full justify-start gap-3 text-muted-foreground hover:bg-muted hover:text-foreground ${!isSidebarOpen ? 'px-3' : ''}`}
             onClick={onLogout}
             aria-label="Log out"
           >

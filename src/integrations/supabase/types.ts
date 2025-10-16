@@ -633,6 +633,8 @@ export type Database = {
           date_of_birth: string | null
           full_name: string | null
           id: string
+          onboarding_completed: boolean | null
+          onboarding_step: number | null
           phone: string | null
           role: string | null
           updated_at: string | null
@@ -644,6 +646,8 @@ export type Database = {
           date_of_birth?: string | null
           full_name?: string | null
           id: string
+          onboarding_completed?: boolean | null
+          onboarding_step?: number | null
           phone?: string | null
           role?: string | null
           updated_at?: string | null
@@ -655,6 +659,8 @@ export type Database = {
           date_of_birth?: string | null
           full_name?: string | null
           id?: string
+          onboarding_completed?: boolean | null
+          onboarding_step?: number | null
           phone?: string | null
           role?: string | null
           updated_at?: string | null
@@ -1030,6 +1036,36 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      tutor_preferences: {
+        Row: {
+          auto_rate_students: boolean | null
+          created_at: string | null
+          id: string
+          reminder_hours_before: number | null
+          send_session_reminders: boolean | null
+          tutor_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          auto_rate_students?: boolean | null
+          created_at?: string | null
+          id?: string
+          reminder_hours_before?: number | null
+          send_session_reminders?: boolean | null
+          tutor_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          auto_rate_students?: boolean | null
+          created_at?: string | null
+          id?: string
+          reminder_hours_before?: number | null
+          send_session_reminders?: boolean | null
+          tutor_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

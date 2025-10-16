@@ -8,7 +8,6 @@ import NotFound from "@/pages/NotFound";
 // Landing and Dashboard pages
 import Index from "@/pages/dashboard/Index";
 import Dashboard from "@/pages/Dashboard";
-import TutorEntry from "@/pages/TutorEntry";
 import TutorApplicationForm from "@/pages/TutorApplicationForm";
 
 // Stripe Demo
@@ -29,13 +28,7 @@ import SavedClasses from "@/pages/dashboard/dashboard/SavedClasses";
 import UserProfile from "@/pages/dashboard/dashboard/UserProfile";
 import AccountSettings from "@/pages/dashboard/dashboard/AccountSettings";
 
-// Tutor Dashboard Pages
-import TutorDashboard from "@/pages/dashboard/tutor-dashboard/TutorDashboard";
-import MyClasses from "@/pages/dashboard/tutor-dashboard/MyClasses";
-import ClassDetails from "@/pages/dashboard/tutor-dashboard/ClassDetails";
-import Earnings from "@/pages/dashboard/tutor-dashboard/Earnings";
-import Messages from "@/pages/dashboard/tutor-dashboard/Messages";
-import Feedback from "@/pages/dashboard/tutor-dashboard/Feedback";
+// Tutor Dashboard Pages - removed, using /tutor/* routes instead
 
 // Tutor pages
 import TutorDashboardMain from "@/pages/tutor/Dashboard";
@@ -107,9 +100,6 @@ const AppRoutes = () => {
       {/* Dashboard selection page */}
       <Route path="/dashboard" element={<Dashboard />} />
       
-      {/* Entry points that redirect to respective dashboards */}
-      <Route path="/tutor" element={<TutorEntry />} />
-      
       {/* Auth */}
       <Route path="/auth/login" element={<Login />} />
       <Route path="/auth/signup" element={<SignUp />} />
@@ -138,31 +128,7 @@ const AppRoutes = () => {
         element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} 
       />
       
-      {/* Tutor Dashboard */}
-      <Route 
-        path="/tutor-dashboard" 
-        element={<ProtectedRoute allowedRoles={["tutor"]}><TutorDashboard /></ProtectedRoute>} 
-      />
-      <Route 
-        path="/tutor-dashboard/earnings" 
-        element={<ProtectedRoute allowedRoles={["tutor"]}><Earnings /></ProtectedRoute>} 
-      />
-      <Route 
-        path="/tutor-dashboard/classes" 
-        element={<ProtectedRoute allowedRoles={["tutor"]}><MyClasses /></ProtectedRoute>} 
-      />
-      <Route 
-        path="/tutor-dashboard/classes/:id" 
-        element={<ProtectedRoute allowedRoles={["tutor"]}><ClassDetails /></ProtectedRoute>} 
-      />
-      <Route 
-        path="/tutor-dashboard/messages" 
-        element={<ProtectedRoute allowedRoles={["tutor"]}><Messages /></ProtectedRoute>} 
-      />
-      <Route 
-        path="/tutor-dashboard/feedback" 
-        element={<ProtectedRoute allowedRoles={["tutor"]}><Feedback /></ProtectedRoute>} 
-      />
+      {/* Removed old /tutor-dashboard/* routes - now using /tutor/* routes */}
       
       {/* Tutor Routes with Layout */}
       <Route element={<Layout />}>
@@ -185,7 +151,6 @@ const AppRoutes = () => {
         <Route 
           path="/tutor/messages" 
           element={<ProtectedRoute allowedRoles={["tutor"]}><TutorMessages /></ProtectedRoute>} 
-          // element={<ProtectedRoute allowedRoles={["tutor"]}> <Messages /></ProtectedRoute>} 
         />
         <Route 
           path="/tutor/feedback" 

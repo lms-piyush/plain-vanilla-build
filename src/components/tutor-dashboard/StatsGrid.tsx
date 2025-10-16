@@ -7,22 +7,36 @@ interface StatsGridProps {
   totalClasses?: number;
   activeClasses?: number;
   todaysSessionsCount?: number;
+  totalStudents?: number;
+  monthlyRevenue?: number;
+  averageRating?: number;
+  isLoading?: boolean;
 }
 
-const StatsGrid = ({ totalClasses: propTotalClasses, activeClasses: propActiveClasses, todaysSessionsCount: propTodaysSessionsCount }: StatsGridProps) => {
-  const { data: stats, isLoading } = useTutorDashboardStats();
+const StatsGrid = ({ 
+  totalClasses: propTotalClasses, 
+  activeClasses: propActiveClasses, 
+  todaysSessionsCount: propTodaysSessionsCount,
+  totalStudents: propTotalStudents,
+  monthlyRevenue: propMonthlyRevenue,
+  averageRating: propAverageRating,
+  isLoading: propIsLoading
+}: StatsGridProps) => {
+  const { data: stats, isLoading: hookIsLoading } = useTutorDashboardStats();
+  
+  const isLoading = propIsLoading ?? hookIsLoading;
 
-  // Use real data if available, fallback to props, then to dummy data
-  const totalClasses = stats?.totalClasses ?? propTotalClasses ?? 12;
+  // Use real data if available, fallback to props, then to default values
+  const totalClasses = propTotalClasses ?? stats?.totalClasses ?? 0;
   const activeClasses = propActiveClasses ?? Math.floor(totalClasses * 0.8);
-  const todaysSessionsCount = stats?.todaysSessions ?? propTodaysSessionsCount ?? 3;
-  const totalStudents = stats?.totalStudents ?? 156;
-  const monthlyRevenue = stats?.monthlyRevenue ?? 15000;
-  const unreadMessages = stats?.unreadMessages ?? 12;
-  const averageRating = stats?.averageRating ?? 4.5;
-  const totalReviews = stats?.totalReviews ?? 135;
-  const studentGrowth = stats?.studentGrowth ?? 14;
-  const revenueGrowth = stats?.previousMonthRevenue > 0 
+  const todaysSessionsCount = propTodaysSessionsCount ?? stats?.todaysSessions ?? 0;
+  const totalStudents = propTotalStudents ?? stats?.totalStudents ?? 0;
+  const monthlyRevenue = propMonthlyRevenue ?? stats?.monthlyRevenue ?? 0;
+  const unreadMessages = stats?.unreadMessages ?? 0;
+  const averageRating = propAverageRating ?? stats?.averageRating ?? 0;
+  const totalReviews = stats?.totalReviews ?? 0;
+  const studentGrowth = stats?.studentGrowth ?? 0;
+  const revenueGrowth = stats?.previousMonthRevenue && stats.previousMonthRevenue > 0
     ? ((monthlyRevenue - stats.previousMonthRevenue) / stats.previousMonthRevenue * 100)
     : 0;
 
