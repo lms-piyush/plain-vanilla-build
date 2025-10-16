@@ -311,14 +311,18 @@ export type Database = {
       }
       classes: {
         Row: {
+          age_range_max: number | null
+          age_range_min: number | null
           auto_renewal: boolean | null
           batch_number: number | null
           class_format: string | null
           class_size: string | null
+          class_type: string | null
           created_at: string | null
           currency: string | null
           delivery_mode: string | null
           description: string | null
+          duration_minutes: number | null
           duration_type: string | null
           enrollment_deadline: string | null
           id: string
@@ -327,6 +331,7 @@ export type Database = {
           price: number | null
           pricing_model: string | null
           required_subscription_tier: string | null
+          schedule_type: string | null
           status: string | null
           subject: string | null
           thumbnail_url: string | null
@@ -335,14 +340,18 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          age_range_max?: number | null
+          age_range_min?: number | null
           auto_renewal?: boolean | null
           batch_number?: number | null
           class_format?: string | null
           class_size?: string | null
+          class_type?: string | null
           created_at?: string | null
           currency?: string | null
           delivery_mode?: string | null
           description?: string | null
+          duration_minutes?: number | null
           duration_type?: string | null
           enrollment_deadline?: string | null
           id?: string
@@ -351,6 +360,7 @@ export type Database = {
           price?: number | null
           pricing_model?: string | null
           required_subscription_tier?: string | null
+          schedule_type?: string | null
           status?: string | null
           subject?: string | null
           thumbnail_url?: string | null
@@ -359,14 +369,18 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          age_range_max?: number | null
+          age_range_min?: number | null
           auto_renewal?: boolean | null
           batch_number?: number | null
           class_format?: string | null
           class_size?: string | null
+          class_type?: string | null
           created_at?: string | null
           currency?: string | null
           delivery_mode?: string | null
           description?: string | null
+          duration_minutes?: number | null
           duration_type?: string | null
           enrollment_deadline?: string | null
           id?: string
@@ -375,6 +389,7 @@ export type Database = {
           price?: number | null
           pricing_model?: string | null
           required_subscription_tier?: string | null
+          schedule_type?: string | null
           status?: string | null
           subject?: string | null
           thumbnail_url?: string | null

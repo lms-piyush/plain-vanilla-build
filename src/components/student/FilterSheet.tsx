@@ -14,6 +14,8 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Slider } from "@/components/ui/slider";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface FilterSheetProps {
   filterOpen: boolean;
@@ -29,6 +31,14 @@ interface FilterSheetProps {
   paymentModel: "one-time" | "subscription";
   setPaymentModel: (model: "one-time" | "subscription") => void;
   onApplyFilters: () => void;
+  ageRange?: [number, number];
+  setAgeRange?: (range: [number, number]) => void;
+  priceRange?: [number, number];
+  setPriceRange?: (range: [number, number]) => void;
+  gradeLevel?: string;
+  setGradeLevel?: (level: string) => void;
+  dayOfWeek?: string;
+  setDayOfWeek?: (day: string) => void;
 }
 
 const FilterSheet = ({
@@ -45,6 +55,14 @@ const FilterSheet = ({
   paymentModel,
   setPaymentModel,
   onApplyFilters,
+  ageRange = [5, 18],
+  setAgeRange,
+  priceRange = [0, 100],
+  setPriceRange,
+  gradeLevel,
+  setGradeLevel,
+  dayOfWeek,
+  setDayOfWeek,
 }: FilterSheetProps) => {
   
   const handleSaveFilters = () => {
@@ -200,6 +218,103 @@ const FilterSheet = ({
               </div>
             </RadioGroup>
           </div>
+          
+          <Separator />
+
+          {/* Age Range Filter */}
+          {setAgeRange && (
+            <div className="space-y-3">
+              <h3 className="text-sm font-medium">Age Range</h3>
+              <div className="space-y-2">
+                <Slider
+                  min={3}
+                  max={18}
+                  step={1}
+                  value={ageRange}
+                  onValueChange={(value) => setAgeRange(value as [number, number])}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>{ageRange[0]} years</span>
+                  <span>{ageRange[1]} years</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Grade Level Filter */}
+          {setGradeLevel && (
+            <>
+              <Separator />
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium">Grade Level</h3>
+                <Select value={gradeLevel} onValueChange={setGradeLevel}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select grade level" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Grades</SelectItem>
+                    <SelectItem value="pre-k">Pre-K</SelectItem>
+                    <SelectItem value="k-2">K-2</SelectItem>
+                    <SelectItem value="3-5">3-5</SelectItem>
+                    <SelectItem value="6-8">6-8</SelectItem>
+                    <SelectItem value="9-12">9-12</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
+
+          {/* Day of Week Filter */}
+          {setDayOfWeek && (
+            <>
+              <Separator />
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium">Day of Week</h3>
+                <Select value={dayOfWeek} onValueChange={setDayOfWeek}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Any day" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="any">Any day</SelectItem>
+                    <SelectItem value="weekdays">Weekdays</SelectItem>
+                    <SelectItem value="weekends">Weekends</SelectItem>
+                    <SelectItem value="monday">Monday</SelectItem>
+                    <SelectItem value="tuesday">Tuesday</SelectItem>
+                    <SelectItem value="wednesday">Wednesday</SelectItem>
+                    <SelectItem value="thursday">Thursday</SelectItem>
+                    <SelectItem value="friday">Friday</SelectItem>
+                    <SelectItem value="saturday">Saturday</SelectItem>
+                    <SelectItem value="sunday">Sunday</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </>
+          )}
+
+          {/* Price Range Filter */}
+          {setPriceRange && (
+            <>
+              <Separator />
+              <div className="space-y-3">
+                <h3 className="text-sm font-medium">Price Range</h3>
+                <div className="space-y-2">
+                  <Slider
+                    min={0}
+                    max={200}
+                    step={5}
+                    value={priceRange}
+                    onValueChange={(value) => setPriceRange(value as [number, number])}
+                    className="w-full"
+                  />
+                  <div className="flex justify-between text-xs text-muted-foreground">
+                    <span>${priceRange[0]}</span>
+                    <span>${priceRange[1]}</span>
+                  </div>
+                </div>
+              </div>
+            </>
+          )}
           
           <div className="flex justify-end pt-4">
             <Button 

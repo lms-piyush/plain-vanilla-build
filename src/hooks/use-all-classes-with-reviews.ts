@@ -20,9 +20,15 @@ export interface TutorClassWithReviews {
   created_at: string;
   updated_at: string;
   tutor_name: string;
+  tutor_avatar: string | null;
   average_rating: number;
   total_reviews: number;
   student_count: number;
+  age_range_min: number | null;
+  age_range_max: number | null;
+  duration_minutes: number | null;
+  class_type: string | null;
+  schedule_type: string | null;
 }
 
 interface UseAllClassesWithReviewsParams {
@@ -42,7 +48,7 @@ export const useAllClassesWithReviews = (params: UseAllClassesWithReviewsParams 
         .from("classes")
         .select(`
           *,
-          profiles!classes_tutor_id_fkey(full_name),
+          profiles!classes_tutor_id_fkey(full_name, avatar_url),
           class_reviews(rating),
           student_enrollments(id)
         `, { count: 'exact' })
@@ -84,9 +90,15 @@ export const useAllClassesWithReviews = (params: UseAllClassesWithReviewsParams 
           created_at: classItem.created_at,
           updated_at: classItem.updated_at,
           tutor_name: classItem.profiles?.full_name || "Unknown Tutor",
+          tutor_avatar: classItem.profiles?.avatar_url ?? null,
           average_rating: averageRating,
           total_reviews: totalReviews,
           student_count: studentCount,
+          age_range_min: classItem.age_range_min ?? null,
+          age_range_max: classItem.age_range_max ?? null,
+          duration_minutes: classItem.duration_minutes ?? null,
+          class_type: classItem.class_type ?? null,
+          schedule_type: classItem.schedule_type ?? null,
         } as TutorClassWithReviews;
       }) || [];
 

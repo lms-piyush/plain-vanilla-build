@@ -21,19 +21,25 @@ export const convertToClassCard = (tutorClass: TutorClassWithReviews, wishlisted
   };
 
   const getAgeRange = () => {
-    // For now, return a default age range. This will be replaced with actual data later
-    return "7-16";
+    if (tutorClass.age_range_min && tutorClass.age_range_max) {
+      return `${tutorClass.age_range_min}-${tutorClass.age_range_max} years`;
+    }
+    return "All ages";
   };
 
   const getDuration = () => {
-    // Default duration, will be replaced with actual data
-    return "60 Min";
+    if (tutorClass.duration_minutes) {
+      return `${tutorClass.duration_minutes} min`;
+    }
+    return "60 min";
   };
 
   const getSchedule = () => {
-    // Build schedule string from available data
+    if (tutorClass.schedule_type) {
+      return tutorClass.schedule_type;
+    }
     if (tutorClass.duration_type === 'recurring') {
-      return "Weekly classes • Flexible schedule";
+      return "Weekly • Flexible schedule";
     }
     return "One-time class";
   };
@@ -47,7 +53,7 @@ export const convertToClassCard = (tutorClass: TutorClassWithReviews, wishlisted
     title: tutorClass.title,
     tutor: tutorClass.tutor_name || "Unknown Tutor",
     tutorId: tutorClass.tutor_id,
-    tutorAvatar: undefined, // Will be populated when we add profile data
+    tutorAvatar: tutorClass.tutor_avatar,
     rating: tutorClass.average_rating || 0,
     reviewCount: tutorClass.total_reviews || 0,
     image: tutorClass.thumbnail_url || "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?auto=format&fit=crop&w=300",

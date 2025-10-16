@@ -27,8 +27,8 @@ const ClassesList = ({
   return (
     <TabsContent value={activeTab} className="mt-6">
       {isLoading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[...Array(9)].map((_, i) => (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {[...Array(6)].map((_, i) => (
             <div key={i} className="animate-pulse">
               <div className="bg-gray-200 h-40 rounded-lg mb-4"></div>
               <div className="bg-gray-200 h-4 rounded mb-2"></div>
@@ -37,7 +37,7 @@ const ClassesList = ({
           ))}
         </div>
       ) : displayedClasses.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {displayedClasses.map((course) => (
             <CourseCard
               key={course.id}
