@@ -5,12 +5,14 @@ import CreateClassDialog from '@/components/tutor-dashboard/class-creation/Creat
 import WelcomeSection from '@/components/tutor-dashboard/WelcomeSection';
 import StatsGrid from '@/components/tutor-dashboard/StatsGrid';
 import SessionsSection from '@/components/tutor-dashboard/SessionsSection';
+import { TutorOnboardingTour } from '@/components/tutor/TutorOnboardingTour';
 import { useTutorClasses } from '@/hooks/use-tutor-classes';
 import { useTutorDashboardStats } from '@/hooks/use-tutor-dashboard-stats';
 
 const Dashboard = () => {
   const [searchParams] = useSearchParams();
   const [createClassDialogOpen, setCreateClassDialogOpen] = useState(false);
+  const [onboardingOpen, setOnboardingOpen] = useState(false);
   const [sessionFilter, setSessionFilter] = useState<'today' | 'all'>('today');
   const [currentPage, setCurrentPage] = useState(1);
   
@@ -18,6 +20,13 @@ const Dashboard = () => {
   
   // Check if this is first time login
   const isFirstTime = searchParams.get('firstTime') === 'true';
+
+  // Show onboarding tour on first visit
+  useEffect(() => {
+    if (isFirstTime) {
+      setOnboardingOpen(true);
+    }
+  }, [isFirstTime]);
   
   // Fetch all classes to handle filtering client-side
   const { classes: allClasses, totalCount: allTotalCount, refetch } = useTutorClasses({
@@ -121,6 +130,12 @@ const Dashboard = () => {
   return (
     <div>
       <WelcomeSection onCreateClass={handleCreateClass} />
+      
+      {/* Tutor Onboarding Tour */}
+      <TutorOnboardingTour
+        isOpen={onboardingOpen}
+        onClose={() => setOnboardingOpen(false)}
+      />
       
       {/* Create Class Dialog */}
       <CreateClassDialog

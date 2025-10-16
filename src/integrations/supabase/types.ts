@@ -711,6 +711,7 @@ export type Database = {
           bio: string | null
           created_at: string | null
           date_of_birth: string | null
+          dismissed_profile_prompt: boolean | null
           full_name: string | null
           id: string
           onboarding_completed: boolean | null
@@ -724,6 +725,7 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           date_of_birth?: string | null
+          dismissed_profile_prompt?: boolean | null
           full_name?: string | null
           id: string
           onboarding_completed?: boolean | null
@@ -737,6 +739,7 @@ export type Database = {
           bio?: string | null
           created_at?: string | null
           date_of_birth?: string | null
+          dismissed_profile_prompt?: boolean | null
           full_name?: string | null
           id?: string
           onboarding_completed?: boolean | null
