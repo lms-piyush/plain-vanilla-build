@@ -14,12 +14,26 @@ const DashboardNavigation = () => {
     <nav className="hidden md:flex items-center space-x-6">
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
-            Explore Classes
-            <ChevronDown className="ml-1 h-4 w-4" />
+          <Button 
+            variant="ghost" 
+            className="text-gray-700 hover:text-[#8A5BB7] flex items-center"
+            asChild
+          >
+            <Link to="/student/explore" className="flex items-center">
+              Explore Classes
+              <ChevronDown className="ml-1 h-4 w-4" />
+            </Link>
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-64 bg-white">
+          <DropdownMenuItem>
+            <Link to="/student/explore" className="w-full">
+              <div className="flex flex-col">
+                <span className="font-medium">All Classes</span>
+                <span className="text-sm text-gray-500">Browse all available classes</span>
+              </div>
+            </Link>
+          </DropdownMenuItem>
           <DropdownMenuItem>
             <Link to="/explore/academic-subjects" className="w-full">
               <div className="flex flex-col">
