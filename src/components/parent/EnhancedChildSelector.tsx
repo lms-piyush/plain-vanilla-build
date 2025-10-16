@@ -11,6 +11,7 @@ interface EnhancedChildSelectorProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onConfirm: (childId: string) => void;
+  onSelect?: (childId: string) => void;
   isProcessing?: boolean;
   classAgeMin?: number;
   classAgeMax?: number;
@@ -21,6 +22,7 @@ export const EnhancedChildSelector = ({
   open, 
   onOpenChange, 
   onConfirm,
+  onSelect,
   isProcessing = false,
   classAgeMin,
   classAgeMax,
@@ -29,6 +31,13 @@ export const EnhancedChildSelector = ({
   const [selectedChild, setSelectedChild] = useState("");
   const [showAddChild, setShowAddChild] = useState(false);
   const { children } = useChildren();
+
+  const handleChildSelection = (childId: string) => {
+    setSelectedChild(childId);
+    if (onSelect) {
+      onSelect(childId);
+    }
+  };
 
   const handleConfirm = () => {
     if (selectedChild) {
@@ -96,7 +105,7 @@ export const EnhancedChildSelector = ({
                     {eligibleChildren.map((child) => (
                       <div
                         key={child.id}
-                        onClick={() => setSelectedChild(child.id)}
+                        onClick={() => handleChildSelection(child.id)}
                         className={`p-3 border rounded-lg cursor-pointer transition-all ${
                           selectedChild === child.id
                             ? "border-primary bg-primary/5 ring-2 ring-primary"

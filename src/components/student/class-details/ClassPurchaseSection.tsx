@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { StudentClassDetails } from "@/hooks/use-student-class-details";
 import { enrollStudentInClass } from "@/hooks/use-student-enrollment";
@@ -12,6 +12,9 @@ import { usePaymentSuccess } from "@/hooks/use-payment-success";
 import { useSubscriptionPlans, useSubscriptionStatus, useCreatePaymentCheckout, useCreateClassSubscriptionCheckout } from "@/hooks/use-subscription";
 import { useAuth } from "@/contexts/AuthContext";
 import { EnhancedChildSelector } from "@/components/parent/EnhancedChildSelector";
+import { useSpendingLimitCheck } from "@/hooks/use-spending-limit-check";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 
 interface ClassPurchaseSectionProps {
   classDetails: StudentClassDetails;
@@ -23,19 +26,26 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
   const { isAuthenticated, user } = useAuth();
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [showChildSelector, setShowChildSelector] = useState(false);
+  const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [pendingEnrollment, setPendingEnrollment] = useState<'free' | 'payment' | 'subscription' | null>(null);
   const { data: subscriptionPlans } = useSubscriptionPlans();
   const { data: subscriptionStatus } = useSubscriptionStatus();
   const createPaymentCheckout = useCreatePaymentCheckout();
   const createClassSubscription = useCreateClassSubscriptionCheckout();
 
-  // Handle payment success from URL parameters
-  usePaymentSuccess(onEnrollmentChange);
-
-  // For recurring classes, show monthly charge only (no multiplication)
+  // Check spending limit for parents
   const displayPrice = classDetails.duration_type === 'recurring' && classDetails.monthly_charges 
     ? classDetails.monthly_charges 
     : classDetails.price;
+  const priceNumber = typeof displayPrice === 'string' ? parseFloat(displayPrice) : displayPrice || 0;
+  
+  const spendingLimit = useSpendingLimitCheck(
+    selectedChildId,
+    priceNumber
+  );
+
+  // Handle payment success from URL parameters
+  usePaymentSuccess(onEnrollmentChange);
 
   const handleFreeEnrollment = async (childId?: string) => {
     // Check if user is logged in first
@@ -274,11 +284,44 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
       </div>
       </div>
 
+      {/* Spending Limit Warning for Parents */}
+      {user?.role === "parent" && selectedChildId && spendingLimit.limitExceeded && (
+        <Alert variant="destructive" className="mt-4">
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Spending Limit Exceeded!</strong> 
+            <p className="mt-1">
+              Current spending for this child: ₹{spendingLimit.currentSpending.toFixed(2)}
+            </p>
+            <p>
+              Your limit: ₹{spendingLimit.spendingLimit?.toFixed(2)}
+            </p>
+            <p>
+              This class costs ₹{priceNumber.toFixed(2)}, which would exceed your set limit.
+            </p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="mt-2"
+              onClick={() => navigate('/student/parent-settings')}
+            >
+              Update Spending Limit
+            </Button>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {user?.role === "parent" && (
         <EnhancedChildSelector
           open={showChildSelector}
-          onOpenChange={setShowChildSelector}
+          onOpenChange={(open) => {
+            setShowChildSelector(open);
+            if (!open) {
+              setSelectedChildId(null);
+            }
+          }}
           onConfirm={handleChildSelectionConfirm}
+          onSelect={(childId) => setSelectedChildId(childId)}
           isProcessing={isEnrolling || createPaymentCheckout.isPending || createClassSubscription.isPending}
           classAgeMin={classDetails?.age_range_min || undefined}
           classAgeMax={classDetails?.age_range_max || undefined}
