@@ -625,6 +625,86 @@ export type Database = {
         }
         Relationships: []
       }
+      parent_notifications: {
+        Row: {
+          child_id: string | null
+          created_at: string | null
+          id: string
+          is_read: boolean | null
+          message: string
+          metadata: Json | null
+          parent_id: string
+          title: string
+          type: string
+          updated_at: string | null
+        }
+        Insert: {
+          child_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message: string
+          metadata?: Json | null
+          parent_id: string
+          title: string
+          type: string
+          updated_at?: string | null
+        }
+        Update: {
+          child_id?: string | null
+          created_at?: string | null
+          id?: string
+          is_read?: boolean | null
+          message?: string
+          metadata?: Json | null
+          parent_id?: string
+          title?: string
+          type?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "parent_notifications_child_id_fkey"
+            columns: ["child_id"]
+            isOneToOne: false
+            referencedRelation: "children"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      parent_preferences: {
+        Row: {
+          class_reminders: boolean | null
+          created_at: string | null
+          email_notifications: boolean | null
+          id: string
+          parent_id: string
+          progress_reports: boolean | null
+          spending_limit_per_child: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          class_reminders?: boolean | null
+          created_at?: string | null
+          email_notifications?: boolean | null
+          id?: string
+          parent_id: string
+          progress_reports?: boolean | null
+          spending_limit_per_child?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          class_reminders?: boolean | null
+          created_at?: string | null
+          email_notifications?: boolean | null
+          id?: string
+          parent_id?: string
+          progress_reports?: boolean | null
+          spending_limit_per_child?: number | null
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -738,6 +818,7 @@ export type Database = {
           class_id: string
           completed_sessions: number | null
           created_at: string | null
+          enrolled_by_parent_id: string | null
           enrollment_date: string | null
           id: string
           last_accessed_at: string | null
@@ -754,6 +835,7 @@ export type Database = {
           class_id: string
           completed_sessions?: number | null
           created_at?: string | null
+          enrolled_by_parent_id?: string | null
           enrollment_date?: string | null
           id?: string
           last_accessed_at?: string | null
@@ -770,6 +852,7 @@ export type Database = {
           class_id?: string
           completed_sessions?: number | null
           created_at?: string | null
+          enrolled_by_parent_id?: string | null
           enrollment_date?: string | null
           id?: string
           last_accessed_at?: string | null

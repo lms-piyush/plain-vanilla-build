@@ -39,6 +39,7 @@ const Sidebar = () => {
     { icon: Compass, label: "Explore Classes", path: "/student/explore" },
     { icon: CreditCard, label: "Subscription", path: "/student/subscription" },
     { icon: MessagesSquare, label: "Messages", path: "/student/messages" },
+    ...(user?.role === "parent" ? [{ icon: Settings, label: "Parent Settings", path: "/student/parent-settings" }] : []),
     { icon: HelpCircle, label: "Help", path: "/student/help" },
   ];
 

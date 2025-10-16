@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useChildren } from "@/hooks/use-children";
+import { useParentStats } from "@/hooks/use-parent-stats";
 import { useAuth } from "@/contexts/AuthContext";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Users, BookOpen, Calendar, DollarSign, TrendingUp } from "lucide-react";
+import { Plus, Users, BookOpen, Calendar, DollarSign, TrendingUp, Loader2, Settings } from "lucide-react";
 import { AddChildDialog } from "@/components/parent/AddChildDialog";
 
 const FamilyOverview = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const { children, isLoading } = useChildren();
+  const { children, isLoading: isChildrenLoading } = useChildren();
+  const { data: stats, isLoading: isStatsLoading } = useParentStats();
   const [showAddChild, setShowAddChild] = useState(false);
 
   if (user?.role !== "parent") {
@@ -19,13 +21,7 @@ const FamilyOverview = () => {
     return null;
   }
 
-  // Mock data for overview stats (replace with real hooks later)
-  const stats = {
-    totalChildren: children.length,
-    activeClasses: 0, // TODO: Calculate from enrollments
-    upcomingSessions: 0, // TODO: Calculate from schedules
-    monthlySpending: 0, // TODO: Calculate from payments
-  };
+  const isLoading = isChildrenLoading || isStatsLoading;
 
   return (
     <div className="space-y-6">
@@ -43,14 +39,19 @@ const FamilyOverview = () => {
       </div>
 
       {/* Stats Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      {isLoading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Children</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.totalChildren}</div>
+            <div className="text-2xl font-bold">{stats?.totalChildren || 0}</div>
             <p className="text-xs text-muted-foreground">Total children added</p>
           </CardContent>
         </Card>
@@ -61,7 +62,7 @@ const FamilyOverview = () => {
             <BookOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.activeClasses}</div>
+            <div className="text-2xl font-bold">{stats?.activeClasses || 0}</div>
             <p className="text-xs text-muted-foreground">Across all children</p>
           </CardContent>
         </Card>
@@ -72,7 +73,7 @@ const FamilyOverview = () => {
             <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{stats.upcomingSessions}</div>
+            <div className="text-2xl font-bold">{stats?.upcomingSessions || 0}</div>
             <p className="text-xs text-muted-foreground">This week</p>
           </CardContent>
         </Card>
@@ -83,11 +84,12 @@ const FamilyOverview = () => {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">₹{stats.monthlySpending}</div>
+            <div className="text-2xl font-bold">₹{stats?.monthlySpending.toLocaleString() || 0}</div>
             <p className="text-xs text-muted-foreground">Current month</p>
           </CardContent>
         </Card>
       </div>
+      )}
 
       {/* Children List */}
       <Card>
@@ -189,23 +191,23 @@ const FamilyOverview = () => {
           <Button
             variant="outline"
             className="justify-start h-auto p-4"
-            onClick={() => navigate("/student/my-classes")}
+            onClick={() => navigate("/student/family-calendar")}
           >
             <Calendar className="h-5 w-5 mr-3" />
             <div className="text-left">
-              <div className="font-medium">View Schedule</div>
-              <div className="text-xs text-muted-foreground">See all upcoming sessions</div>
+              <div className="font-medium">Family Calendar</div>
+              <div className="text-xs text-muted-foreground">View all scheduled sessions</div>
             </div>
           </Button>
           <Button
             variant="outline"
             className="justify-start h-auto p-4"
-            onClick={() => navigate("/student/subscription")}
+            onClick={() => navigate("/student/parent-settings")}
           >
-            <DollarSign className="h-5 w-5 mr-3" />
+            <Settings className="h-5 w-5 mr-3" />
             <div className="text-left">
-              <div className="font-medium">Billing</div>
-              <div className="text-xs text-muted-foreground">Manage payments</div>
+              <div className="font-medium">Settings</div>
+              <div className="text-xs text-muted-foreground">Preferences & controls</div>
             </div>
           </Button>
         </CardContent>

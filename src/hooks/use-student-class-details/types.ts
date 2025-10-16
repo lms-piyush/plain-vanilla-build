@@ -14,6 +14,8 @@ export interface StudentClassDetails {
   price: number | null;
   monthly_charges?: number | null;
   total_sessions?: number | null;
+  age_range_min: number | null;
+  age_range_max: number | null;
   currency: string | null;
   max_students: number | null;
   thumbnail_url: string | null;

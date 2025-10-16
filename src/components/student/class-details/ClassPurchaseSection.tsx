@@ -11,7 +11,7 @@ import SubscriptionButton from "@/components/subscription/SubscriptionButton";
 import { usePaymentSuccess } from "@/hooks/use-payment-success";
 import { useSubscriptionPlans, useSubscriptionStatus, useCreatePaymentCheckout, useCreateClassSubscriptionCheckout } from "@/hooks/use-subscription";
 import { useAuth } from "@/contexts/AuthContext";
-import { EnrollmentChildSelector } from "@/components/parent/EnrollmentChildSelector";
+import { EnhancedChildSelector } from "@/components/parent/EnhancedChildSelector";
 
 interface ClassPurchaseSectionProps {
   classDetails: StudentClassDetails;
@@ -275,11 +275,14 @@ const ClassPurchaseSection = ({ classDetails, onEnrollmentChange }: ClassPurchas
       </div>
 
       {user?.role === "parent" && (
-        <EnrollmentChildSelector
+        <EnhancedChildSelector
           open={showChildSelector}
           onOpenChange={setShowChildSelector}
           onConfirm={handleChildSelectionConfirm}
           isProcessing={isEnrolling || createPaymentCheckout.isPending || createClassSubscription.isPending}
+          classAgeMin={classDetails?.age_range_min || undefined}
+          classAgeMax={classDetails?.age_range_max || undefined}
+          classTitle={classDetails?.title || undefined}
         />
       )}
     </>

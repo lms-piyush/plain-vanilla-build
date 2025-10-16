@@ -57,6 +57,8 @@ import EnrollmentSuccess from "@/pages/student/EnrollmentSuccess";
 
 // Parent pages
 import FamilyOverview from "@/pages/parent/FamilyOverview";
+import ParentSettings from "@/pages/parent/ParentSettings";
+import FamilyCalendar from "@/pages/parent/FamilyCalendar";
 
 // Explore Pages
 import AcademicSubjects from "@/pages/dashboard/explore/AcademicSubjects";
@@ -193,6 +195,14 @@ const AppRoutes = () => {
         <Route 
           path="/student/family-overview" 
           element={<ProtectedRoute allowedRoles={["parent"]}><FamilyOverview /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/student/parent-settings" 
+          element={<ProtectedRoute allowedRoles={["parent"]}><ParentSettings /></ProtectedRoute>} 
+        />
+        <Route 
+          path="/student/family-calendar" 
+          element={<ProtectedRoute allowedRoles={["parent"]}><FamilyCalendar /></ProtectedRoute>} 
         />
         <Route 
           path="/student/checkout/:id" 
