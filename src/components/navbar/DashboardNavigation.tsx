@@ -14,90 +14,12 @@ import { ChevronDown } from 'lucide-react';
 const DashboardNavigation = () => {
   return (
     <nav className="hidden md:flex items-center space-x-6">
-      <NavigationMenu>
-        <NavigationMenuList>
-          <NavigationMenuItem>
-            <NavigationMenuTrigger asChild>
-              <Link 
-                to="/student/explore"
-                className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium text-gray-700 hover:text-[#8A5BB7] transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 data-[active]:bg-accent/50 data-[state=open]:bg-accent/50"
-              >
-                Explore Classes
-                <ChevronDown className="relative top-[1px] ml-1 h-3 w-3 transition duration-200 group-data-[state=open]:rotate-180" aria-hidden="true" />
-              </Link>
-            </NavigationMenuTrigger>
-            <NavigationMenuContent className="z-50">
-              <ul className="grid w-[400px] gap-3 p-4 bg-white">
-                <li>
-                  <NavigationMenuLink asChild>
-                    <Link 
-                      to="/student/explore"
-                      className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                    >
-                      <div className="text-sm font-medium leading-none">All Classes</div>
-                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        Browse all available classes
-                      </p>
-                    </Link>
-                  </NavigationMenuLink>
-                </li>
-                <li>
-                  <NavigationMenuLink asChild>
-                    <Link 
-                      to="/explore/academic-subjects"
-                      className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                    >
-                      <div className="text-sm font-medium leading-none">Academic Subjects</div>
-                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        Math, Science, Language Arts, and more
-                      </p>
-                    </Link>
-                  </NavigationMenuLink>
-                </li>
-                <li>
-                  <NavigationMenuLink asChild>
-                    <Link 
-                      to="/explore/arts-creativity"
-                      className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                    >
-                      <div className="text-sm font-medium leading-none">Arts & Creativity</div>
-                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        Music, Drawing, Painting, Drama
-                      </p>
-                    </Link>
-                  </NavigationMenuLink>
-                </li>
-                <li>
-                  <NavigationMenuLink asChild>
-                    <Link 
-                      to="/explore/technology-coding"
-                      className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                    >
-                      <div className="text-sm font-medium leading-none">Technology & Coding</div>
-                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        Programming, Game Design, Robotics
-                      </p>
-                    </Link>
-                  </NavigationMenuLink>
-                </li>
-                <li>
-                  <NavigationMenuLink asChild>
-                    <Link 
-                      to="/explore/life-skills"
-                      className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                    >
-                      <div className="text-sm font-medium leading-none">Life Skills</div>
-                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        Public Speaking, Financial Literacy
-                      </p>
-                    </Link>
-                  </NavigationMenuLink>
-                </li>
-              </ul>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
-        </NavigationMenuList>
-      </NavigationMenu>
+      <Link 
+        to="/student/explore"
+        className="inline-flex items-center text-gray-700 hover:text-[#8A5BB7] text-sm font-medium transition-colors"
+      >
+        Explore Classes
+      </Link>
 
       <NavigationMenu>
         <NavigationMenuList>
