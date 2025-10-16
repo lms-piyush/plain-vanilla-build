@@ -2,183 +2,163 @@
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
-  NavigationMenu,
-  NavigationMenuContent,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-  NavigationMenuTrigger,
-} from "@/components/ui/navigation-menu";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ChevronDown } from 'lucide-react';
 
 const DashboardNavigation = () => {
   return (
     <nav className="hidden md:flex items-center space-x-6">
-      <Link 
-        to="/student/explore"
-        className="inline-flex items-center text-gray-700 hover:text-[#8A5BB7] text-sm font-medium transition-colors"
-      >
-        Explore Classes
-      </Link>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
+            Explore Classes
+            <ChevronDown className="ml-1 h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-64 bg-white">
+          <DropdownMenuItem>
+            <Link to="/explore/academic-subjects" className="w-full">
+              <div className="flex flex-col">
+                <span className="font-medium">Academic Subjects</span>
+                <span className="text-sm text-gray-500">Math, Science, Language Arts, and more</span>
+              </div>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link to="/explore/arts-creativity" className="w-full">
+              <div className="flex flex-col">
+                <span className="font-medium">Arts & Creativity</span>
+                <span className="text-sm text-gray-500">Music, Drawing, Painting, Drama</span>
+              </div>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link to="/explore/technology-coding" className="w-full">
+              <div className="flex flex-col">
+                <span className="font-medium">Technology & Coding</span>
+                <span className="text-sm text-gray-500">Programming, Game Design, Robotics</span>
+              </div>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link to="/explore/life-skills" className="w-full">
+              <div className="flex flex-col">
+                <span className="font-medium">Life Skills</span>
+                <span className="text-sm text-gray-500">Public Speaking, Financial Literacy</span>
+              </div>
+            </Link>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-      <NavigationMenu>
-        <NavigationMenuList>
-          <NavigationMenuItem>
-            <NavigationMenuTrigger className="text-gray-700 hover:text-[#8A5BB7] bg-transparent">
-              How It Works
-            </NavigationMenuTrigger>
-            <NavigationMenuContent className="z-50">
-              <ul className="grid w-[400px] gap-3 p-4 bg-white">
-                <li>
-                  <NavigationMenuLink asChild>
-                    <Link 
-                      to="/how-it-works/for-parents"
-                      className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                    >
-                      <div className="text-sm font-medium leading-none">For Parents</div>
-                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        Learn how our platform helps your child
-                      </p>
-                    </Link>
-                  </NavigationMenuLink>
-                </li>
-                <li>
-                  <NavigationMenuLink asChild>
-                    <Link 
-                      to="/how-it-works/class-formats"
-                      className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                    >
-                      <div className="text-sm font-medium leading-none">Class Formats</div>
-                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        Different class types and experiences
-                      </p>
-                    </Link>
-                  </NavigationMenuLink>
-                </li>
-                <li>
-                  <NavigationMenuLink asChild>
-                    <Link 
-                      to="/how-it-works/safety-quality"
-                      className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                    >
-                      <div className="text-sm font-medium leading-none">Safety & Quality</div>
-                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        Our commitment to safe online education
-                      </p>
-                    </Link>
-                  </NavigationMenuLink>
-                </li>
-              </ul>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
-        </NavigationMenuList>
-      </NavigationMenu>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
+            How It Works
+            <ChevronDown className="ml-1 h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-64 bg-white">
+          <DropdownMenuItem>
+            <Link to="/how-it-works/for-parents" className="w-full">
+              <div className="flex flex-col">
+                <span className="font-medium">For Parents</span>
+                <span className="text-sm text-gray-500">Learn how our platform helps your child</span>
+              </div>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link to="/how-it-works/class-formats" className="w-full">
+              <div className="flex flex-col">
+                <span className="font-medium">Class Formats</span>
+                <span className="text-sm text-gray-500">Different class types and experiences</span>
+              </div>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link to="/how-it-works/safety-quality" className="w-full">
+              <div className="flex flex-col">
+                <span className="font-medium">Safety & Quality</span>
+                <span className="text-sm text-gray-500">Our commitment to safe online education</span>
+              </div>
+            </Link>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-      <NavigationMenu>
-        <NavigationMenuList>
-          <NavigationMenuItem>
-            <NavigationMenuTrigger className="text-gray-700 hover:text-[#8A5BB7] bg-transparent">
-              For Tutors
-            </NavigationMenuTrigger>
-            <NavigationMenuContent className="z-50">
-              <ul className="grid w-[400px] gap-3 p-4 bg-white">
-                <li>
-                  <NavigationMenuLink asChild>
-                    <Link 
-                      to="/for-tutors/become-tutor"
-                      className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                    >
-                      <div className="text-sm font-medium leading-none">Become a Tutor</div>
-                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        Start teaching on our platform
-                      </p>
-                    </Link>
-                  </NavigationMenuLink>
-                </li>
-                <li>
-                  <NavigationMenuLink asChild>
-                    <Link 
-                      to="/for-tutors/tutor-resources"
-                      className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                    >
-                      <div className="text-sm font-medium leading-none">Tutor Resources</div>
-                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        Tools and guides to help you succeed
-                      </p>
-                    </Link>
-                  </NavigationMenuLink>
-                </li>
-                <li>
-                  <NavigationMenuLink asChild>
-                    <Link 
-                      to="/for-tutors/success-stories"
-                      className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                    >
-                      <div className="text-sm font-medium leading-none">Success Stories</div>
-                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        Learn from other successful tutors
-                      </p>
-                    </Link>
-                  </NavigationMenuLink>
-                </li>
-              </ul>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
-        </NavigationMenuList>
-      </NavigationMenu>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
+            For Tutors
+            <ChevronDown className="ml-1 h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-64 bg-white">
+          <DropdownMenuItem>
+            <Link to="/for-tutors/become-tutor" className="w-full">
+              <div className="flex flex-col">
+                <span className="font-medium">Become a Tutor</span>
+                <span className="text-sm text-gray-500">Start teaching on our platform</span>
+              </div>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link to="/for-tutors/tutor-resources" className="w-full">
+              <div className="flex flex-col">
+                <span className="font-medium">Tutor Resources</span>
+                <span className="text-sm text-gray-500">Tools and guides to help you succeed</span>
+              </div>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link to="/for-tutors/success-stories" className="w-full">
+              <div className="flex flex-col">
+                <span className="font-medium">Success Stories</span>
+                <span className="text-sm text-gray-500">Learn from other successful tutors</span>
+              </div>
+            </Link>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
-      <NavigationMenu>
-        <NavigationMenuList>
-          <NavigationMenuItem>
-            <NavigationMenuTrigger className="text-gray-700 hover:text-[#8A5BB7] bg-transparent">
-              Resources
-            </NavigationMenuTrigger>
-            <NavigationMenuContent className="z-50">
-              <ul className="grid w-[400px] gap-3 p-4 bg-white">
-                <li>
-                  <NavigationMenuLink asChild>
-                    <Link 
-                      to="/resources/blog-articles"
-                      className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                    >
-                      <div className="text-sm font-medium leading-none">Blog & Articles</div>
-                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        Educational insights and tips
-                      </p>
-                    </Link>
-                  </NavigationMenuLink>
-                </li>
-                <li>
-                  <NavigationMenuLink asChild>
-                    <Link 
-                      to="/resources/help-center"
-                      className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                    >
-                      <div className="text-sm font-medium leading-none">Help Center</div>
-                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        FAQs and support resources
-                      </p>
-                    </Link>
-                  </NavigationMenuLink>
-                </li>
-                <li>
-                  <NavigationMenuLink asChild>
-                    <Link 
-                      to="/resources/learning-guides"
-                      className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
-                    >
-                      <div className="text-sm font-medium leading-none">Learning Guides</div>
-                      <p className="line-clamp-2 text-sm leading-snug text-muted-foreground">
-                        Subject-specific resources
-                      </p>
-                    </Link>
-                  </NavigationMenuLink>
-                </li>
-              </ul>
-            </NavigationMenuContent>
-          </NavigationMenuItem>
-        </NavigationMenuList>
-      </NavigationMenu>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
+            Resources
+            <ChevronDown className="ml-1 h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-64 bg-white">
+          <DropdownMenuItem>
+            <Link to="/resources/blog-articles" className="w-full">
+              <div className="flex flex-col">
+                <span className="font-medium">Blog & Articles</span>
+                <span className="text-sm text-gray-500">Educational insights and tips</span>
+              </div>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link to="/resources/help-center" className="w-full">
+              <div className="flex flex-col">
+                <span className="font-medium">Help Center</span>
+                <span className="text-sm text-gray-500">FAQs and support resources</span>
+              </div>
+            </Link>
+          </DropdownMenuItem>
+          <DropdownMenuItem>
+            <Link to="/resources/learning-guides" className="w-full">
+              <div className="flex flex-col">
+                <span className="font-medium">Learning Guides</span>
+                <span className="text-sm text-gray-500">Subject-specific resources</span>
+              </div>
+            </Link>
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
 
       <Link to="/student/help" className="text-gray-700 hover:text-[#8A5BB7] text-sm font-medium">
         Help
