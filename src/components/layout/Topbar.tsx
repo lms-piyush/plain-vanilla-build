@@ -182,8 +182,15 @@ const Topbar = () => {
   // Student design - Keep existing light theme
   return (
     <div className="sticky top-0 z-10 bg-white border-b border-gray-200 h-16 flex items-center px-6">
+      {/* Left Section - Sidebar Toggle only for authenticated users */}
+      {user && (
+        <div className="flex items-center space-x-4">
+          <SidebarTrigger className="text-gray-600 hover:text-gray-900 p-2 hover:bg-gray-100 rounded-md transition-colors" />
+        </div>
+      )}
+
       {/* Search Bar - Show only for student routes */}
-      <div className="flex-1 max-w-md relative">
+      <div className={`flex-1 max-w-md relative ${!user ? 'ml-0' : ''}`}>
         {/* <div className="relative flex items-center">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
@@ -237,7 +244,7 @@ const Topbar = () => {
         )}
       </div>
 
-      {/* Right Section - Home, Notifications & Profile */}
+      {/* Right Section - Home, Notifications & Profile OR Sign In/Up */}
       <div className="flex items-center justify-end space-x-4 ml-auto">
         {/* Home Button */}
         <Button 
@@ -251,69 +258,90 @@ const Topbar = () => {
           </Link>
         </Button>
 
-        {/* Notification Button */}
-        <div className="relative">
-          <Button 
-            variant="outline" 
-            size="icon" 
-            className="relative border border-gray-200 hover:bg-[#E5D0FF] hover:text-black active:bg-[#8A5BB7] active:text-white focus:bg-[#8A5BB7] focus:text-white"
-            onClick={() => setNotificationOpen(!notificationOpen)}
-          >
-            <Bell className="h-5 w-5" />
-            {unreadCount > 0 && (
-              <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-[#BA8DF1]"></span>
-            )}
-          </Button>
-          {notificationOpen && (
-            <NotificationDropdown onClose={() => setNotificationOpen(false)} />
-          )}
-        </div>
-        
-        {/* Profile Button with User Info */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
+        {user ? (
+          <>
+            {/* Notification Button - Only for authenticated users */}
+            <div className="relative">
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="relative border border-gray-200 hover:bg-[#E5D0FF] hover:text-black active:bg-[#8A5BB7] active:text-white focus:bg-[#8A5BB7] focus:text-white"
+                onClick={() => setNotificationOpen(!notificationOpen)}
+              >
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-[#BA8DF1]"></span>
+                )}
+              </Button>
+              {notificationOpen && (
+                <NotificationDropdown onClose={() => setNotificationOpen(false)} />
+              )}
+            </div>
+            
+            {/* Profile Button with User Info */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button 
+                  variant="outline" 
+                  className="flex items-center space-x-2 border border-gray-200 hover:bg-[#E5D0FF] hover:text-black active:bg-[#8A5BB7] active:text-white focus:bg-[#8A5BB7] focus:text-white px-3"
+                >
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user?.avatar} alt={user?.fullName} />
+                    <AvatarFallback className="bg-[#8A5BB7] text-white">
+                      {user?.fullName?.charAt(0).toUpperCase() || 'S'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="hidden md:block text-left">
+                    <div className="text-sm font-medium">{user?.fullName || 'Student'}</div>
+                    <div className="text-xs text-gray-500">
+                      {user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1) || 'Student'}
+                    </div>
+                  </div>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-1">
+                    <p className="text-sm font-medium leading-none">{user?.fullName}</p>
+                    <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1)} Account
+                    </p>
+                  </div>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link to="/student/dashboard" className="cursor-pointer">
+                    <User className="mr-2 h-4 w-4" />
+                    <span>Dashboard</span>
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>Log out</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </>
+        ) : (
+          <>
+            {/* Sign In and Sign Up buttons for non-authenticated users */}
             <Button 
               variant="outline" 
-              className="flex items-center space-x-2 border border-gray-200 hover:bg-[#E5D0FF] hover:text-black active:bg-[#8A5BB7] active:text-white focus:bg-[#8A5BB7] focus:text-white px-3"
+              asChild
+              className="border border-gray-200 hover:bg-[#E5D0FF] hover:text-black"
             >
-              <Avatar className="h-8 w-8">
-                <AvatarImage src={user?.avatar} alt={user?.fullName} />
-                <AvatarFallback className="bg-[#8A5BB7] text-white">
-                  {user?.fullName?.charAt(0).toUpperCase() || 'S'}
-                </AvatarFallback>
-              </Avatar>
-              <div className="hidden md:block text-left">
-                <div className="text-sm font-medium">{user?.fullName || 'Student'}</div>
-                <div className="text-xs text-gray-500">
-                  {user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1) || 'Student'}
-                </div>
-              </div>
+              <Link to="/auth/login">Sign In</Link>
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-56">
-            <DropdownMenuLabel className="font-normal">
-              <div className="flex flex-col space-y-1">
-                <p className="text-sm font-medium leading-none">{user?.fullName}</p>
-                <p className="text-xs leading-none text-muted-foreground">{user?.email}</p>
-                <p className="text-xs leading-none text-muted-foreground">
-                  {user?.role?.charAt(0).toUpperCase() + user?.role?.slice(1)} Account
-                </p>
-              </div>
-            </DropdownMenuLabel>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link to="/student/dashboard" className="cursor-pointer">
-                <User className="mr-2 h-4 w-4" />
-                <span>Dashboard</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleLogout} className="cursor-pointer">
-              <LogOut className="mr-2 h-4 w-4" />
-              <span>Log out</span>
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div> 
+            <Button 
+              asChild
+              className="bg-[#8A5BB7] hover:bg-[#8A5BB7]/90 text-white"
+            >
+              <Link to="/auth/signup">Sign Up</Link>
+            </Button>
+          </>
+        )}
+      </div>
       
     </div>
   );
