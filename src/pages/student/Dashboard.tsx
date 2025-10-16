@@ -17,6 +17,7 @@ import { useRecentlyViewedClasses } from "@/hooks/use-recently-viewed-classes";
 import { useRecommendedClasses } from "@/hooks/use-recommended-classes";
 import OnboardingTour from "@/components/student/OnboardingTour";
 import ParentOnboardingTour from "@/components/parent/ParentOnboardingTour";
+import { ProfileCompletionBanner } from "@/components/student/ProfileCompletionBanner";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -91,6 +92,9 @@ const Dashboard = () => {
       {user?.role === "student" ? <OnboardingTour /> : <ParentOnboardingTour />}
       <h1 className="text-2xl font-bold mb-6">Dashboard</h1>
       
+      {/* Profile Completion Banner - Only for Students */}
+      {user?.role === "student" && <ProfileCompletionBanner />}
+      
       {/* Statistics Section */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         {stats.map((stat, index) => (
@@ -106,7 +110,7 @@ const Dashboard = () => {
       </div>
       
       {/* Recommended for You Section */}
-      {recommendations.length > 0 && (
+      {!isRecommendationsLoading && recommendations.length > 0 && (
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-2">
@@ -148,7 +152,7 @@ const Dashboard = () => {
       )}
 
       {/* Recently Viewed Section */}
-      {recentlyViewed.length > 0 && (
+      {!isRecentlyViewedLoading && recentlyViewed.length > 0 && (
         <div className="mb-8">
           <div className="flex justify-between items-center mb-4">
             <div className="flex items-center gap-2">
@@ -208,7 +212,7 @@ const Dashboard = () => {
                   <div className="bg-muted h-4 rounded w-3/4"></div>
                 </div>
               ))
-            ) : (
+            ) : newCourses.length > 0 ? (
               newCourses.slice(0, 3).map((course) => (
                 <CourseCard
                   key={course.id}
@@ -220,6 +224,15 @@ const Dashboard = () => {
                   onClick={() => navigate(`/student/classes/${course.id}`)}
                 />
               ))
+            ) : (
+              <div className="col-span-3 flex flex-col items-center justify-center py-12">
+                <BookOpen className="h-16 w-16 text-muted-foreground mb-4" />
+                <p className="text-lg font-medium mb-2">No new courses available yet</p>
+                <p className="text-muted-foreground mb-4">Check back soon for fresh content!</p>
+                <Button onClick={() => navigate("/student/explore")}>
+                  Explore All Classes
+                </Button>
+              </div>
             )}
           </div>
         </div>
