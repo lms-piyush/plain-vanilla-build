@@ -12,48 +12,9 @@ import { ChevronDown } from 'lucide-react';
 const DashboardNavigation = () => {
   return (
     <nav className="hidden md:flex items-center space-x-6">
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="text-gray-700 hover:text-[#8A5BB7] flex items-center">
-            Explore Classes
-            <ChevronDown className="ml-1 h-4 w-4" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-64 bg-white">
-          <DropdownMenuItem>
-            <Link to="/explore/academic-subjects" className="w-full">
-              <div className="flex flex-col">
-                <span className="font-medium">Academic Subjects</span>
-                <span className="text-sm text-gray-500">Math, Science, Language Arts, and more</span>
-              </div>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Link to="/explore/arts-creativity" className="w-full">
-              <div className="flex flex-col">
-                <span className="font-medium">Arts & Creativity</span>
-                <span className="text-sm text-gray-500">Music, Drawing, Painting, Drama</span>
-              </div>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Link to="/explore/technology-coding" className="w-full">
-              <div className="flex flex-col">
-                <span className="font-medium">Technology & Coding</span>
-                <span className="text-sm text-gray-500">Programming, Game Design, Robotics</span>
-              </div>
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuItem>
-            <Link to="/explore/life-skills" className="w-full">
-              <div className="flex flex-col">
-                <span className="font-medium">Life Skills</span>
-                <span className="text-sm text-gray-500">Public Speaking, Financial Literacy</span>
-              </div>
-            </Link>
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      <Link to="/student/explore" className="text-gray-700 hover:text-[#8A5BB7] text-sm font-medium">
+        Explore Classes
+      </Link>
 
       <DropdownMenu>
         <DropdownMenuTrigger asChild>

@@ -8,7 +8,6 @@ import NotFound from "@/pages/NotFound";
 // Landing and Dashboard pages
 import Index from "@/pages/dashboard/Index";
 import Dashboard from "@/pages/Dashboard";
-import StudentEntry from "@/pages/StudentEntry";
 import TutorEntry from "@/pages/TutorEntry";
 import TutorApplicationForm from "@/pages/TutorApplicationForm";
 
@@ -108,7 +107,6 @@ const AppRoutes = () => {
       <Route path="/dashboard" element={<Dashboard />} />
       
       {/* Entry points that redirect to respective dashboards */}
-      <Route path="/student" element={<StudentEntry />} />
       <Route path="/tutor" element={<TutorEntry />} />
       
       {/* Auth */}

@@ -67,11 +67,17 @@ const SignUp = () => {
       
       toast({
         title: "Account created successfully!",
-        description: "Please check your email to verify your account before logging in.",
+        description: "Welcome to TalentSchool! Redirecting you to explore classes...",
       });
       
-      // Redirect to login page after successful signup
-      navigate("/auth/login");
+      // Redirect based on role with firstTime parameter
+      if (data.role === "student" || data.role === "parent") {
+        navigate("/student/explore?firstTime=true");
+      } else if (data.role === "tutor") {
+        navigate("/tutor/dashboard?firstTime=true");
+      } else {
+        navigate("/dashboard");
+      }
       
     } catch (error: any) {
       console.error("Signup error:", error);
