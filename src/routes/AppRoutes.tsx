@@ -92,6 +92,7 @@ import AdminUsers from "@/pages/admin/Users";
 import AdminClasses from "@/pages/admin/Classes";
 import BlogManagement from "@/pages/admin/BlogManagement";
 import TicketsManagement from "@/pages/admin/TicketsManagement";
+import TutorApplications from "@/pages/admin/TutorApplications";
 
 const AppRoutes = () => {
   return (
@@ -284,6 +285,10 @@ const AppRoutes = () => {
       <Route 
         path="/admin/tickets" 
         element={<AdminRoute><TicketsManagement /></AdminRoute>} 
+      />
+      <Route 
+        path="/admin/tutor-applications" 
+        element={<AdminRoute><TutorApplications /></AdminRoute>} 
       />
       
       {/* 404 Not Found */}

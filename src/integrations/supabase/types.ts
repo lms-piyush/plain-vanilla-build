@@ -265,6 +265,8 @@ export type Database = {
           end_time: string | null
           id: string
           notes: string | null
+          recording_duration: number | null
+          recording_url: string | null
           session_date: string | null
           start_time: string | null
           status: string | null
@@ -280,6 +282,8 @@ export type Database = {
           end_time?: string | null
           id?: string
           notes?: string | null
+          recording_duration?: number | null
+          recording_url?: string | null
           session_date?: string | null
           start_time?: string | null
           status?: string | null
@@ -295,6 +299,8 @@ export type Database = {
           end_time?: string | null
           id?: string
           notes?: string | null
+          recording_duration?: number | null
+          recording_url?: string | null
           session_date?: string | null
           start_time?: string | null
           status?: string | null
@@ -362,6 +368,7 @@ export type Database = {
           description: string | null
           duration_minutes: number | null
           duration_type: string | null
+          enrollment_count: number | null
           enrollment_deadline: string | null
           id: string
           max_students: number | null
@@ -376,6 +383,7 @@ export type Database = {
           title: string
           tutor_id: string
           updated_at: string | null
+          view_count: number | null
         }
         Insert: {
           age_range_max?: number | null
@@ -391,6 +399,7 @@ export type Database = {
           description?: string | null
           duration_minutes?: number | null
           duration_type?: string | null
+          enrollment_count?: number | null
           enrollment_deadline?: string | null
           id?: string
           max_students?: number | null
@@ -405,6 +414,7 @@ export type Database = {
           title: string
           tutor_id: string
           updated_at?: string | null
+          view_count?: number | null
         }
         Update: {
           age_range_max?: number | null
@@ -420,6 +430,7 @@ export type Database = {
           description?: string | null
           duration_minutes?: number | null
           duration_type?: string | null
+          enrollment_count?: number | null
           enrollment_deadline?: string | null
           id?: string
           max_students?: number | null
@@ -434,6 +445,7 @@ export type Database = {
           title?: string
           tutor_id?: string
           updated_at?: string | null
+          view_count?: number | null
         }
         Relationships: [
           {
