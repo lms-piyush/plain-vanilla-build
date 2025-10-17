@@ -22,23 +22,24 @@ const NotificationDropdown = ({ onClose }: NotificationDropdownProps) => {
       markAsRead(notification.id);
     }
 
-    // Navigate based on notification type and user role
+    // Navigate based on notification type
+    const metadata = notification.metadata || {};
     const currentPath = window.location.pathname;
     const isStudentRoute = currentPath.startsWith('/student');
     const isTutorRoute = currentPath.startsWith('/tutor');
 
-    switch (notification.notification_type) {
+    switch (notification.type) {
       case 'class_created':
-        navigate(`/tutor/classes/${notification.reference_id}`);
+        navigate(`/tutor/classes/${metadata.class_id}`);
         break;
       case 'student_enrollment':
-        navigate(`/tutor/classes/${notification.reference_id}`);
+        navigate(`/tutor/classes/${metadata.class_id}`);
         break;
       case 'enrollment_success':
         if (isStudentRoute) {
-          navigate(`/student/classes/${notification.reference_id}`);
+          navigate(`/student/classes/${metadata.class_id}`);
         } else {
-          navigate(`/student/classes/${notification.reference_id}`);
+          navigate(`/student/classes/${metadata.class_id}`);
         }
         break;
       case 'message_received':
@@ -52,20 +53,20 @@ const NotificationDropdown = ({ onClose }: NotificationDropdownProps) => {
         break;
       case 'class_review':
       case 'class_review_updated':
-        navigate(`/tutor/classes/${notification.reference_id}`);
+        navigate(`/tutor/classes/${metadata.class_id}`);
         break;
       case 'tutor_review':
       case 'tutor_review_updated':
         navigate('/tutor/feedback');
         break;
       case 'session_reminder':
-        navigate(`/tutor/classes/${notification.reference_id}`);
+        navigate(`/tutor/classes/${metadata.class_id}`);
         break;
       case 'student_session_reminder':
         if (isStudentRoute) {
-          navigate(`/student/classes/${notification.reference_id}`);
+          navigate(`/student/classes/${metadata.class_id}`);
         } else {
-          navigate(`/student/classes/${notification.reference_id}`);
+          navigate(`/student/classes/${metadata.class_id}`);
         }
         break;
       default:
@@ -155,7 +156,7 @@ const NotificationDropdown = ({ onClose }: NotificationDropdownProps) => {
                   >
                     <div className="flex items-start gap-3">
                       <div className="text-lg flex-shrink-0">
-                        {getNotificationIcon(notification.notification_type)}
+                        {getNotificationIcon(notification.type || '')}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
@@ -167,7 +168,7 @@ const NotificationDropdown = ({ onClose }: NotificationDropdownProps) => {
                           )}
                         </div>
                         <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
-                          {notification.description}
+                          {notification.message}
                         </p>
                         <p className="text-xs text-muted-foreground mt-1">
                           {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}

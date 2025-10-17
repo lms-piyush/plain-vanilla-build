@@ -6,19 +6,12 @@ import { useToast } from '@/hooks/use-toast';
 export interface Notification {
   id: string;
   title: string;
-  description: string;
+  message: string;
   user_id: string;
-  sender_id: string | null;
-  notification_type: string;
-  reference_id: string | null;
-  reference_table: string | null;
+  type: string | null;
   is_read: boolean;
+  metadata: any;
   created_at: string;
-  updated_at: string;
-  sender?: {
-    full_name: string;
-    avatar_url: string | null;
-  };
 }
 
 export const useNotifications = () => {
@@ -42,10 +35,7 @@ export const useNotifications = () => {
 
       const { data, error } = await supabase
         .from('notifications')
-        .select(`
-          *,
-          sender:profiles!notifications_sender_id_fkey(full_name, avatar_url)
-        `)
+        .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .range(from, to);
@@ -140,12 +130,10 @@ export const useNotifications = () => {
   // Create notification
   const createNotification = async (notificationData: {
     title: string;
-    description: string;
+    message: string;
     user_id: string;
-    sender_id?: string;
-    notification_type: string;
-    reference_id?: string;
-    reference_table?: string;
+    type?: string;
+    metadata?: any;
   }) => {
     try {
       const { error } = await supabase
