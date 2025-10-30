@@ -54,7 +54,6 @@ export interface StudentClassDetails {
     start_time: string | null;
     end_time: string | null;
     status: string | null;
-    is_completed: boolean;
     materials: Array<{
       id: string;
       material_name: string;

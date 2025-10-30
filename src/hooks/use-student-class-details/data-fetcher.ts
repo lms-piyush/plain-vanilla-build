@@ -36,7 +36,6 @@ export const fetchClassData = async (classId: string) => {
         start_time,
         end_time,
         status,
-        is_completed,
         lesson_materials!lesson_materials_lesson_id_fkey (
           id,
           material_name,

@@ -17,7 +17,6 @@ export const createDummyLessons = () => {
       start_time: "18:00:00",
       end_time: "19:30:00",
       status: "upcoming",
-      is_completed: false,
       materials: [
         {
           id: 'dummy-mat-1',
@@ -46,7 +45,6 @@ export const createDummyLessons = () => {
       start_time: "18:00:00",
       end_time: "19:30:00",
       status: "upcoming",
-      is_completed: false,
       materials: [
         {
           id: 'dummy-mat-3',
